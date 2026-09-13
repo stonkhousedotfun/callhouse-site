@@ -144,7 +144,7 @@ export default function RisksPage() {
 
       <Group
         title="The ordinary outcomes"
-        note="Not edge cases. On any given week, one of these three is what happens."
+        note="Not edge cases. Every week ends in one or more of these."
       >
         <Risk
           title="No buyer"
@@ -162,15 +162,47 @@ export default function RisksPage() {
         >
           <p>
             The keeper writes the call and lists it. If nobody lifts the offer before the book
-            closes on Friday, the option expires unsold and the collateral comes back at Saturday
-            expiry. This is the most likely outcome on a thin book, and the order book for weekly
-            calls on a tokenised stock is thin.
+            closes on Friday, the week&apos;s premium is zero and the vault&apos;s unsold options
+            are worthless after Saturday expiry. If nothing is assigned to the vault either, the
+            collateral comes back when the week closes. This is the most likely outcome on a thin
+            book, and the order book for weekly calls on a tokenised stock is thin.
           </p>
           <p style={{ marginBottom: 0 }}>
-            <strong>Costs you:</strong> the week&apos;s premium, which is zero. Your collateral is
-            not touched — it was locked in Valorem for the week and returns whole. The protocol fee
-            is a share of the premium harvested, so an unfilled week also collects no fee. You lose
-            the time, not the tokens.
+            <strong>Costs you:</strong> the week&apos;s premium, which is zero, and the time. The
+            protocol fee is a share of the premium harvested, so an unfilled week also collects no
+            fee. An unsold listing does not protect the collateral from assignment: see the next
+            entry.
+          </p>
+        </Risk>
+
+        <Risk
+          title="Assignment in a week nobody bought"
+          likelihood="Any week spot runs"
+          tone="warn"
+          response={
+            <>
+              Nothing. The vault cannot choose which writers Valorem assigns, and holding its own
+              unsold options does not shield its collateral; those options are worthless after
+              expiry. When the week closes the vault redeems its claim and gets back whatever
+              collateral was not assigned, plus the strike USDG for what was. Deposits stay closed
+              while assignment proceeds sit unredeemed in the claim, so nobody can buy shares into
+              that gap.
+            </>
+          }
+        >
+          <p>
+            The option the vault writes is not private to it. It is one of the {MARKET} option
+            series Overcall registers for the week, and anyone else who writes that option writes
+            into the same series. Valorem assigns exercises across all writers of a series, by
+            bucket, not to whoever sold the exercised call. So if buyers of calls that other writers sold exercise, part
+            or all of the vault&apos;s position can be assigned even though its own listing never
+            filled.
+          </p>
+          <p style={{ marginBottom: 0 }}>
+            <strong>Costs you:</strong> both at once. The week&apos;s premium is zero, and the
+            assigned tokens leave at the strike. The vault receives the strike in USDG, credited to
+            depositors with no fee, and the upside above the strike is gone for that week. v1 does
+            not buy the tokens back.
           </p>
         </Risk>
 
@@ -189,9 +221,10 @@ export default function RisksPage() {
           }
         >
           <p>
-            Whoever bought the call may exercise it inside the exercise window. Valorem takes the
-            collateral at the strike and leaves the strike proceeds in USDG, which are credited to
-            depositors in full: the protocol fee is charged on premium, never on them. The strike
+            Anyone holding a call of the series the vault wrote may exercise it inside the exercise
+            window, and Valorem can assign that exercise to the vault whether or not the call was
+            bought from the vault. Valorem takes the collateral at the strike and leaves the strike
+            proceeds in USDG, which are credited to depositors in full: the protocol fee is charged on premium, never on them. The strike
             is the nearest Overcall rung inside a 3–12% out-of-the-money band, so it takes a move,
             but not an enormous one.
           </p>
@@ -250,12 +283,16 @@ export default function RisksPage() {
             Stock Tokens are debt securities issued by Robinhood Assets (Jersey) Limited. Not
             shares: no vote, no claim on the underlying company, and issuer credit risk on that
             entity. The issuer can freeze or restrict transfers and can upgrade the token proxy;
-            the token can pause its own price oracle. Either event stops writing and stops
-            settlement.
+            the token can pause its own price oracle. The two are different. A freeze can stop
+            anything that moves the token: writing a call, closing the week with{" "}
+            <code>rollClose</code>, deposits, and redemptions that pay out tokens. An oracle pause
+            stops the vault writing and listing new calls, and nothing else; settlement never reads
+            the oracle, so an open week still closes.
           </p>
           <p style={{ marginBottom: 0 }}>
-            <strong>Costs you:</strong> in the mild case, weeks of nothing while the vault sits
-            unable to write or settle. In the severe case, the instrument itself — if the issuer
+            <strong>Costs you:</strong> in the mild case, weeks of nothing: no new calls under
+            either event, and under a freeze an open week that cannot close and redemptions that
+            cannot pay out tokens until it lifts. In the severe case, the instrument itself — if the issuer
             fails, the token does not survive independently of it. See{" "}
             <Link href="/legal">the legal page</Link> for the full legal form.
           </p>
@@ -323,8 +360,8 @@ export default function RisksPage() {
           tone="bad"
           response={
             <>
-              The deposit cap is the real statement of confidence: 20–50 {MARKET} at launch, not an
-              open door. There is no proxy and no upgrade key, so a bug means a v2 and a migration
+              The deposit cap is the real statement of confidence: 20 {MARKET} at launch, not an
+              open door, and only the Admin Safe can raise it. There is no proxy and no upgrade key, so a bug means a v2 and a migration
               announced in advance rather than a silent patch. An external audit is on the plan and
               has not happened.
             </>
@@ -353,10 +390,12 @@ export default function RisksPage() {
           tone="info"
           response={
             <>
-              A dead keeper cannot strand collateral past the week. The Guardian can close the week
-              after expiry, and closing becomes permissionless an hour later, so anyone can settle
-              the queue and release the collateral. Halting writes never blocks a redemption, a
-              USDG claim, or the close of a week — it blocks exactly one thing, opening a new short.
+              A dead keeper cannot strand collateral past the week. The keeper can close the week
+              from expiry, and closing becomes permissionless one hour after expiry, so anyone can
+              redeem the claim, settle the queue and release the collateral. The Guardian cannot
+              close a week; it can only halt writes and cancel or invalidate listings. Halting
+              writes never blocks a redemption, a USDG claim, or the close of a week — it blocks
+              writing new calls and authorising new listings, nothing else.
             </>
           }
         >

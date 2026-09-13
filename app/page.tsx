@@ -92,7 +92,7 @@ const LIMITS: ReadonlyArray<readonly [string, string]> = [
   ["Will not list below", "0.40% of spot / week"],
   ["Collateral written", "at most 95% of idle"],
   ["Listings signed per cycle", "at most 3"],
-  ["Deposit cap at launch", `20–50 ${MARKET}`],
+  ["Deposit cap at launch", `20 ${MARKET}; only the Admin Safe can raise it`],
 ];
 
 export default function HomePage() {
@@ -154,7 +154,7 @@ export default function HomePage() {
               <span className="k">{MARKET} locked per contract</span>
             </div>
             <div className="lead-stat">
-              <span className="v">20–50</span>
+              <span className="v">20</span>
               <span className="k">{MARKET} deposit cap at launch</span>
             </div>
           </div>
@@ -208,8 +208,8 @@ export default function HomePage() {
             <h2 className="card-title">How the week ends</h2>
           </div>
           <p className="small muted">
-            Three endings. Which one you get is decided by the order book and by where the stock
-            closes, not by anything the vault does.
+            Three endings. Which one you get is decided by the order book and by what holders of
+            this week&apos;s calls do, not by anything the vault does.
           </p>
 
           <div className="grid grid-3">
@@ -222,8 +222,11 @@ export default function HomePage() {
               </div>
               <p className="small" style={{ marginBottom: 0 }}>
                 There is no dealer obliged to take the other side. The listing sat on a thin book
-                and nobody filled it, so the week pays zero USDG. Nobody owns the call, so nothing
-                can be assigned: the collateral comes straight back out of Valorem at expiry.
+                and nobody filled it, so the week pays zero USDG and the unsold options are
+                worthless after expiry. The collateral can still be assigned: the vault writes the
+                same option series as other writers, and Valorem assigns exercises across all of
+                them. If their buyers exercise, tokens can leave at the strike for strike USDG in a
+                week that paid nothing. Whatever is not assigned comes back when the week closes.
               </p>
             </div>
 
@@ -236,8 +239,8 @@ export default function HomePage() {
               </div>
               <p className="small" style={{ marginBottom: 0 }}>
                 A buyer paid. The vault was credited 95% of the premium and {VENUE_NAME} took 5%
-                inside the order itself. Spot finished under the strike, so the collateral was
-                never touched and the USDG is claimable after the protocol fee.
+                inside the order itself. No exercise was assigned to the vault, so the collateral
+                comes back when the week closes and the USDG is claimable after the protocol fee.
               </p>
             </div>
 
@@ -293,12 +296,14 @@ export default function HomePage() {
           <hr className="hr" />
 
           <p className="small muted" style={{ marginBottom: 0 }}>
-            Cut the path at Seaport and you have the other week: nobody fills, the premium is zero,
-            and Valorem hands the collateral back whole at expiry. Settlement never reads a price
-            feed — whether the vault was assigned is decided by what the option holder did, and the
-            Chainlink feed is display and a gate on writing, nothing more. The protocol fee is
-            5% of the premium and nothing else: strike proceeds from an assignment carry no fee,
-            and a week that pays nothing costs nothing.
+            Cut the path at Seaport and you have the other week: nobody fills and the premium is
+            zero. The collateral is still written into a series other writers share, so it can
+            still be assigned if their buyers exercise; whatever is not assigned comes back when
+            the week closes. Settlement never reads a price feed — whether the vault was assigned
+            is decided by what holders of the series did and by Valorem&apos;s assignment, and the
+            Chainlink feed is display and a gate on writing and listing, nothing more. The protocol
+            fee is 5% of the premium and nothing else: strike proceeds from an assignment carry no
+            fee, and a week that pays nothing is charged nothing.
           </p>
         </div>
 
@@ -345,8 +350,9 @@ export default function HomePage() {
             <li>
               <strong>Stock Tokens are debt securities</strong> issued by Robinhood Assets (Jersey)
               Limited. Not shares: no vote, no claim on the company, and the issuer&apos;s credit
-              risk is yours. The issuer can freeze transfers and the token can pause its own price
-              oracle, either of which can stop this vault writing or settling.{" "}
+              risk is yours. The issuer can freeze transfers, which can stop this vault writing,
+              closing the week and paying out tokens. The token can also pause its own price
+              oracle, which stops new writes and listings but not settlement.{" "}
               <Link href="/legal">The legal page</Link> has the full form.
             </li>
             <li>
@@ -356,7 +362,7 @@ export default function HomePage() {
             <li>
               <strong>The Callhouse contracts have not been audited.</strong> Valorem
               Clear was audited by Zellic under its former name; this vault was not. There is no
-              proxy, so a fix means a v2 and a migration. The 20–50 {MARKET} cap is the honest
+              proxy, so a fix means a v2 and a migration. The 20 {MARKET} launch cap is the honest
               measure of how much confidence that deserves.
             </li>
             <li>
@@ -364,7 +370,8 @@ export default function HomePage() {
               launch. Depositing early accrues nothing but the USDG a buyer actually paid.
             </li>
             <li>
-              An empty book, assignment, partial assignment, an issuer freeze, the Valorem fee
+              An empty book, assignment (including in a week nobody bought), partial assignment,
+              an issuer freeze, the Valorem fee
               switch and an outage into the Friday window are each written out on{" "}
               <Link href="/risks">the risks page</Link>. Read it before the app.
             </li>

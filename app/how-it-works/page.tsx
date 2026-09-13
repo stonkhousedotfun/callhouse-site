@@ -77,7 +77,7 @@ const POLICY: Array<[string, string]> = [
   ["Min list premium", "0.40% of spot / week"],
   ["Max utilization", `95% of idle ${MARKET}`],
   ["Protocol fee", "5% of premium harvested (filled weeks only; never on strike proceeds)"],
-  ["Deposit cap", `20–50 ${MARKET} at launch`],
+  ["Deposit cap", `20 ${MARKET} at launch`],
   ["Max listings signed per cycle", "3"],
 ];
 
@@ -222,8 +222,8 @@ export default function HowItWorksPage() {
         </div>
         <p className="small muted">
           Three outcomes, and premium is paid only if a buyer fills the listing. Which one you get
-          is decided by the order book and by where the stock closes, not by anything the vault
-          does.
+          is decided by the order book and by what holders of this week&apos;s calls do, not by
+          anything the vault does.
         </p>
 
         <div className="grid grid-3">
@@ -235,10 +235,13 @@ export default function HowItWorksPage() {
               </span>
             </div>
             <p className="small" style={{ marginBottom: 0 }}>
-              The listing sat on a thin book and nobody filled it. The week pays zero USDG. Nobody
-              owns the call, so nothing can be assigned: the collateral comes straight back out of
-              Valorem at expiry. This is published as a row like any other week, not hidden as an
-              error state.
+              The listing sat on a thin book and nobody filled it. The week pays zero USDG and the
+              unsold options are worthless after expiry. The collateral can still be assigned: the
+              vault writes the same option series as other writers, and Valorem assigns exercises
+              across all of them. If their buyers exercise, tokens can leave at the strike for
+              strike USDG in a week that paid nothing. Whatever is not assigned comes back when the
+              week closes. This is published as a row like any other week, not hidden as an error
+              state.
             </p>
           </div>
 
@@ -250,9 +253,10 @@ export default function HowItWorksPage() {
               </span>
             </div>
             <p className="small" style={{ marginBottom: 0 }}>
-              A buyer paid the premium and the stock finished below the strike, so exercising would
-              have cost them money. The option expires worthless to them. The vault keeps the
-              premium net of fees and the collateral returns intact.
+              A buyer paid the premium, and no exercise was assigned to the vault, usually because
+              the stock stayed below the strike. The option expires worthless to its holder. The
+              vault keeps the premium net of fees and the collateral comes back when the week
+              closes.
             </p>
           </div>
 
@@ -273,8 +277,10 @@ export default function HowItWorksPage() {
 
         <div className="notice" data-tone="info" style={{ marginTop: 16 }}>
           <strong>Partial assignment is normal.</strong>
-          Valorem assigns by bucket, not perfectly pro rata, so a week can end with some of the
-          vault&apos;s contracts assigned and the rest not. The vault then holds a mix of
+          Valorem assigns by bucket across every writer of the same option series, not perfectly
+          pro rata and not according to who sold the exercised call. A week can end with some of
+          the vault&apos;s contracts assigned and the rest not, and that can happen in a week the
+          vault&apos;s own listing never filled. The vault then holds a mix of
           collateral and USDG, and a queued withdrawal settled that week pays out in the same mix.
         </div>
       </div>
@@ -339,9 +345,9 @@ export default function HowItWorksPage() {
             was assigned, part of it arrives as USDG at the strike.
           </li>
           <li>
-            <strong>Withdrawing from idle collateral is never blocked by a pause.</strong> Halting
-            writes stops exactly one thing — opening a new short. It does not stop a withdrawal, a
-            claim, or the close of a week.
+            <strong>Withdrawing from idle collateral is never blocked by a halt.</strong> Halting
+            writes stops writing new calls and authorising new listings, nothing else. It does not
+            stop a withdrawal, a claim, or the close of a week.
           </li>
         </ul>
       </div>
@@ -388,7 +394,7 @@ export default function HowItWorksPage() {
         <p className="small muted" style={{ marginBottom: 0 }}>
           Both live fees are taken out of premium, and premium exists only when a buyer fills.
           Stacked, they come to 9.75% of what the buyer paid: 5% to {VENUE_NAME}, then 5% of the
-          95% that reaches the vault. A week with no buyer costs nothing because nothing was
+          95% that reaches the vault. A week with no buyer is charged no fee because nothing was
           collected.
         </p>
       </div>
@@ -520,9 +526,11 @@ export default function HowItWorksPage() {
 
         <p className="small muted" style={{ marginTop: 12, marginBottom: 0 }}>
           <strong>Settlement never reads a price feed.</strong> Whether a call is exercised is
-          decided by whoever bought it, and what the vault gets back is decided by Valorem. The
-          Chainlink feed is used for two things only: showing a spot price, and gating the write so
-          the vault refuses to sell a strike against a stale or paused oracle.
+          decided by whoever holds it, and what the vault gets back is decided by Valorem. The
+          Chainlink feed is used for two things only: showing a spot price, and gating writes and
+          listings so the vault refuses to sell against a stale price. A pause of the Stock
+          Token&apos;s own oracle blocks writes and listings the same way. Neither is read when the
+          week settles.
         </p>
       </div>
 
