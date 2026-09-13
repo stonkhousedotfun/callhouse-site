@@ -273,7 +273,7 @@ export default function RisksPage() {
             <>
               There is no technical mitigation, and pretending otherwise would be the dishonest
               part. That is the asset: a Stock Token is a claim on its issuer. What the contracts
-              do guarantee is that a freeze never traps you procedurally — queueing a redemption
+              do ensure is that a freeze never traps you procedurally — queueing a redemption
               and claiming USDG keep working while token transfers are stopped, and the vault
               refuses to write against a paused oracle rather than writing blind.
             </>
@@ -474,9 +474,10 @@ export default function RisksPage() {
           response={
             <>
               The queue is the mechanism, not a discretionary gate: shares are escrowed and tagged
-              with an epoch, the epoch settles when the week closes, and you draw a pro-rata slice.
-              No key can jump the queue, and no key can stop it — the close is permissionless an
-              hour after expiry. Deposits close at the cycle&apos;s exercise timestamp for the same
+              with an epoch, the epoch settles when the week closes, and you draw a pro-rata share of the collateral
+              plus the USDG your own queued shares earned. No Callhouse key can jump the queue or
+              stop it — the close is permissionless an hour after expiry — though a Stock Token
+              issuer freeze can hold up the close until it lifts. Deposits close at the cycle&apos;s exercise timestamp for the same
               structural reason.
             </>
           }

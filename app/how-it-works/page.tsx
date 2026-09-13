@@ -340,8 +340,8 @@ export default function HowItWorksPage() {
           <li>
             <strong>A withdrawal requested while a call is open is queued, not refused.</strong>{" "}
             The shares are escrowed and tagged with the week. When the vault reclaims, that week is
-            settled into a pot of collateral and USDG and each queued holder draws a pro-rata
-            slice. A queued withdrawal is never a promise of a fixed number of tokens: if the week
+            settled into a pot of collateral and USDG. Each queued holder draws a pro-rata share of
+            the collateral, plus the USDG their own queued shares earned. A queued withdrawal is never a promise of a fixed number of tokens: if the week
             was assigned, part of it arrives as USDG at the strike.
           </li>
           <li>

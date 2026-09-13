@@ -53,7 +53,7 @@ import {
 } from "@/lib/site";
 
 const DESCRIPTION =
-  "Deposit one tokenised stock, receive vault shares. Each week a keeper writes one Overcall call per whole token and lists it for USDG. Premium is paid only if a buyer fills, and a week with no buyer pays zero.";
+  "Deposit one tokenised stock, receive vault shares. Each week a keeper writes one Overcall call per whole token and lists it for USDG. Premium is paid only if a buyer fills, and a week with no buyer pays zero premium.";
 
 /**
  * `title.absolute` and not a bare string: the layout carries a "%s — Callhouse" template, so a
@@ -107,7 +107,7 @@ export default function HomePage() {
           Deposit one tokenised stock, receive {SHARE_TICKER} shares. Each week a keeper writes an{" "}
           {VENUE_NAME} call against the idle collateral and lists it for USDG.{" "}
           <strong>Premium is paid only if a buyer fills</strong> the listing. A week with no buyer
-          pays zero, and on a book this thin that is the most likely outcome — published as a row
+          pays zero premium, and on a book this thin that is the most likely outcome — published as a row
           like any other week, not hidden as an error state.
         </p>
 
