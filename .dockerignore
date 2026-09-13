@@ -1,0 +1,29 @@
+# Build-context filter. The Dockerfile's `COPY . .` sends whatever survives this file into the
+# image build, so it decides what can reach `next build`.
+#
+# DELIBERATELY ABSENT: any exception that lets a `.env` file into the context. Nothing in .env*
+# may ever enter an image — Next would load it during `next build` and inline its NEXT_PUBLIC_*
+# values over the ARGs. Build-time values arrive as ARGs from Railway (see the Dockerfile).
+
+# ---- never in the image ----
+node_modules
+.next
+out
+.git
+.github
+.gitignore
+.dockerignore
+.DS_Store
+*.log
+*.tsbuildinfo
+next-env.d.ts
+coverage
+
+# ---- secrets. No exception line may follow this block. ----
+.env
+.env.*
+
+# ---- docs and deploy config: read by humans and Railway, never by `next build` ----
+*.md
+Dockerfile
+railway.json

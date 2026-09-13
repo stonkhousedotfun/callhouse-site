@@ -1,20 +1,53 @@
-# site
+# callhouse-site
 
 `callhouse.xyz` — the public landing. Static marketing pages for a product whose dapp lives on a
-different domain. Next.js App Router, React 19, one stylesheet, no framework.
+different domain, in a different repo. Next.js 16 App Router, React 19, one stylesheet, no
+framework, zero wallet code.
+
+This repo was split out of the Callhouse monorepo (it was `site/` there) on 2026-09-13. It builds,
+lints, typechecks and deploys on its own: its own `package.json`, its own `pnpm-lock.yaml`, its own
+Dockerfile and Railway service, its own copy-lint gate.
 
 ```bash
-pnpm --filter @callhouse/site dev     # http://localhost:3001  (web owns 3000)
-pnpm --filter @callhouse/site build
-node ../scripts/copy-lint.mjs         # compliance gate, also runs in CI
+pnpm install                 # pnpm 9.10.0 via corepack (packageManager), Node >= 22
+pnpm dev                     # http://localhost:3001  (the app owns 3000 locally)
+pnpm typecheck
+pnpm lint
+pnpm build                   # emits .next/standalone/server.js
+pnpm copy-lint               # compliance gate: self-test, then the real tree. Also runs in CI
 ```
 
-Two packages, two domains, two Railway services:
+## Sibling repos
 
-| Domain | Package | What it is |
+| Repo | Domain | What it is |
 |---|---|---|
-| `callhouse.xyz` | `site/` (this one) | explains the product. No wallet. |
-| `app.callhouse.xyz` | `web/` | deposit, cycle tape, claim USDG. |
+| **leekzor/callhouse-site** (this one) | `callhouse.xyz` | explains the product. No wallet. |
+| leekzor/callhouse | `app.callhouse.xyz` | the app: `web/` (deposit, cycle tape, claim USDG), plus `keeper/`, `indexer/`, `ops/`, and `contracts/` mounted as a submodule. |
+| leekzor/callhouse-contracts | — | the vault contracts (Foundry). |
+
+References in this repo's code comments of the form ``leekzor/callhouse: `web/app/layout.tsx` ``
+name a file in the app repo. Nothing here imports from, builds against or deploys with either
+sibling; the links are for humans keeping paired files in step.
+
+## Design tokens are duplicated in leekzor/callhouse — change them in PAIRED COMMITS
+
+> **The `:root` token block in `app/globals.css` is duplicated in leekzor/callhouse
+> `web/app/globals.css`** — the same palette, the same radius, the same gap, the same two font
+> stacks, byte for byte. In the monorepo this was enforced as "change both in the same commit".
+> The two files now live in two repos, so no single commit can hold both sides.
+>
+> **Rule:** a token change is a pair of commits, one in each repo, with the same message and each
+> naming the other's commit. Deploy both or neither. Nothing here should invent a palette value that
+> does not exist in the app's `web/app/globals.css`.
+
+Why duplicated rather than shared: this site must build and deploy with no dependency on the app.
+The two domains sit one click apart, and a drifted palette reads as a phishing page when a user
+crosses the seam.
+
+The same pairing rule applies to the other files that mirror the app, each named in its header
+comment: `app/legal/page.tsx` (disclosure copy), `app/layout.tsx` and `app/robots.ts` (the
+index/noindex decision), `components/Nav.tsx` and `components/Footer.tsx` (chrome and standing
+disclaimers), and `scripts/copy-lint.mjs` (the forbidden-copy table).
 
 ## What this is not
 
@@ -38,18 +71,24 @@ If a page here ever needs a number that changes, it belongs on the dapp instead.
 | `/how-it-works` | the cycle in detail: the phase machine, the policy table, the addresses, who may call what |
 | `/risks` | the unabridged risk list. No buyer, assignment, partial assignment, issuer freeze, fee switch, admin, unaudited contracts |
 | `/legal` | geographic restrictions and the legal form of the Stock Token |
+| `/terms`, `/privacy` | drafts, marked as such until counsel adopts them (see "Copy rules") |
 
-Four routes. Adding a fifth means asking whether it is marketing or product; product goes to
-`web/`.
+Four product routes. Adding a fifth means asking whether it is marketing or product; product goes
+to the app (leekzor/callhouse `web/`).
 
 ## Copy rules are a CI gate, not a style preference
 
-`scripts/copy-lint.mjs` scans `site/` exactly as it scans `web/`, and it fails the build. The
-rules come from README "Frontend copy" and TECHSPEC 7.3, and they exist because the product is a
-tokenized security in a restricted perimeter. This domain is the *marketing* surface, which is
-the surface those rules were written for, so treat them as tighter here, not looser.
+`scripts/copy-lint.mjs` scans this whole repo (skipping `node_modules`, `.next` and other build
+output) and fails CI. The rules come from leekzor/callhouse README "Frontend copy" and TECHSPEC 7.3,
+and they exist because the product is a tokenized security in a restricted perimeter. This domain is
+the *marketing* surface, which is the surface those rules were written for, so treat them as tighter
+here, not looser.
 
-**Never appears anywhere under `site/`:** APY, APR, "10% weekly", "projected yield", "annualized", <!-- copy-lint-allow: this line names the forbidden phrases inside an explicit "never" -->
+The app repo carries its own copy of the script for `web/`. The `FORBIDDEN` table is byte-identical
+between the two; `REQUIRED` here is exactly the monorepo's `site` rows. Change a forbidden rule in
+one repo and change it in the other in a paired commit.
+
+**Never appears anywhere in this repo:** APY, APR, "10% weekly", "projected yield", "annualized", <!-- copy-lint-allow: this line names the forbidden phrases inside an explicit "never" -->
 "backed by Nvidia", "dividend paid by Nvidia", "guaranteed yield", "risk-free". <!-- copy-lint-allow: same enumeration, continued -->
 
 The escape hatch is a `copy-lint-allow` comment on the same line and it is only for a sentence
@@ -58,11 +97,22 @@ that is an explicit denial. It is not a way to ship the phrase.
 Never turn a weekly figure into a yearly one, by multiplication, compounding, illustration or
 "for example". No price chart. No candlesticks.
 
+**The legal-docs draft gate.** `lib/legal.ts` exports `LEGAL_DOCS_VERSION = "draft-…"`, and
+`/terms` and `/privacy` render "Draft — pending review by counsel" while the prefix is there.
+copy-lint requires the export line to still begin with `draft-`, so adopting the documents fails CI
+until that `REQUIRED` entry is removed in the same commit. That is deliberate: adoption must be an
+explicit act. The self-test proves the gate still fires.
+
+Every run starts with a self-test on synthetic trees (forbidden phrase caught, wrapped phrase
+caught, allow-comment honoured, missing disclosure caught, wrapped disclosure passes, draft gate
+fires, `node_modules`/`.next` skipped, missing package root is a hard failure). A red self-test
+fails the run before the real tree is looked at.
+
 ## The honest framing is the brand
 
 Do not write around any of these. They are the pitch, not the fine print:
 
-- Premium is paid only if a buyer fills the listing.
+- Premium is paid only if a buyer fills.
 - A week with no buyer pays zero. On a thin book that is the most likely outcome, and it is
   published as a row like any other — not hidden as an error state.
 - Assignment can take the collateral at the strike. The upside above it is gone that week.
@@ -70,10 +120,10 @@ Do not write around any of these. They are the pitch, not the fine print:
   vote, and the issuer can freeze transfers.
 - Not available to US persons.
 - No protocol token, no points, no airdrop at launch.
-- The contracts in this repo have not been audited.
+- The contracts have not been audited.
 
-No exclamation marks, no marketing adjectives. The register is `web/app/page.tsx`: "Deposit one
-tokenised stock, receive vault shares."
+No exclamation marks, no marketing adjectives. The register is the app's `web/app/page.tsx`:
+"Deposit one tokenised stock, receive vault shares."
 
 ## Display rules
 
@@ -81,37 +131,152 @@ tokenised stock, receive vault shares."
   flat bordered box.
 - **Must work at 400px wide**, with no horizontal scroll. Addresses and order hashes are single
   unbreakable tokens; let them wrap rather than let one push the page sideways.
-- British-ish spellings already in use across the repo: "tokenised", "labelled". Match the file
-  you are in.
-
-## Design tokens are duplicated from web, on purpose
-
-`app/globals.css` here is a copy of the token block in `web/app/globals.css` — the same palette,
-the same radius, the same two font stacks. It is duplicated rather than imported because this
-package must build and deploy with no dependency on `web/`: two Railway services, two containers,
-one repo.
-
-**Keep them in sync.** If you change a colour in one, change it in the other in the same commit,
-or the two domains drift apart and a user notices the seam when they click through to the app.
-Nothing here should invent a palette value that does not exist in `web/app/globals.css`.
+- British-ish spellings already in use: "tokenised", "labelled". Match the file you are in.
 
 ## Addresses and constants are duplicated too
 
 `lib/site.ts` carries the market ticker, the chain, the explorer and the address table, copied by
-hand from `web/lib/contracts.ts`, `web/lib/chain.ts` and the root `README.md` for the same
-reason. This site *displays* those addresses; it never calls them. The root `README.md` and
-`ops/addresses.json` remain the source of truth — update this file from them, never the reverse.
+hand from leekzor/callhouse `web/lib/contracts.ts`, `web/lib/chain.ts` and `README.md` for the same
+reason. This site *displays* those addresses; it never calls them. leekzor/callhouse `README.md`
+and `ops/addresses.json` remain the source of truth — update this file from them, never the reverse.
 
 ## Environment
 
-Two optional variables, `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_APP_URL`; see `.env.example`.
-Both are inlined at build time, so the Railway Dockerfile takes them as build `ARG`s — setting
-them as runtime variables on the service does nothing. Both default to the production domains, so
-a local build with no `.env` produces exactly what production produces.
+Two domain variables, `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_APP_URL`, plus six operator variables
+for the legal pages; see `.env.example`. All are inlined at build time, so the Dockerfile has to take
+them as build `ARG`s — setting them as runtime variables on the service does nothing. The two domain
+variables default to the production domains, so a local build with no `.env` produces exactly what
+production produces.
+
+**The Dockerfile declares only the two domain URLs today.** The six `NEXT_PUBLIC_OPERATOR_*` /
+`*_CONTACT_EMAIL` variables are intentionally blank until counsel decides them
+(leekzor/callhouse `ops/launch-legal.md`). Before they are set on Railway, add six `ARG`/`ENV`
+pairs (no defaults) to the build-time block of `Dockerfile`, or the values never reach `next build`.
 
 ## Deploy
 
-Railway, Dockerfile build, repo root as build context (pnpm hoists dependencies to the root, so a
-`site/`-scoped context cannot install). `next.config.mjs` sets `output: "standalone"` and an
-`outputFileTracingRoot` of the repo root — read the comment at the top of that file before
-changing either.
+Railway, one service, Dockerfile build, **this repo root as the build context**.
+
+### Railway service settings
+
+| Setting | Value |
+|---|---|
+| Service name | `site` |
+| Source → Repo / Branch | `leekzor/callhouse-site` / `main` |
+| Source → Root Directory | empty (the repo root) |
+| Config-as-code path | `railway.json` (the default) |
+| Builder / Dockerfile path | `DOCKERFILE` / `Dockerfile` (from `railway.json`) |
+| Public networking | enabled, port 3000 |
+| Healthcheck | `GET /`, timeout 120 s, restart `ON_FAILURE` up to 10 (from `railway.json`) |
+
+`railway.json` carries no comments — JSON has none. This section is its documentation.
+
+- **No `watchPatterns`.** The whole repo is the site, so every push is a site change.
+- **No `startCommand`, deliberately.** Railway runs a `startCommand` through a shell, which puts
+  `/bin/sh` at PID 1, swallows SIGTERM, and turns every redeploy into a 30-second kill. With the key
+  absent, the Dockerfile's exec-form `CMD ["node", "server.js"]` runs and node is PID 1. (The
+  monorepo's keeper dropped its `startCommand` for the same reason.) Do not re-add it for
+  legibility; the start command is readable in the Dockerfile.
+
+### Build variables need a REBUILD
+
+| Variable | Value | If unset |
+|---|---|---|
+| `NEXT_PUBLIC_SITE_URL` | `https://callhouse.xyz` | Dockerfile ARG default, same value. Safe |
+| `NEXT_PUBLIC_APP_URL` | `https://app.callhouse.xyz` | Dockerfile ARG default, same value. Safe |
+
+Set them anyway; an explicit variable is what a preview environment overrides.
+
+> **`NEXT_PUBLIC_*` is compiled into the JavaScript by `next build`. It is not read at runtime.**
+> Railway passes a service variable into a Dockerfile build only if the Dockerfile declares it as
+> an `ARG`. An undeclared variable is silently absent: the container starts, the healthcheck passes,
+> and the page links to the wrong host. **Changing one requires a rebuild (Deploy → Redeploy, or a
+> push), not a restart.**
+
+Runtime variables: none. `PORT` is injected by Railway and read by `server.js`; do not set it.
+
+### First deploy, in order
+
+1. `pnpm install --frozen-lockfile` locally must succeed without touching the lockfile. If it wants
+   to rewrite `pnpm-lock.yaml`, stop: the Docker build runs the same command and will fail.
+2. Set the build variables above, before the first build.
+3. Deploy (push to `main`, or Railway → service → Deploy).
+4. Verify on the Railway-generated `*.up.railway.app` host (see below).
+5. **Attach the custom domain only after a deploy is healthy**, so a DNS failure is distinguishable
+   from an application failure.
+
+### Custom domain: `callhouse.xyz` is an apex
+
+Attach in Railway → service → Settings → Networking → Custom Domain. Railway gives a target of the
+form `<something>.up.railway.app`.
+
+**A `CNAME` at the apex is not valid DNS** (RFC 1034: a CNAME cannot coexist with the `SOA` and `NS`
+records every zone apex carries), and Railway publishes no stable A record. The apex therefore needs
+a DNS provider that implements one of:
+
+- **`ALIAS` / `ANAME`** — a synthetic record that resolves the target and answers with its A/AAAA
+  (DNSimple, Namecheap, Route 53 `ALIAS`, others).
+- **Cloudflare CNAME flattening** — create a normal `CNAME` at the root and Cloudflare flattens it.
+
+```
+Type          Name   Value
+ALIAS/ANAME   @      <target>.up.railway.app
+```
+
+If the registrar offers neither, move DNS to one that does (Cloudflare is free). **Do not** pin an A
+record to an IP you got from `dig` against the Railway target: it is not yours and it will move. On
+Cloudflare, use **DNS only** (grey cloud) unless you have decided to run proxied on purpose.
+
+`www.callhouse.xyz` redirects to the apex with a 301, implemented at the DNS/CDN layer (a Cloudflare
+Redirect Rule or registrar forwarding), not in the app. TLS is issued by Railway once the record
+resolves.
+
+### Verify a deploy
+
+```bash
+curl -sI https://callhouse.xyz/ | head -1                                     # HTTP/2 200
+curl -s https://callhouse.xyz/ | grep -ci 'connect wallet'                    # 0
+curl -s https://callhouse.xyz/ | grep -o 'https://app\.callhouse\.xyz[^"]*' | sort -u
+for p in "" how-it-works risks legal terms privacy; do
+  printf '%-14s %s\n' "/$p" "$(curl -s -o /dev/null -w '%{http_code}' https://callhouse.xyz/$p)"
+done
+```
+
+### Rollback
+
+Railway → service → Deployments → last known-good → Redeploy. That restores the image, including the
+`NEXT_PUBLIC_*` values it was built with. Reverting a commit alone does not undo a variable change.
+
+### Build the image locally
+
+```bash
+docker build -t callhouse-site .
+docker run --rm -p 3000:3000 callhouse-site      # -> http://localhost:3000
+```
+
+### Known sharp edges
+
+1. **`NEXT_PUBLIC_*` is baked at build time.** Rebuild, never restart.
+2. **`HOSTNAME=0.0.0.0`** in the runner. Remove it and the standalone server binds localhost,
+   unreachable from outside the container; every healthcheck times out and looks like a slow boot.
+   Also do not override `PORT` on the service.
+3. **The standalone entry point is `.next/standalone/server.js`**, because `next.config.mjs` pins
+   `outputFileTracingRoot` to this directory. `.next/static` is not inside the standalone tree and is
+   copied separately; miss it and every asset 404s. The Dockerfile asserts the entry point exists at
+   the end of the builder stage so a config regression fails with an explanation.
+4. **pnpm is pinned by `packageManager`** (`pnpm@9.10.0`, the version that wrote `pnpm-lock.yaml`).
+   `corepack enable` in the Dockerfile and `pnpm/action-setup` in CI both read it. Change the field,
+   never a version in the Dockerfile.
+5. **`.dockerignore` keeps every `.env*` file out of the build context.** Next loads `.env` files
+   during `next build`; a local one leaking in would override the build ARGs.
+6. **The image runs as `nextjs` (uid 1001).** Nothing writes to disk at runtime.
+
+## CI
+
+`.github/workflows/ci.yml`: `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm lint`,
+`pnpm build` on Node 22 with pnpm from `packageManager`, plus a separate dependency-free
+`copy-lint` job.
+
+**Known issue:** GitHub Actions on the `leekzor` account currently fails every run with
+`startup_failure` because of an account-level billing problem, not because of this workflow. Until
+that is fixed, run the five commands above locally before pushing.

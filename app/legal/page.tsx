@@ -10,23 +10,23 @@
  * script; "not available to US persons" and "Robinhood Assets (Jersey) Limited" are literal
  * string matches, not sentiments.
  *
- * It mirrors web/app/legal/page.tsx and MUST STAY IN SYNC WITH IT. A change to one is a change
- * to both, in the same commit — two domains carrying two different versions of the same
- * disclosure is worse than either version on its own. The only permitted divergence is
- * cross-links: /activity is a dapp route and is reached with appUrl(), while the risk list and
- * the mechanics are pages on this domain.
+ * It mirrors leekzor/callhouse: `web/app/legal/page.tsx` and MUST STAY IN SYNC WITH IT. A change to
+ * one is a change to both, in paired commits across the two repos — two domains carrying two
+ * different versions of the same disclosure is worse than either version on its own. The only
+ * permitted divergence is cross-links: /activity is a dapp route and is reached with appUrl(),
+ * while the risk list and the mechanics are pages on this domain.
  *
  * DELIBERATELY ABSENT: no wallet, no chain read, no "I accept" button, no geo gate and no
  * cookie banner. Access is restricted by the Terms of Use at /terms and not by a technical
  * control, which the page says outright and links; shipping a checkbox here would imply a
  * perimeter that does not exist. Whether use-based acceptance is defensible for this perimeter
- * is a counsel question, tracked in ops/launch-legal.md.
+ * is a counsel question, tracked in leekzor/callhouse: `ops/launch-legal.md`.
  *
  * The "Reporting a vulnerability" section at the bottom is the `Policy:` target of
- * /.well-known/security.txt (app/.well-known/security.txt/route.ts) and SECURITY.md §6 points
- * here too. It renders the security contact from lib/legal.ts or says there is none yet; it
- * does not invent one. This section has no twin on web/app/legal/page.tsx — the disclosure
- * address belongs on the indexed domain, once.
+ * /.well-known/security.txt (app/.well-known/security.txt/route.ts) and leekzor/callhouse:
+ * `SECURITY.md` §6 points here too. It renders the security contact from lib/legal.ts or says there
+ * is none yet; it does not invent one. This section has no twin on the dapp's
+ * web/app/legal/page.tsx — the disclosure address belongs on the indexed domain, once.
  */
 import type { Metadata } from "next";
 import Link from "next/link";

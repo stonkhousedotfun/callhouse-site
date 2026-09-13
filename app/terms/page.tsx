@@ -9,7 +9,8 @@
  * WHAT IT IS NOT: adopted terms. No operating entity has been designated, no governing law has
  * been chosen and no counsel has reviewed this text. The page renders those gaps in plain words
  * from lib/legal.ts instead of hiding them behind a placeholder, and shows a warn notice while
- * operatorIsDesignated() is false. ops/launch-legal.md is the list of decisions that closes it.
+ * operatorIsDesignated() is false. leekzor/callhouse: `ops/launch-legal.md` is the list of
+ * decisions that closes it.
  *
  * The eligibility section is copied VERBATIM from app/legal/page.tsx, because the terms cannot
  * describe the perimeter differently from the page that announces it. "not available to US
@@ -19,7 +20,8 @@
  *
  * DELIBERATELY ABSENT: an "I accept" control (there is no account to attach acceptance to and a
  * checkbox would imply a gate that does not exist — whether use-based acceptance is defensible
- * for this perimeter is a counsel question, listed in ops/launch-legal.md), clause numbering
+ * for this perimeter is a counsel question, listed in leekzor/callhouse: `ops/launch-legal.md`),
+ * clause numbering
  * (the sections are not cross-referenced, so numbers would be decoration), a geoblock, and any
  * sentence that promises an outcome. Nothing here is legal advice.
  */

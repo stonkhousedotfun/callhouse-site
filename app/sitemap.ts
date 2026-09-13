@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/site";
  *
  * The list is literal rather than derived from the filesystem on purpose. This site has exactly
  * six public pages — four product pages and the two legal documents added 2026-09-12 — and
- * adding another is a product decision (site/README.md: "Adding a fifth means asking whether it
+ * adding another is a product decision (README.md: "Adding a fifth means asking whether it
  * is marketing or product"), so a new route SHOULD require an edit here. A globbed sitemap would
  * quietly publish anything that landed in app/. /.well-known/security.txt is not a page and is
  * not listed.
@@ -24,10 +24,10 @@ import { SITE_URL } from "@/lib/site";
  * near-static, and the landing page is the entry point) rather than to gamed values.
  *
  * Deliberately absent: app.callhouse.xyz. The dapp is a different domain with its own robots.txt
- * that disallows everything — see app/robots.ts here and web/app/robots.ts there. Listing its
- * routes in this sitemap would contradict that, and a sitemap may not carry URLs on another host
- * in the first place. Also absent: alternates/i18n (one language), images (no remote images),
- * and any route that is not one of the six below.
+ * that disallows everything — see app/robots.ts here and leekzor/callhouse: `web/app/robots.ts`
+ * there. Listing its routes in this sitemap would contradict that, and a sitemap may not carry URLs
+ * on another host in the first place. Also absent: alternates/i18n (one language), images (no
+ * remote images), and any route that is not one of the six below.
  */
 
 /**

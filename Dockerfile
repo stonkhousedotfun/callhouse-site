@@ -1,31 +1,33 @@
 # ---------------------------------------------------------------------------------------------
 # @callhouse/site  →  callhouse.xyz  (the marketing landing: /, /how-it-works, /risks, /legal)
 #
-# WHY THIS FILE EXISTS: Railway builds this package with the REPO ROOT as the build context, not
-# site/. pnpm-lock.yaml and pnpm-workspace.yaml live at the root and the install must be
-# workspace-aware, so a Dockerfile that could only see site/ would have nothing correct to install
-# from. `dockerfilePath` in site/railway.json therefore reads `site/Dockerfile`, relative to a
-# service Root Directory of the repo root. ops/deploy.md documents every Railway-side setting this
-# file assumes; if you change one, change it there too.
+# WHY THIS FILE EXISTS: Railway builds this repo with the repo root as the build context and the
+# Dockerfile at `Dockerfile` (railway.json). This repo is one pnpm package with its own
+# pnpm-lock.yaml, so the context holds everything the install needs and nothing else. README.md
+# "Deploy" documents every Railway-side setting this file assumes; if you change one, change it
+# there too.
 #
-# This is the twin of web/Dockerfile and stays deliberately identical in shape. The one real
-# difference is the build-time configuration block: this package reads TWO variables, because it
-# has no wallet code and makes no chain reads at all. There is no RPC here, no vault address, no
-# indexer URL — nothing to misconfigure into a wrong-contract failure. If this list ever grows
-# past the two domain URLs, something has been added to site/ that does not belong there.
+# THE LAYERING IS THE POINT: manifests → install → sources → build. Copy the sources before the
+# install and every one-line copy edit reinstalls node_modules from scratch.
+#
+# This image reads TWO build variables, because the site has no wallet code and makes no chain
+# reads at all. There is no RPC here, no vault address, no indexer URL — nothing to misconfigure
+# into a wrong-contract failure. If this list ever grows past the two domain URLs, something has
+# been added to this repo that belongs in the app (leekzor/callhouse, web/).
 #
 # DELIBERATELY ABSENT:
-#   - No unfiltered `pnpm install`. The workspace contains keeper/, whose better-sqlite3
-#     dependency is a native addon: an unfiltered install tries to node-gyp it and dies on
-#     node:22-alpine with "Could not find any Python installation to use". Installing python3
-#     and build-base to compile a database driver into a web image would be absurd, so the
-#     install is filtered to this package and its dependencies instead. Every workspace
-#     member's package.json is still copied in — see the manifest block below for why.
-#   - No NEXT_PUBLIC_VAULT / RPC / API ARGs. Adding one would mean site/ had started reading the
-#     chain. v1 shows no live data: the vault is not deployed, so every live number would be a
-#     zero, and a zero on a landing page reads as a broken product rather than as an honest
+#   - No `corepack prepare pnpm@<x>`. package.json carries `packageManager`, so corepack resolves
+#     the SAME pnpm the lockfile was written by, here, in CI and on every developer machine. An
+#     unpinned corepack once resolved pnpm 12 for the keeper image and the install died.
+#   - No `pnpm install --no-frozen-lockfile`. The lockfile is the reproducibility contract; an
+#     install that is allowed to rewrite it is a different tree every build.
+#   - No NEXT_PUBLIC_VAULT / RPC / API ARGs. Adding one would mean the site had started reading
+#     the chain. v1 shows no live data: the vault is not deployed, so every live number would be
+#     a zero, and a zero on a landing page reads as a broken product rather than as an honest
 #     pre-launch state.
-#   - No HEALTHCHECK instruction. Railway owns the healthcheck (site/railway.json).
+#   - No `next start`. The standalone output ships its own server; `next start` would need the
+#     full node_modules tree this image deliberately does not carry.
+#   - No HEALTHCHECK instruction. Railway owns the healthcheck (railway.json).
 # ---------------------------------------------------------------------------------------------
 
 # =============================================================================================
@@ -44,23 +46,15 @@ FROM base AS builder
 
 ENV PNPM_HOME=/pnpm
 ENV PATH=$PNPM_HOME:$PATH
-RUN corepack enable && corepack prepare pnpm@9 --activate
+# No interactive "Corepack is about to download pnpm" prompt in a build log nobody is watching.
+ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
+# The version comes from `packageManager` in package.json, read by corepack the moment pnpm is
+# first invoked below. Nothing here names a version, so nothing here can disagree.
+RUN corepack enable
 
 # ---- manifests first. This layer changes only when a dependency changes. ----
-# Every workspace member's package.json is required, not just site's: `--frozen-lockfile` compares
-# the lockfile's importer set against the workspace, and a missing member fails the install with
-# "lockfile is not up to date" even though its code never enters this image.
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY site/package.json ./site/
-COPY web/package.json ./web/
-COPY keeper/package.json ./keeper/
-COPY indexer/package.json ./indexer/
-
-# `--filter <pkg>...` (trailing ellipsis) = this package plus its dependencies, and nothing
-# else in the workspace. --frozen-lockfile still holds: pnpm resolves against the shared
-# lockfile and fails if it is stale, it just declines to fetch importers this image will
-# never run. Drop the filter and the build dies compiling keeper's better-sqlite3.
-RUN pnpm install --frozen-lockfile --filter @callhouse/site...
+COPY package.json pnpm-lock.yaml ./
+RUN pnpm install --frozen-lockfile
 
 # =============================================================================================
 # BUILD-TIME CONFIGURATION. READ THIS BEFORE CHANGING A VARIABLE IN THE RAILWAY UI.
@@ -73,10 +67,9 @@ RUN pnpm install --frozen-lockfile --filter @callhouse/site...
 #      wrong host.
 #   2. Changing one of these on Railway requires a REBUILD, not a restart.
 #
-# The failure mode here is milder than web/'s but is still a broken product: every "go do
-# something" CTA on this site is an absolute external link to app.callhouse.xyz. Get
-# NEXT_PUBLIC_APP_URL wrong and the landing page's only job — handing the reader to the dapp —
-# stops working.
+# The failure mode is still a broken product: every "go do something" CTA on this site is an
+# absolute external link to app.callhouse.xyz. Get NEXT_PUBLIC_APP_URL wrong and the landing
+# page's only job — handing the reader to the dapp — stops working.
 #
 # Both carry the production defaults, so an unset variable ships a correct site rather than a
 # relative metadata base or a link to "undefined". Override them for a preview deploy only.
@@ -93,25 +86,24 @@ ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
 
-# ---- sources, last ----
-COPY scripts ./scripts
-COPY site ./site
+# ---- sources, last. .dockerignore decides what reaches this COPY: no node_modules (the layer
+#      above owns it), no .next, no .git, and no .env file of any kind. ----
+COPY . .
 
 # An absent public/ is a hard COPY failure in the runner, so guarantee it exists rather than
 # making the runner conditional.
-RUN mkdir -p ./site/public
+RUN mkdir -p ./public
 
-WORKDIR /app/site
 RUN pnpm run build
 
-# The standalone tree mirrors `outputFileTracingRoot`, which site/next.config.mjs pins to the repo
-# root — so the entry point is standalone/site/server.js, NOT standalone/server.js. Assert it
-# here: if that config loses `output: 'standalone'`, the runner's COPY fails with a bare
-# "not found" and no hint as to the cause.
-RUN test -f .next/standalone/site/server.js || { \
-      echo "BUILD ERROR: .next/standalone/site/server.js is missing."; \
-      echo "site/next.config.mjs must set output:'standalone' AND outputFileTracingRoot to the repo root."; \
-      echo "See ops/deploy.md, 'Known sharp edges'."; \
+# The standalone tree mirrors `outputFileTracingRoot`, which next.config.mjs pins to this
+# directory — so the entry point is standalone/server.js, at the top. Assert it here: if that
+# config loses `output: 'standalone'`, or the tracing root drifts upward, the runner's COPY fails
+# with a bare "not found" (or the container fails to boot) and no hint as to the cause.
+RUN test -f .next/standalone/server.js || { \
+      echo "BUILD ERROR: .next/standalone/server.js is missing."; \
+      echo "next.config.mjs must set output:'standalone' AND outputFileTracingRoot to this directory."; \
+      echo "See README.md, 'Known sharp edges'."; \
       exit 1; \
     }
 
@@ -132,25 +124,25 @@ ENV HOSTNAME=0.0.0.0
 # injected value wins; this keeps `docker run` locally on a predictable port.
 ENV PORT=3000
 
-# No runtime variables. This package has no server-side configuration at all — no API proxy, no
-# secrets, nothing read per request. web/ has OVERCALL_API_BASE; this one has nothing.
+# No runtime variables. This site has no server-side configuration at all — no API proxy, no
+# secrets, nothing read per request.
 
 RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nextjs -G nodejs
 
 # Three copies, and all three are needed:
-#   1. standalone   — the server, plus the pruned node_modules it traced. Unpacks to /app/site/…
-#                     and /app/node_modules because the tracing root is the repo root.
+#   1. standalone   — server.js, plus the pruned node_modules it traced, unpacked into /app.
 #   2. .next/static — NOT included in standalone. Without it every hashed JS/CSS asset 404s and
 #                     the page renders unstyled and dead.
-#   3. public       — served from the package directory, next to server.js.
-COPY --from=builder --chown=nextjs:nodejs /app/site/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/site/.next/static ./site/.next/static
-COPY --from=builder --chown=nextjs:nodejs /app/site/public ./site/public
+#   3. public       — served from the directory next to server.js.
+COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 USER nextjs
 
 EXPOSE 3000
 
 # Exec form: node is PID 1 and receives Railway's SIGTERM directly. A shell form would put /bin/sh
-# at PID 1, swallow the signal, and turn every redeploy into a 30-second kill.
-CMD ["node", "site/server.js"]
+# at PID 1, swallow the signal, and turn every redeploy into a 30-second kill. For the same reason
+# railway.json carries no startCommand: Railway runs that through a shell.
+CMD ["node", "server.js"]

@@ -11,7 +11,8 @@
  * DELIBERATELY ABSENT:
  *   - Wallet code of any kind. No wagmi, no viem, no query client, no connect button. This is a
  *     server component with no "use client", no hooks and no fetch; it renders identically with
- *     JavaScript switched off, which is the whole reason site/ is a separate package from web/.
+ *     JavaScript switched off, which is the whole reason this site is a separate repo from the
+ *     dapp.
  *   - Live data. The vault is not deployed. A chain read here would render zeros, and a zero that
  *     really means "not deployed yet" is a lie told in a number. The notice below the hero says
  *     so in words instead.
@@ -77,7 +78,7 @@ export const metadata: Metadata = {
  * the page. Inside a `.grid` the grid's own gap already does that, and the inherited margin drops
  * every card except the first out of line with its row. Cancelling it per element is cheaper than
  * adding a selector to a stylesheet that has to stay byte-compatible with the dapp's. Same
- * constant, same reason, as site/app/how-it-works/page.tsx.
+ * constant, same reason, as app/how-it-works/page.tsx.
  */
 const IN_GRID: CSSProperties = { marginTop: 0 };
 

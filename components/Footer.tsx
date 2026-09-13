@@ -2,16 +2,18 @@
  * Footer for callhouse.xyz. Server component — there is nothing here to hydrate, and this
  * package has no client runtime to spend on a row of links.
  *
- * The markup is web/app/layout.tsx's footer (.footer / .footer-inner, same type scale, same
- * separators) so the bottom of the two domains matches. Three rows, in this order:
+ * The markup is the dapp's footer in leekzor/callhouse: `web/app/layout.tsx` (.footer /
+ * .footer-inner, same type scale, same separators) so the bottom of the two domains matches. Three
+ * rows, in this order:
  *
  *   1. what this is — product, share ticker, collateral, chain.
  *   2. where to go  — the four disclosure pages and the explainer first, then the two links that
  *                     leave this domain. Legal leads because it is the row's reason for existing;
  *                     Terms and Privacy follow it because they are the documents /legal cites.
  *   3. the standing disclaimers, carried word for word from the dapp's footer. They are copied
- *      rather than shared: site/ builds with no dependency on web/. If one is reworded, reword
- *      both in the same commit, or the same sentence reads two ways on two hostnames.
+ *      rather than shared: this repo builds with no dependency on the dapp. If one is reworded,
+ *      reword both in paired commits across the two repos, or the same sentence reads two ways on
+ *      two hostnames.
  *
  * DELIBERATELY ABSENT: the dapp's "vault contract ↗" link. The vault is not deployed, lib/site.ts
  * carries no address for it, and a footer link to nothing is worse than no link.

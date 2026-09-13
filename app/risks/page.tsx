@@ -7,8 +7,9 @@
  * what the system actually does about it — which for several of these is nothing, and the page
  * says so rather than inventing a mitigation.
  *
- * Sources, in order of authority: SECURITY.md (threat model, the keys table, the accepted
- * risks), the root README ("Risks (short)", the policy table, the phase machine) and the dapp's
+ * Sources, in order of authority, all in leekzor/callhouse: SECURITY.md (threat model, the keys
+ * table, the accepted risks), the root README ("Risks (short)", the policy table, the phase
+ * machine) and the dapp's
  * own /docs risk section. Where this page and those disagree, this page is the one that is wrong.
  *
  * DELIBERATELY ABSENT:
@@ -17,7 +18,7 @@
  *   - Any probability expressed as a percentage. "Most weeks" is an honest ordering of
  *     likelihood; "12% chance of assignment" would be a model we do not have.
  *   - Any reassurance the bytecode does not enforce. Every "what the system does" line below
- *     maps to a check in contracts/ or to an explicit "there is no mitigation".
+ *     maps to a check in leekzor/callhouse-contracts or to an explicit "there is no mitigation".
  *   - Wallet code of any kind. Every link that does something is an absolute URL into
  *     app.callhouse.xyz, built with appUrl().
  */

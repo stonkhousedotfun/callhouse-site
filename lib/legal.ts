@@ -6,7 +6,8 @@
  * the operating entity, where it is organised, which law governs the terms, and the three
  * contact addresses. As of 2026-09-12 NONE of them has been decided: no entity has been formed
  * or chosen, no counsel has named a governing law, and no mailbox exists for legal, privacy or
- * vulnerability reports. ops/launch-legal.md is the list of decisions that fills these in.
+ * vulnerability reports. leekzor/callhouse: `ops/launch-legal.md` is the list of decisions that
+ * fills these in.
  *
  * EVERY VALUE IS OPTIONAL AND NONE HAS A DEFAULT. `undefined` when unset, and the pages render
  * that as a visible gap in plain words ("not yet designated"). There is no placeholder name here
@@ -17,8 +18,9 @@
  *
  * These are NEXT_PUBLIC_*, so like everything in lib/site.ts they are INLINED AT BUILD TIME.
  * Setting them on the Railway service and restarting changes nothing; the site must be rebuilt,
- * and site/Dockerfile must declare each one as a build ARG or the value never reaches
- * `next build` at all (ops/deploy.md §3). ops/launch-legal.md walks through the order.
+ * and this repo's Dockerfile must declare each one as a build ARG or the value never reaches
+ * `next build` at all (README.md "Deploy"). As of the repo split it declares only the two domain
+ * URLs. leekzor/callhouse: `ops/launch-legal.md` walks through the order.
  *
  * Deliberately absent: a postal address (counsel decides whether one must be published), a
  * company number, a DPO or EU/UK representative line (whether one is needed is a counsel

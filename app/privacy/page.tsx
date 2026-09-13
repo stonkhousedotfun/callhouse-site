@@ -10,13 +10,14 @@
  * EVERY SENTENCE BELOW IS GROUNDED IN CODE THAT WAS READ BEFORE IT WAS WRITTEN. The facts and
  * where they come from, so the next editor can re-verify rather than trust:
  *
- *   site/    grep -rniE 'cookie|localStorage|sessionStorage|analytics|gtag|fetch\(|<script|
- *            posthog|plausible|sentry' site --include=*.ts --include=*.tsx --include=*.mjs
+ *   site     (this repo) grep -rniE 'cookie|localStorage|sessionStorage|analytics|gtag|fetch\(|
+ *            <script|posthog|plausible|sentry' . --include=*.ts --include=*.tsx --include=*.mjs
  *            --include=*.css (node_modules and .next excluded) returns one hit, and it is a
  *            comment in app/legal/page.tsx saying there is no cookie banner. package.json has
  *            three dependencies: next, react, react-dom. No form, no wallet, no fetch.
- *   web/     lib/wagmi.ts: createConfig with `ssr: true` and the default storage, which
- *            @wagmi/core 3.6.5 createStorage.js keys as `wagmi.<name>` in localStorage. The
+ *   web/     (in leekzor/callhouse) lib/wagmi.ts: createConfig with `ssr: true` and the default
+ *            storage, which @wagmi/core 3.6.5 createStorage.js keys as `wagmi.<name>` in
+ *            localStorage. The
  *            names written are `recentConnectorId` (actions/connect.js), `store` (the
  *            persisted connection state: connected addresses and chain id) and
  *            `injected.connected` / `injected.disconnected` (connectors/injected.js, the
@@ -28,28 +29,32 @@
  *            indexer; NOTHING CALLS IT (grep fetchAccount web/ — the definition is the only
  *            hit), and no dapp route path contains an address (web/app has no dynamic
  *            segment). If either changes, the "not sent to a server of ours" sentences below
- *            become false and must change in the same commit.
+ *            become false and must change in a paired commit in this repo.
  *            app/api/overcall/listings/route.ts: `runtime = "nodejs"`, GET only, forwards
  *            offerer = the compiled-in VAULT, status=all, limit=50 and, only when the browser
  *            sent exactly `market=<MARKET>`, the compiled-in MARKET — to
  *            ${OVERCALL_API_BASE}/api/orders with an `accept` header and nothing else. No
  *            value from the visitor's request is forwarded. The visitor's IP stops at our
  *            server; Overcall sees our server's.
- *   indexer/ ponder.schema.ts: every table is derived from on-chain events. The `user` table
- *            is keyed by wallet address and holds share and USDG figures. src/api/index.ts
- *            serves GET /v1/account/:addr (an address in the path) and mounts hono/logger,
- *            which prints method, path, status and elapsed time — not IP. So a call to that
+ *   indexer/ (in leekzor/callhouse) ponder.schema.ts: every table is derived from on-chain
+ *            events. The `user` table is keyed by wallet address and holds share and USDG
+ *            figures. src/api/index.ts serves GET /v1/account/:addr (an address in the path)
+ *            and mounts hono/logger, which prints method, path, status and elapsed time — not
+ *            IP. So a call to that
  *            endpoint would put the address in our log, and the host's own connection log, if
  *            it keeps one, would hold the caller's IP beside it. Today the dapp makes no such
  *            call (see web/ above).
- *   RPC      lib/chain.ts: rpc.mainnet.chain.robinhood.com then robinhood-rpc.publicnode.com,
- *            called from the browser by wagmi's transport and by publicClient.
- *   Railway  both domains are Railway services (ops/deploy.md §0). Railway keeps its own HTTP
- *            logs for each service; nothing in this repository configures, shortens or extends
- *            that retention, and no log is shipped anywhere else.
+ *   RPC      web/lib/chain.ts (leekzor/callhouse): rpc.mainnet.chain.robinhood.com then
+ *            robinhood-rpc.publicnode.com, called from the browser by wagmi's transport and
+ *            by publicClient.
+ *   Railway  both domains are Railway services (README.md "Deploy" here; leekzor/callhouse:
+ *            `ops/deploy.md` for the app). Railway keeps its own HTTP logs for each service;
+ *            nothing in either repository configures, shortens or extends that retention, and
+ *            no log is shipped anywhere else.
  *
  * If any of those files changes what it does, this page is wrong and must change in the same
- * commit. "Draft" on this page is a literal match required by scripts/copy-lint.mjs.
+ * commit (or, for a file in leekzor/callhouse, in a paired commit here). "Draft" on this page is
+ * a literal match required by scripts/copy-lint.mjs.
  *
  * DELIBERATELY ABSENT: a cookie banner (there are no cookies to consent to), a "we may share
  * with partners" clause (there are no partners), a data-processing-agreement list, and a

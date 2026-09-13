@@ -9,20 +9,22 @@ import "./globals.css";
 /**
  * Root layout for callhouse.xyz.
  *
- * DELIBERATELY ABSENT: a <Providers> wrapper. web/app/layout.tsx has one because the dapp needs
- * wagmi, viem and @tanstack/react-query mounted above every route. This package has none of those
- * as dependencies and must never acquire them — that is the entire point of splitting the two
- * domains. A marketing page that ships a wallet runtime pays for a connect flow it will never
- * offer, and the vault is not deployed yet, so every live figure it could render would be a zero.
- * Nothing under this layout fetches, reads a chain, or holds client state beyond the nav's active
- * link. If a page here ever needs a provider, the page belongs on app.callhouse.xyz.
+ * DELIBERATELY ABSENT: a <Providers> wrapper. leekzor/callhouse: `web/app/layout.tsx` has one
+ * because the dapp needs wagmi, viem and @tanstack/react-query mounted above every route. This
+ * package has none of those as dependencies and must never acquire them — that is the entire point
+ * of splitting the two domains. A marketing page that ships a wallet runtime pays for a connect
+ * flow it will never offer, and the vault is not deployed yet, so every live figure it could render
+ * would be a zero. Nothing under this layout fetches, reads a chain, or holds client state beyond
+ * the nav's active link. If a page here ever needs a provider, the page belongs on
+ * app.callhouse.xyz.
  *
  * `metadataBase` is callhouse.xyz because that is where this package is served; relative
  * canonicals and Open Graph URLs resolve against it, and without it Next falls back to localhost
  * in a production build.
  *
- * THE robots DECISION — index: true HERE, and index: false in web/app/layout.tsx. The pairing is
- * the point, and the two files have to be changed together:
+ * THE robots DECISION — index: true HERE, and index: false in leekzor/callhouse:
+ * `web/app/layout.tsx`. The pairing is the point, and the two files have to be changed together,
+ * in paired commits across the two repos:
  *
  *   - This domain carries the canonical /legal, /risks and /how-it-works copy. Serving the same
  *     disclosures from two hostnames is duplicate content, and duplicate content lets a search
@@ -61,7 +63,10 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
 };
 
-/** Matches web/app/layout.tsx exactly. The two domains must not flash different chrome colours. */
+/**
+ * Matches leekzor/callhouse: `web/app/layout.tsx` exactly. The two domains must not flash different
+ * chrome colours.
+ */
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,

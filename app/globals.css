@@ -1,16 +1,18 @@
 /* Callhouse marketing site (callhouse.xyz) — one stylesheet, no framework.
 
-   This file is a DELIBERATE DUPLICATE of web/app/globals.css. It is copied rather than
-   imported so that site/ builds and deploys as its own Railway service with no dependency
-   on the dapp package. Two services, two Dockerfiles, two lockfile graphs; a shared CSS
-   import across package boundaries would tie them back together for no benefit.
+   This file is a DELIBERATE DUPLICATE of leekzor/callhouse: `web/app/globals.css`. It is
+   copied rather than imported so that this site builds and deploys as its own repo and
+   Railway service with no dependency on the dapp. Two repos, two Dockerfiles, two lockfiles;
+   a shared CSS package across them would tie them back together for no benefit.
 
    The :root token block below is the CONTRACT between the two files. Colours, radius, gap
-   and the font stacks must stay byte-identical to web/app/globals.css — the two domains sit
-   one click apart and a drifted palette reads as a phishing page. Change a token in one
-   file, change it in the other in the same commit.
+   and the font stacks must stay byte-identical to leekzor/callhouse: `web/app/globals.css` —
+   the two domains sit one click apart and a drifted palette reads as a phishing page. The
+   two files now live in different repos, so no single commit can hold both sides: change a
+   token in one, change it in the other in a PAIRED commit (same message, each referencing
+   the other), and do not deploy one side without the other. See README.md "Design tokens".
 
-   DELIBERATELY ABSENT: every dapp-only primitive. site/ ships zero wallet JS — no wagmi,
+   DELIBERATELY ABSENT: every dapp-only primitive. This site ships zero wallet JS — no wagmi,
    no viem, no react-query, no connect button, no chain reads — so there is nothing here for
    toasts (.toast-), form controls (input, select, label, .field, .input-wrap), position bars
    (.split-, .legend-, .rail-), raw payload dumps (pre.payload, .kv-mono) or the picked-row
@@ -381,7 +383,7 @@ code,
 /* ------------------------------------------------------------------ controls ----------- */
 
 /* The <button> selectors are carried over verbatim from the dapp so the two domains stay in
-   sync. site/ itself renders no <button>: see the .btn variant mirrors further down. */
+   sync. This site itself renders no <button>: see the .btn variant mirrors further down. */
 
 button,
 .btn {
@@ -578,8 +580,8 @@ ul.tight li {
 
 /* Everything below this banner exists only on callhouse.xyz. The dapp has no landing page,
    no money-flow diagram and no call-to-action row, so none of it is back-ported to
-   web/app/globals.css. Same flat house style: no gradients, no shadows, no animation beyond
-   a colour transition, and nothing that could be mistaken for a chart. */
+   leekzor/callhouse: `web/app/globals.css`. Same flat house style: no gradients, no shadows,
+   no animation beyond a colour transition, and nothing that could be mistaken for a chart. */
 
 /* Short uppercase mono label sat directly above a section heading. */
 .kicker {
@@ -729,7 +731,7 @@ ul.tight li {
 }
 
 /* The primary call-to-action row. Every target is an absolute link to app.callhouse.xyz —
-   site/ has no routes that do anything. */
+   this site has no routes that do anything. */
 .cta {
   display: flex;
   align-items: center;
@@ -744,7 +746,7 @@ ul.tight li {
   transition: border-color 0.12s ease, color 0.12s ease;
 }
 
-/* site/ renders no <button> elements, so mirror the dapp's variants onto .btn — a CTA here is
+/* This site renders no <button> elements, so mirror the dapp's variants onto .btn — a CTA here is
    always <a class="btn" data-variant="primary" href="https://app.callhouse.xyz/...">. */
 .btn[data-variant="primary"] {
   background: var(--accent);

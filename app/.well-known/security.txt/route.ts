@@ -2,9 +2,9 @@
  * /.well-known/security.txt — RFC 9116, the file a researcher looks for before anything else.
  *
  * WHY IT LIVES HERE: callhouse.xyz is the indexed domain and the one a stranger reaches first;
- * SECURITY.md §6 points at this path. It is a route handler rather than a file in public/
- * because the Contact line is NEXT_PUBLIC_SECURITY_CONTACT_EMAIL from lib/legal.ts and the
- * Expires line is derived from LEGAL_DOCS_VERSION — a static file would have to be edited by
+ * leekzor/callhouse: `SECURITY.md` §6 points at this path. It is a route handler rather than a file
+ * in public/ because the Contact line is NEXT_PUBLIC_SECURITY_CONTACT_EMAIL from lib/legal.ts and
+ * the Expires line is derived from LEGAL_DOCS_VERSION — a static file would have to be edited by
  * hand in step with both, and would drift.
  *
  * WHILE NO SECURITY CONTACT IS SET THIS ROUTE RETURNS 404, on purpose. RFC 9116 §2.5.3 makes
@@ -12,8 +12,8 @@
  * scanners parse it as a valid policy and stop looking, and a researcher who finds it reads
  * "this project thought about disclosure" on a file that says nothing. A 404 tells the truth
  * (there is no disclosure address yet), and the body says so in one line so it is not mistaken
- * for a missing route. ops/launch-legal.md lists setting the address as a launch step; until
- * then SECURITY.md §6 carries the same gap in words.
+ * for a missing route. leekzor/callhouse: `ops/launch-legal.md` lists setting the address as a
+ * launch step; until then leekzor/callhouse: `SECURITY.md` §6 carries the same gap in words.
  *
  * `dynamic = "force-static"`: every input is a build-time constant (NEXT_PUBLIC_* is inlined by
  * `next build`, LEGAL_DOCS_VERSION is a literal, and securityTxtExpires() reads no clock), so

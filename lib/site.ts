@@ -1,17 +1,19 @@
 /**
  * The one place this package knows a URL, a ticker or an address.
  *
- * Two domains, one product: callhouse.xyz is this package (static marketing, zero wallet code)
- * and app.callhouse.xyz is @callhouse/web (the dapp). Nothing here is same-origin with the app,
- * so every "go do something" link must be an absolute external URL built with appUrl() — a bare
- * href="/vault/nvda" on this site is a 404 on callhouse.xyz, not a route into the dapp.
+ * Two domains, one product: callhouse.xyz is this package (static marketing, zero wallet code) and
+ * app.callhouse.xyz is @callhouse/web in leekzor/callhouse (the dapp). Nothing here is same-origin
+ * with the app, so every "go do something" link must be an absolute external URL built with
+ * appUrl() — a bare href="/vault/nvda" on this site is a 404 on callhouse.xyz, not a route into the
+ * dapp.
  *
- * The constants below are DUPLICATED FROM web/lib/contracts.ts, web/lib/chain.ts and README.md
- * ON PURPOSE. site/ must build, typecheck and deploy with no dependency on web/ — it is a second
- * Railway service with its own container, and a shared package would drag viem (and therefore a
- * wallet-shaped dependency tree) into a landing page that makes no chain calls at all. This file
- * DISPLAYS these addresses; it never calls them. If an address changes, README.md and
- * ops/addresses.json are the source of truth and this file is updated by hand to match.
+ * The constants below are DUPLICATED FROM leekzor/callhouse: `web/lib/contracts.ts`,
+ * `web/lib/chain.ts` and `README.md` ON PURPOSE. This repo must build, typecheck and deploy with no
+ * dependency on the dapp — it is a separate repo and Railway service with its own container, and a
+ * shared package would drag viem (and therefore a wallet-shaped dependency tree) into a landing
+ * page that makes no chain calls at all. This file DISPLAYS these addresses; it never calls them.
+ * If an address changes, leekzor/callhouse: `README.md` and `ops/addresses.json` are the source of
+ * truth and this file is updated by hand to match.
  *
  * Deliberately absent: chain clients, ABIs, a vault address (the vault is not deployed, and a
  * placeholder would be worse than not showing one), and anything that reads live state. Every
@@ -40,7 +42,10 @@ export function appUrl(path = ""): string {
   return rest ? `${APP_URL}/${rest}` : APP_URL;
 }
 
-/** First (and at launch, only) market. Matches MARKET / SHARE_TICKER in web/lib/contracts.ts. */
+/**
+ * First (and at launch, only) market. Matches MARKET / SHARE_TICKER in leekzor/callhouse:
+ * `web/lib/contracts.ts`.
+ */
 export const MARKET = "NVDA";
 export const SHARE_TICKER = "cNVDA";
 
@@ -61,7 +66,7 @@ export const VENUE_URL = "https://overcall.finance";
 export type AddressRow = {
   /** Label as it appears in the README addresses table. */
   label: string;
-  /** Checksummed, as confirmed on chain 4663 by ops/recon/. */
+  /** Checksummed, as confirmed on chain 4663 by leekzor/callhouse: `ops/recon/`. */
   address: string;
   /** One line on what it does, for the table's second column. */
   what: string;

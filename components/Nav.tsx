@@ -3,10 +3,10 @@
 /**
  * Marketing chrome for callhouse.xyz.
  *
- * The markup is deliberately the same as web/components/Nav.tsx — .topbar / .topbar-inner /
- * .brand / .nav, the same exact-match active test — because the two domains sit one click apart
- * and a visitor who crosses from here to app.callhouse.xyz should not feel the seam. Only the
- * link list and the right-hand control differ.
+ * The markup is deliberately the same as leekzor/callhouse: `web/components/Nav.tsx` — .topbar /
+ * .topbar-inner / .brand / .nav, the same exact-match active test — because the two domains sit one
+ * click apart and a visitor who crosses from here to app.callhouse.xyz should not feel the seam.
+ * Only the link list and the right-hand control differ.
  *
  * "use client" buys exactly one thing: usePathname, for the active link. That is the whole client
  * island on this domain. DELIBERATELY ABSENT: the dapp's <ConnectButton /> and everything behind
