@@ -1,7 +1,7 @@
 /**
  * /.well-known/security.txt — RFC 9116, the file a researcher looks for before anything else.
  *
- * WHY IT LIVES HERE: callhouse.xyz is the indexed domain and the one a stranger reaches first;
+ * WHY IT LIVES HERE: callhouse.finance is the indexed domain and the one a stranger reaches first;
  * leekzor/callhouse: `SECURITY.md` §6 points at this path. It is a route handler rather than a file
  * in public/ because the Contact line is NEXT_PUBLIC_SECURITY_CONTACT_EMAIL from lib/legal.ts and
  * the Expires line is derived from LEGAL_DOCS_VERSION — a static file would have to be edited by

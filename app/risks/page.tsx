@@ -1,5 +1,5 @@
 /**
- * /risks — the unabridged failure list for callhouse.xyz.
+ * /risks — the unabridged failure list for callhouse.finance.
  *
  * This page is a product feature, not a legal appendix. The pitch is that the bad weeks are
  * published, so the bad weeks are described here in the same register an engineer would use in
@@ -20,7 +20,7 @@
  *   - Any reassurance the bytecode does not enforce. Every "what the system does" line below
  *     maps to a check in leekzor/callhouse-contracts or to an explicit "there is no mitigation".
  *   - Wallet code of any kind. Every link that does something is an absolute URL into
- *     app.callhouse.xyz, built with appUrl().
+ *     app.callhouse.finance, built with appUrl().
  */
 import type { Metadata } from "next";
 import type { ReactNode } from "react";

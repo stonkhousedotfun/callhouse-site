@@ -1,11 +1,11 @@
 "use client";
 
 /**
- * Marketing chrome for callhouse.xyz.
+ * Marketing chrome for callhouse.finance.
  *
  * The markup is deliberately the same as leekzor/callhouse: `web/components/Nav.tsx` — .topbar /
  * .topbar-inner / .brand / .nav, the same exact-match active test — because the two domains sit one
- * click apart and a visitor who crosses from here to app.callhouse.xyz should not feel the seam.
+ * click apart and a visitor who crosses from here to app.callhouse.finance should not feel the seam.
  * Only the link list and the right-hand control differ.
  *
  * "use client" buys exactly one thing: usePathname, for the active link. That is the whole client
@@ -54,7 +54,7 @@ export function Nav() {
         {/*
           The one control that leaves this domain, and the only call to action in the chrome.
 
-          It is a plain <a>, not next/link: app.callhouse.xyz is a different origin and a
+          It is a plain <a>, not next/link: app.callhouse.finance is a different origin and a
           different Next application, so there is no route for the router to prefetch and no
           client transition to make. next/link here would be a heavier anchor that does nothing
           extra. target/rel are set for the same reason — the reader who came to read /risks

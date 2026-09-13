@@ -1,5 +1,5 @@
 /**
- * 404 for callhouse.xyz. Not a content page — not in the sitemap, no metadata of its own beyond
+ * 404 for callhouse.finance. Not a content page — not in the sitemap, no metadata of its own beyond
  * the title — just a way back. A lost visitor gets the three routes that answer "what is this"
  * and the way out to the app, in the same chrome as every other page. No wallet code, no fetch:
  * this renders statically like everything else here.

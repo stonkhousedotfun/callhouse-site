@@ -1,5 +1,5 @@
 <!--
-  Favicon for callhouse.xyz. Next serves this via the app/icon file convention and emits the
+  Favicon for callhouse.finance. Next serves this via the app/icon file convention and emits the
   <link rel="icon"> itself, so nothing imports it and nothing should.
 
   THE MARK: a roof over two ledger rows. The roof is the "house" half of the name; the rows are

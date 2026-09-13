@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 import { CHAIN_NAME, MARKET, SITE_URL } from "@/lib/site";
 
 /**
- * The Open Graph card for callhouse.xyz — the image a link to this site unfurls into in Slack,
+ * The Open Graph card for callhouse.finance — the image a link to this site unfurls into in Slack,
  * Telegram, X and iMessage. Next's app/opengraph-image file convention: exporting `alt`, `size`
  * and `contentType` alongside the default render is what makes Next emit the og:image tags, so
  * nothing imports this file and the layout needs no og.images entry.
@@ -11,7 +11,7 @@ import { CHAIN_NAME, MARKET, SITE_URL } from "@/lib/site";
  * Rendered once at build time into a static PNG. It says what the product is and nothing more:
  * a wordmark, one line, the domain. No number appears on it, which is the point — an OG card is
  * cached by every platform that scrapes it, sometimes for weeks, so any figure baked in here
- * would go stale somewhere we cannot reach. Live numbers live on app.callhouse.xyz.
+ * would go stale somewhere we cannot reach. Live numbers live on app.callhouse.finance.
  *
  * TWO HARD CONSTRAINTS, both of which fail in ways that are not obvious from the error text:
  *
@@ -53,7 +53,7 @@ const SANS =
   'ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif';
 
 /**
- * The bare host, so the card reads "callhouse.xyz" rather than "https://callhouse.xyz/". Derived
+ * The bare host, so the card reads "callhouse.finance" rather than "https://callhouse.finance/". Derived
  * from SITE_URL rather than hardcoded so a preview build labels itself honestly.
  */
 const DOMAIN = SITE_URL.replace(/^https?:\/\//, "");

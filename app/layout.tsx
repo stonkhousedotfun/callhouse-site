@@ -7,7 +7,7 @@ import { SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 /**
- * Root layout for callhouse.xyz.
+ * Root layout for callhouse.finance.
  *
  * DELIBERATELY ABSENT: a <Providers> wrapper. leekzor/callhouse: `web/app/layout.tsx` has one
  * because the dapp needs wagmi, viem and @tanstack/react-query mounted above every route. This
@@ -16,9 +16,9 @@ import "./globals.css";
  * flow it will never offer, and the vault is not deployed yet, so every live figure it could render
  * would be a zero. Nothing under this layout fetches, reads a chain, or holds client state beyond
  * the nav's active link. If a page here ever needs a provider, the page belongs on
- * app.callhouse.xyz.
+ * app.callhouse.finance.
  *
- * `metadataBase` is callhouse.xyz because that is where this package is served; relative
+ * `metadataBase` is callhouse.finance because that is where this package is served; relative
  * canonicals and Open Graph URLs resolve against it, and without it Next falls back to localhost
  * in a production build.
  *

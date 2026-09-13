@@ -1,5 +1,5 @@
 /**
- * Footer for callhouse.xyz. Server component — there is nothing here to hydrate, and this
+ * Footer for callhouse.finance. Server component — there is nothing here to hydrate, and this
  * package has no client runtime to spend on a row of links.
  *
  * The markup is the dapp's footer in leekzor/callhouse: `web/app/layout.tsx` (.footer /
@@ -43,7 +43,7 @@ export function Footer() {
           <Link href="/privacy">Privacy</Link> · <Link href="/risks">Risks</Link> ·{" "}
           <Link href="/how-it-works">How it works</Link> ·{" "}
           <a className="ext" href={APP_URL} target="_blank" rel="noreferrer noopener">
-            app.callhouse.xyz
+            app.callhouse.finance
           </a>{" "}
           ·{" "}
           <a className="ext" href={EXPLORER_URL} target="_blank" rel="noreferrer noopener">

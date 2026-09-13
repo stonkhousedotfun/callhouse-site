@@ -1,5 +1,5 @@
 /**
- * callhouse.xyz/how-it-works — the mechanics, for someone who has not connected anything.
+ * callhouse.finance/how-it-works — the mechanics, for someone who has not connected anything.
  *
  * This is the public sibling of the dapp's /docs page. The difference is the reader: there,
  * a depositor is looking at their own position, so the page can say "your tokens" and sit
@@ -14,7 +14,7 @@
  * scaled past one week, any chart, and any statement of what a week will pay. The only weekly
  * numbers on this page are policy floors and ceilings compiled into the contracts.
  *
- * Every "go do something" link leaves for app.callhouse.xyz via appUrl(). A relative href on
+ * Every "go do something" link leaves for app.callhouse.finance via appUrl(). A relative href on
  * this domain is a 404, not a route into the dapp.
  */
 import type { CSSProperties } from "react";

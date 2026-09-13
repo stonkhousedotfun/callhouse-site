@@ -1,4 +1,4 @@
-/* Callhouse marketing site (callhouse.xyz) — one stylesheet, no framework.
+/* Callhouse marketing site (callhouse.finance) — one stylesheet, no framework.
 
    This file is a DELIBERATE DUPLICATE of leekzor/callhouse: `web/app/globals.css`. It is
    copied rather than imported so that this site builds and deploys as its own repo and
@@ -17,7 +17,7 @@
    toasts (.toast-), form controls (input, select, label, .field, .input-wrap), position bars
    (.split-, .legend-, .rail-), raw payload dumps (pre.payload, .kv-mono) or the picked-row
    table highlight (tbody tr[data-picked]). If a page here needs one of those, the page is
-   wrong: it belongs on app.callhouse.xyz.
+   wrong: it belongs on app.callhouse.finance.
 
    Design rules, unchanged from the dapp: numbers are monospace and right-aligned so columns
    compare at a glance, every panel is a flat bordered box, and nothing on this site is a
@@ -578,7 +578,7 @@ ul.tight li {
 
 /* ------------------------------------------------------------------ marketing ---------- */
 
-/* Everything below this banner exists only on callhouse.xyz. The dapp has no landing page,
+/* Everything below this banner exists only on callhouse.finance. The dapp has no landing page,
    no money-flow diagram and no call-to-action row, so none of it is back-ported to
    leekzor/callhouse: `web/app/globals.css`. Same flat house style: no gradients, no shadows,
    no animation beyond a colour transition, and nothing that could be mistaken for a chart. */
@@ -730,7 +730,7 @@ ul.tight li {
   }
 }
 
-/* The primary call-to-action row. Every target is an absolute link to app.callhouse.xyz —
+/* The primary call-to-action row. Every target is an absolute link to app.callhouse.finance —
    this site has no routes that do anything. */
 .cta {
   display: flex;
@@ -747,7 +747,7 @@ ul.tight li {
 }
 
 /* This site renders no <button> elements, so mirror the dapp's variants onto .btn — a CTA here is
-   always <a class="btn" data-variant="primary" href="https://app.callhouse.xyz/...">. */
+   always <a class="btn" data-variant="primary" href="https://app.callhouse.finance/...">. */
 .btn[data-variant="primary"] {
   background: var(--accent);
   border-color: var(--accent);

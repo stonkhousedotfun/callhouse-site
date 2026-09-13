@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 
 /**
- * /sitemap.xml for callhouse.xyz. Six routes, listed by hand.
+ * /sitemap.xml for callhouse.finance. Six routes, listed by hand.
  *
  * The list is literal rather than derived from the filesystem on purpose. This site has exactly
  * six public pages — four product pages and the two legal documents added 2026-09-12 — and
@@ -23,7 +23,7 @@ import { SITE_URL } from "@/lib/site";
  * and `priority` are hints and nothing more; they are set to what is true (this content is
  * near-static, and the landing page is the entry point) rather than to gamed values.
  *
- * Deliberately absent: app.callhouse.xyz. The dapp is a different domain with its own robots.txt
+ * Deliberately absent: app.callhouse.finance. The dapp is a different domain with its own robots.txt
  * that disallows everything — see app/robots.ts here and leekzor/callhouse: `web/app/robots.ts`
  * there. Listing its routes in this sitemap would contradict that, and a sitemap may not carry URLs
  * on another host in the first place. Also absent: alternates/i18n (one language), images (no

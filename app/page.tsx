@@ -1,5 +1,5 @@
 /**
- * callhouse.xyz/ — the landing page, and the first thing a stranger reads about this product.
+ * callhouse.finance/ — the landing page, and the first thing a stranger reads about this product.
  *
  * One job: leave a reader who skims only the first screen with an ACCURATE expectation. That
  * expectation is not a number, it is a shape — the vault writes one call a week against pooled
@@ -34,7 +34,7 @@
  *   "Stock Tokens are debt securities"
  * Reword those sentences only with `node scripts/copy-lint.mjs` open.
  *
- * Every "go do something" link leaves for app.callhouse.xyz through appUrl(). A relative href on
+ * Every "go do something" link leaves for app.callhouse.finance through appUrl(). A relative href on
  * this domain is a 404, not a route into the dapp.
  */
 import type { CSSProperties } from "react";

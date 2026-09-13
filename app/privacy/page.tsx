@@ -3,7 +3,7 @@
  * LEGAL_DOCS_VERSION in lib/legal.ts).
  *
  * WHY THIS PAGE EXISTS: the product is non-US by construction, so it is served to visitors in
- * the EU and the UK, and a request to app.callhouse.xyz terminates on a server we run. Until
+ * the EU and the UK, and a request to app.callhouse.finance terminates on a server we run. Until
  * 2026-09-12 nothing on either domain said what that server sees, where a wallet address goes,
  * or who the controller is. This page does, and where the answer is "nobody has decided" it
  * says that, from lib/legal.ts, rather than naming an entity that does not exist.
@@ -82,7 +82,7 @@ import { EXPLORER_URL, VENUE_NAME, VENUE_URL, appUrl } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Privacy",
   description:
-    "What callhouse.xyz and app.callhouse.xyz process, where it goes, and what they do not do. No cookies, no analytics, no accounts." +
+    "What callhouse.finance and app.callhouse.finance process, where it goes, and what they do not do. No cookies, no analytics, no accounts." +
     (LEGAL_DOCS_ARE_DRAFT ? " Draft, pending review by counsel." : ""),
   alternates: { canonical: "/privacy" },
 };
@@ -120,14 +120,14 @@ export default function PrivacyPage() {
       )}
 
       <p>
-        This notice covers callhouse.xyz (this site) and app.callhouse.xyz (the dapp). It is written
+        This notice covers callhouse.finance (this site) and app.callhouse.finance (the dapp). It is written
         from the code, not from a template: each statement below names the file it was checked
         against, and the source is listed in the header comment of this page. It does not cover
         your wallet, the chain, or any third-party site linked from here.
       </p>
 
       <h2>What we process</h2>
-      <h3>On callhouse.xyz</h3>
+      <h3>On callhouse.finance</h3>
       <ul className="tight">
         <li>
           Nothing beyond the HTTP request itself. This site sets no cookie, writes nothing to your
@@ -140,7 +140,7 @@ export default function PrivacyPage() {
           <em>Retention</em> below.
         </li>
       </ul>
-      <h3>On app.callhouse.xyz</h3>
+      <h3>On app.callhouse.finance</h3>
       <ul className="tight">
         <li>
           <strong>Your wallet address</strong>, once you connect. It is public chain data. The dapp
@@ -337,7 +337,7 @@ export default function PrivacyPage() {
         The terms are at <Link href="/terms">/terms</Link>, the perimeter at{" "}
         <Link href="/legal">/legal</Link>, and the dapp this notice describes is at{" "}
         <a className="ext" href={appUrl()} target="_blank" rel="noreferrer noopener">
-          app.callhouse.xyz
+          app.callhouse.finance
         </a>
         .
       </p>

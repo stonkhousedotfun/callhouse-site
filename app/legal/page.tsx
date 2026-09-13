@@ -2,7 +2,7 @@
  * Compliance surface, not marketing. Nothing on this page sells anything, and the register is
  * legal text rather than the plain-but-warm voice of the landing.
  *
- * This is the CANONICAL copy of the disclosures. app.callhouse.xyz is noindex; callhouse.xyz is
+ * This is the CANONICAL copy of the disclosures. app.callhouse.finance is noindex; callhouse.finance is
  * the indexed domain, so this is the version a stranger, a search engine or a regulator reads
  * first. The two disclosures it is required to carry — the US-person perimeter and the legal
  * form of the Stock Token — are enforced verbatim by scripts/copy-lint.mjs, which fails CI if

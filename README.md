@@ -1,6 +1,6 @@
 # callhouse-site
 
-`callhouse.xyz` — the public landing. Static marketing pages for a product whose dapp lives on a
+`callhouse.finance` — the public landing. Static marketing pages for a product whose dapp lives on a
 different domain, in a different repo. Next.js 16 App Router, React 19, one stylesheet, no
 framework, zero wallet code.
 
@@ -21,8 +21,8 @@ pnpm copy-lint               # compliance gate: self-test, then the real tree. A
 
 | Repo | Domain | What it is |
 |---|---|---|
-| **leekzor/callhouse-site** (this one) | `callhouse.xyz` | explains the product. No wallet. |
-| leekzor/callhouse | `app.callhouse.xyz` | the app: `web/` (deposit, cycle tape, claim USDG), plus `keeper/`, `indexer/`, `ops/`, and `contracts/` mounted as a submodule. |
+| **leekzor/callhouse-site** (this one) | `callhouse.finance` | explains the product. No wallet. |
+| leekzor/callhouse | `app.callhouse.finance` | the app: `web/` (deposit, cycle tape, claim USDG), plus `keeper/`, `indexer/`, `ops/`, and `contracts/` mounted as a submodule. |
 | leekzor/callhouse-contracts | — | the vault contracts (Foundry). |
 
 References in this repo's code comments of the form ``leekzor/callhouse: `web/app/layout.tsx` ``
@@ -58,7 +58,7 @@ disclaimers), and `scripts/copy-lint.mjs` (the forbidden-copy table).
   figure would render as a zero, and a zero next to the word "realized" reads as a result rather
   than as an absence. Every number here is a fixed policy parameter or an address.
 - **Not a second copy of the dapp.** Every call to action is an absolute external link to
-  `https://app.callhouse.xyz/...`, built with `appUrl()` from `lib/site.ts`. A relative
+  `https://app.callhouse.finance/...`, built with `appUrl()` from `lib/site.ts`. A relative
   `href="/vault/nvda"` on this domain is a 404, not a route into the app.
 
 If a page here ever needs a number that changes, it belongs on the dapp instead.
@@ -187,8 +187,8 @@ Railway, one service, Dockerfile build, **this repo root as the build context**.
 
 | Variable | Value | If unset |
 |---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | `https://callhouse.xyz` | Dockerfile ARG default, same value. Safe |
-| `NEXT_PUBLIC_APP_URL` | `https://app.callhouse.xyz` | Dockerfile ARG default, same value. Safe |
+| `NEXT_PUBLIC_SITE_URL` | `https://callhouse.finance` | Dockerfile ARG default, same value. Safe |
+| `NEXT_PUBLIC_APP_URL` | `https://app.callhouse.finance` | Dockerfile ARG default, same value. Safe |
 | `NEXT_PUBLIC_OPERATOR_*`, `NEXT_PUBLIC_*_CONTACT_EMAIL` (six) | As counsel decides — `ops/launch-legal.md` in leekzor/callhouse | "not yet designated" on the legal pages, `security.txt` 404. Intended pre-launch |
 
 Set the domain pair anyway; an explicit variable is what a preview environment overrides.
@@ -211,7 +211,7 @@ Runtime variables: none. `PORT` is injected by Railway and read by `server.js`; 
 5. **Attach the custom domain only after a deploy is healthy**, so a DNS failure is distinguishable
    from an application failure.
 
-### Custom domain: `callhouse.xyz` is an apex
+### Custom domain: `callhouse.finance` is an apex
 
 Attach in Railway → service → Settings → Networking → Custom Domain. Railway gives a target of the
 form `<something>.up.railway.app`.
@@ -233,18 +233,18 @@ If the registrar offers neither, move DNS to one that does (Cloudflare is free).
 record to an IP you got from `dig` against the Railway target: it is not yours and it will move. On
 Cloudflare, use **DNS only** (grey cloud) unless you have decided to run proxied on purpose.
 
-`www.callhouse.xyz` redirects to the apex with a 301, implemented at the DNS/CDN layer (a Cloudflare
+`www.callhouse.finance` redirects to the apex with a 301, implemented at the DNS/CDN layer (a Cloudflare
 Redirect Rule or registrar forwarding), not in the app. TLS is issued by Railway once the record
 resolves.
 
 ### Verify a deploy
 
 ```bash
-curl -sI https://callhouse.xyz/ | head -1                                     # HTTP/2 200
-curl -s https://callhouse.xyz/ | grep -ci 'connect wallet'                    # 0
-curl -s https://callhouse.xyz/ | grep -o 'https://app\.callhouse\.xyz[^"]*' | sort -u
+curl -sI https://callhouse.finance/ | head -1                                     # HTTP/2 200
+curl -s https://callhouse.finance/ | grep -ci 'connect wallet'                    # 0
+curl -s https://callhouse.finance/ | grep -o 'https://app\.callhouse\.xyz[^"]*' | sort -u
 for p in "" how-it-works risks legal terms privacy; do
-  printf '%-14s %s\n' "/$p" "$(curl -s -o /dev/null -w '%{http_code}' https://callhouse.xyz/$p)"
+  printf '%-14s %s\n' "/$p" "$(curl -s -o /dev/null -w '%{http_code}' https://callhouse.finance/$p)"
 done
 ```
 
