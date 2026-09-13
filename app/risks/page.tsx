@@ -215,8 +215,11 @@ export default function RisksPage() {
               v1 does not buy the token back. That is v2, and it is not in the v1 contracts — an
               automated market buy is its own risk, and shipping one badly is worse than holding
               USDG. The vault does defend the accounting around assignment: deposits close at the
-              cycle&apos;s exercise timestamp, whether or not the keeper is alive, so nobody can
-              mint shares into a position whose collateral has already left.
+              cycle&apos;s exercise timestamp, whether or not the keeper is alive, and as soon as
+              any contract is assigned, so nobody can mint shares into a position whose collateral
+              has already left. Before that, a deposit made while a call is open joins the week and
+              shares any assignment pro rata. If {MARKET} is above the strike at that moment, the
+              deposit pays full price for collateral that may leave at the strike.
             </>
           }
         >

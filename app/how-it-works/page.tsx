@@ -186,8 +186,9 @@ export default function HowItWorksPage() {
             <strong>It writes <code>n</code> calls against idle collateral.</strong> Idle
             collateral is locked in Valorem Clear and written as whole contracts, one contract per
             1.0000 Stock Token, capped at 95% of the idle balance. Collateral already locked in
-            last week&apos;s call is not touched, and neither is anything deposited after the
-            calls are written.
+            last week&apos;s call is not touched. Tokens deposited after the calls are written
+            stay idle and are not written that week, but the depositor&apos;s shares are pooled
+            with everyone else&apos;s from the moment they are minted.
           </li>
           <li className="step">
             <strong>It signs a Seaport listing for USDG.</strong> The vault authorises the order
@@ -331,11 +332,16 @@ export default function HowItWorksPage() {
 
         <ul className="tight small">
           <li>
-            <strong>Deposits close at the cycle&apos;s exercise timestamp.</strong> Not at expiry —
-            at the moment the book closes. A deposit after the calls are written would buy into a
-            position whose downside is already fixed and whose premium was already earned by
-            somebody else&apos;s collateral, so the vault refuses it and the quote goes to zero at
-            the same instant.
+            <strong>Deposits stay open while a call is live, until the cycle&apos;s exercise
+            timestamp.</strong> A deposit in that window joins the open week. Premium that already
+            reached the vault is booked to the earlier holders first, so the new shares do not
+            share it. But shares are priced at the tokens behind them, including those locked
+            behind the call at face value, and every share carries the week&apos;s result pro rata.
+            If the week is assigned, a late deposit takes its share of the loss. If {MARKET} is
+            already above the strike when you deposit, you pay full price for collateral that may
+            leave at the strike. The vault refuses deposits from the exercise timestamp, and as
+            soon as any contract has been assigned, and the quote goes to zero at the same
+            instant.
           </li>
           <li>
             <strong>A withdrawal requested while a call is open is queued, not refused.</strong>{" "}
