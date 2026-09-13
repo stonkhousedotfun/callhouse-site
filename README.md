@@ -154,13 +154,42 @@ production produces.
 The Dockerfile declares all eight: the two domain URLs carry production defaults, the six
 `NEXT_PUBLIC_OPERATOR_*` / `*_CONTACT_EMAIL` variables are declared with **no default** — an
 unset value compiles to the "not yet designated" gap on the legal pages and a 404 on
-security.txt. That is the intended state until counsel decides them (leekzor/callhouse
-`ops/launch-legal.md`). Setting them on Railway then rebuilding closes the gap; a restart does
-nothing.
+security.txt. As of 2026-09-13 the three `*_CONTACT_EMAIL` variables are set on Railway
+(`legal@` / `privacy@` / `security@callhouse.finance`, Cloudflare Email Routing) and
+`security.txt` returns 200; the operator name, jurisdiction and governing law remain
+deliberately unset and the gap notice stays up until they exist (leekzor/callhouse
+`ops/launch-legal.md`). Setting a variable on Railway then rebuilding is what closes a gap; a
+restart does nothing.
 
 ## Deploy
 
 Railway, one service, Dockerfile build, **this repo root as the build context**.
+
+### Current state (2026-09-13)
+
+Live and healthy at `https://site-production-bea7.up.railway.app`; waiting on two DNS records
+before `https://callhouse.finance` serves it (see below).
+
+- Project `callhouse`, service `site`, created with the Railway CLI (`railway init` /
+  `railway add`). **The service is NOT connected to the GitHub repo**: the CLI's repo-linking
+  mutation was rejected (`Unauthorized`), so deploys so far are `railway up` uploads of the local
+  tree — pushes to `main` do NOT auto-deploy. Connect the repo once in the dashboard (service →
+  Settings → Source → `leekzor/callhouse-site`) to get push-to-deploy; until then redeploys are
+  `railway up -d` from this directory.
+- `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_APP_URL` were set before the first build, and the three
+  `*_CONTACT_EMAIL` variables were set later followed by a rebuild (`railway up`), as the
+  build-time inlining requires.
+- Both custom domains are attached on the Railway side, created via the GraphQL
+  `customDomainCreate` mutation because the CLI's `railway domain <custom>` call was also
+  rejected. TLS is in `VALIDATING_OWNERSHIP` until DNS resolves. The targets Railway expects:
+  - `callhouse.finance` → CNAME to `knpvo8xp.up.railway.app`
+  - `www.callhouse.finance` → CNAME to `utodkt24.up.railway.app`
+- The DNS records themselves are the one open step: the zone is on Cloudflare (active), and the
+  records need Zone DNS:Edit, which no credential on the deploy machine holds — the wrangler
+  OAuth grant covers Workers and Email Routing, not DNS. Add the two CNAMEs in the dashboard
+  (both **DNS only** — Cloudflare flattens the apex automatically) or hand over a scoped token.
+- Email Routing is live on the zone: `legal@`, `privacy@`, `security@callhouse.finance` all
+  forward to the owner's mailbox (destination verified). Set up with `wrangler email routing`.
 
 ### Railway service settings
 
@@ -283,6 +312,6 @@ docker run --rm -p 3000:3000 callhouse-site      # -> http://localhost:3000
 `pnpm build` on Node 22 with pnpm from `packageManager`, plus a separate dependency-free
 `copy-lint` job.
 
-**Known issue:** GitHub Actions on the `leekzor` account currently fails every run with
-`startup_failure` because of an account-level billing problem, not because of this workflow. Until
-that is fixed, run the five commands above locally before pushing.
+**Resolved 2026-09-13:** the `leekzor` account-level Actions billing problem that failed every run
+with `startup_failure` is fixed. If it ever recurs, the fallback is to run the five commands above
+locally before pushing.
