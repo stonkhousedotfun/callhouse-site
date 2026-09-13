@@ -168,8 +168,8 @@ Railway, one service, Dockerfile build, **this repo root as the build context**.
 
 ### Current state (2026-09-13)
 
-Live and healthy at `https://site-production-bea7.up.railway.app`; waiting on two DNS records
-before `https://callhouse.finance` serves it (see below).
+**Live at `https://callhouse.finance` and `https://www.callhouse.finance`** (Let's Encrypt, issued
+2026-09-13 about 19 minutes after the DNS below), and at `https://site-production-bea7.up.railway.app`.
 
 - Project `callhouse`, service `site`, created with the Railway CLI (`railway init` /
   `railway add`). **The service is NOT connected to the GitHub repo**: the CLI's repo-linking
@@ -182,13 +182,16 @@ before `https://callhouse.finance` serves it (see below).
   build-time inlining requires.
 - Both custom domains are attached on the Railway side, created via the GraphQL
   `customDomainCreate` mutation because the CLI's `railway domain <custom>` call was also
-  rejected. TLS is in `VALIDATING_OWNERSHIP` until DNS resolves. The targets Railway expects:
-  - `callhouse.finance` → CNAME to `knpvo8xp.up.railway.app`
-  - `www.callhouse.finance` → CNAME to `utodkt24.up.railway.app`
-- The DNS records themselves are the one open step: the zone is on Cloudflare (active), and the
-  records need Zone DNS:Edit, which no credential on the deploy machine holds — the wrangler
-  OAuth grant covers Workers and Email Routing, not DNS. Add the two CNAMEs in the dashboard
-  (both **DNS only** — Cloudflare flattens the apex automatically) or hand over a scoped token.
+  rejected.
+- DNS, created 2026-09-13 through the Cloudflare API (all **DNS only**; Cloudflare flattens the apex):
+  - `callhouse.finance` → CNAME `knpvo8xp.up.railway.app`
+  - `www.callhouse.finance` → CNAME `utodkt24.up.railway.app`
+  - TXT `_railway-verify` and TXT `_railway-verify.www` with the `railway-verify=…` tokens Railway
+    shows for each domain. **The CNAMEs alone are not enough**: Railway keeps the certificate in
+    `VALIDATING_OWNERSHIP` until the TXT ownership records exist. Read the exact targets and tokens
+    from Railway (`domains { customDomains { status { dnsRecords verificationDnsHost verificationToken } } }`),
+    never from notes. Cloudflare's API rejected a CNAME create that carried a `comment` field with a
+    misleading "Content for CNAME record is invalid"; the same record without it succeeded.
 - Email Routing is live on the zone: `legal@`, `privacy@`, `security@callhouse.finance` all
   forward to the owner's mailbox (destination verified). Set up with `wrangler email routing`.
 
