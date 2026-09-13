@@ -1,5 +1,6 @@
 /**
- * /privacy — the privacy notice for both domains. A DRAFT, and it says so at the top and bottom.
+ * /privacy — the privacy notice for both domains. Adopted 2026-09-13 as v1 (see
+ * LEGAL_DOCS_VERSION in lib/legal.ts).
  *
  * WHY THIS PAGE EXISTS: the product is non-US by construction, so it is served to visitors in
  * the EU and the UK, and a request to app.callhouse.xyz terminates on a server we run. Until
@@ -229,6 +230,16 @@ export default function PrivacyPage() {
         </li>
       </ul>
 
+      <h2>Legal bases</h2>
+      <p>
+        Where the GDPR or the UK GDPR applies, the basis for the processing described above is the
+        legitimate interest in operating and securing the interface (Article 6(1)(f)) — the HTTP
+        logs exist to keep the service running and to investigate abuse. We do not rely on consent
+        because there is nothing to consent to: no cookies, no analytics, no marketing. Wallet
+        addresses and balances are public chain data that the indexer republishes, not data you
+        handed us.
+      </p>
+
       <h2>Your rights</h2>
       <p>
         If you are in the EU, the EEA or the UK, the GDPR and the UK GDPR give you rights over
@@ -280,6 +291,34 @@ export default function PrivacyPage() {
           it for you.
         </li>
       </ul>
+
+      <h2>Security</h2>
+      <p>
+        Both domains are served over TLS. There are no accounts, passwords or stored credentials
+        on either domain, so there is no credential store to breach; the main protection for your
+        data is that we collect almost none of it.
+      </p>
+
+      <h2>International transfers</h2>
+      <p>
+        The providers named above — Railway, the RPC providers, {VENUE_NAME} and the explorer —
+        may process data in countries other than yours, including outside the EU and the UK. We
+        have not put transfer safeguards of our own in place beyond what those providers publish;
+        the only data that reaches them is what this page describes.
+      </p>
+
+      <h2>Children</h2>
+      <p>
+        Neither domain is directed at anyone under 18, and we do not knowingly process data about
+        anyone under 18. The <Link href="/terms">terms</Link> require users to be adults.
+      </p>
+
+      <h2>Changes to this notice</h2>
+      <p>
+        This notice is versioned with the Terms of Use. The version in force is{" "}
+        <code>{LEGAL_DOCS_VERSION}</code>. A change is a new version and a new date, published on
+        this page; there is no other notice.
+      </p>
 
       <h2>Contact</h2>
       <p>

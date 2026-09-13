@@ -70,8 +70,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
     {
-      // Terms of Use. Draft until counsel adopts it; listed anyway so the document /legal points
-      // at is reachable by the same crawler that reads /legal.
+      // Terms of Use. Adopted v1-2026-09-13; listed so the document /legal points at is
+      // reachable by the same crawler that reads /legal.
       url: `${SITE_URL}/terms`,
       lastModified: CONTENT_REVISED,
       changeFrequency: "yearly",

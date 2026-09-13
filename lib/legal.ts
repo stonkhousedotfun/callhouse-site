@@ -56,16 +56,16 @@ export const PRIVACY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_PRIVACY_CO
 export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_CONTACT_EMAIL);
 
 /**
- * Version stamp of the legal documents, shown on /terms and /privacy and used to derive the
- * `Expires:` line of security.txt. A literal, not a clock: the same commit must build the same
- * bytes (see the note on CONTENT_REVISED in app/sitemap.ts). Bump it by hand, in the same
- * commit as the wording change, and drop the "draft-" prefix only when counsel has adopted the
- * text. Format is `<state>-<YYYY-MM-DD>`; securityTxtExpires() below reads the date part.
- * scripts/copy-lint.mjs requires the export line below to still begin the value with the draft
- * prefix (the phrase is spelt out there, not here, so this comment cannot satisfy it), so
- * dropping the prefix fails CI until that REQUIRED entry is removed in the same commit.
+ * Version stamp of the legal documents, used to derive the `Expires:` line of security.txt and
+ * cited on /terms and /privacy. A literal, not a clock: the same commit must build the same
+ * bytes (see the note on CONTENT_REVISED in app/sitemap.ts). Bump it by hand, in the same commit
+ * as the wording change. Format is `<state>-<YYYY-MM-DD>`; securityTxtExpires() below reads the
+ * date part. A value starting "draft-" marks an unadopted draft and the pages mark themselves
+ * from it (LEGAL_DOCS_ARE_DRAFT). v1 was adopted 2026-09-13 by the owner, reviewed against the
+ * code, without counsel — leekzor/callhouse: `ops/launch-legal.md` §2 item 9. The copy-lint gate
+ * that once pinned the draft prefix here was removed in the same commit as the adoption.
  */
-export const LEGAL_DOCS_VERSION = "draft-2026-09-12";
+export const LEGAL_DOCS_VERSION = "v1-2026-09-13";
 
 /** True while LEGAL_DOCS_VERSION still carries the draft prefix. The pages mark themselves from this. */
 export const LEGAL_DOCS_ARE_DRAFT = LEGAL_DOCS_VERSION.startsWith("draft-");
@@ -89,8 +89,8 @@ export function operatorIsDesignated(): boolean {
  * so the two pages cannot drift into two descriptions of the same gap.
  */
 export const OPERATOR_GAP_NOTICE =
-  "No operating entity has been designated for this interface yet and this document has not " +
-  "been adopted. It is published so the gap is visible.";
+  "No operating entity has been designated for this interface yet. This document is in force; " +
+  "the gap is published rather than filled with a placeholder.";
 
 /** The words every unset operator fact renders as. Used inline, mid-sentence. */
 export const NOT_YET_DESIGNATED = "not yet designated";

@@ -82,7 +82,8 @@ const REQUIRED = [
   },
   {
     // The Terms of Use restate the perimeter verbatim. "Draft" here only proves the draft-marker
-    // code is still in the file; whether it renders is decided by LEGAL_DOCS_VERSION below.
+    // code is still in the file; whether it renders is decided by LEGAL_DOCS_VERSION in
+    // lib/legal.ts.
     pkg: "site",
     page: "app/terms/page.tsx",
     phrases: ["not available to US persons", "Draft"],
@@ -91,16 +92,6 @@ const REQUIRED = [
     pkg: "site",
     page: "app/privacy/page.tsx",
     phrases: ["Draft"],
-  },
-  {
-    // Not a route: the constant both drafts read their marker from. While it starts with
-    // "draft-" the pages render "Draft — pending review by counsel"; dropping the prefix is
-    // adoption, and it must be a deliberate act that touches this file too, so this entry
-    // fails CI until it is removed in the same commit. The phrase is anchored on the export
-    // so a comment in that file cannot satisfy it (it did, once).
-    pkg: "site",
-    page: "lib/legal.ts",
-    phrases: ['export const LEGAL_DOCS_VERSION = "draft-'],
   },
   {
     pkg: "site",
@@ -282,11 +273,6 @@ function selfTest() {
       "a required disclosure may itself wrap lines",
       () => writeFileSync(join(site, "app", "risks", "page.tsx"), "Premium is paid only if\n  a buyer fills\n"),
       (e) => !e.some((x) => x.includes("missing required disclosure")),
-    );
-    expect(
-      "adopting the legal docs (dropping the draft- prefix) fails until the gate is removed",
-      () => writeFileSync(join(site, "lib", "legal.ts"), 'export const LEGAL_DOCS_VERSION = "2026-09-12";\n'),
-      (e) => e.some((x) => x.includes("lib/legal.ts") && x.includes("missing required disclosure")),
     );
     expect(
       // The package root is the repo root here, so dependencies and build output sit INSIDE

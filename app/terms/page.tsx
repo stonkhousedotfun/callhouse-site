@@ -1,16 +1,18 @@
 /**
- * /terms — Terms of Use for both domains. A DRAFT, and it says so at the top and the bottom.
+ * /terms — Terms of Use for both domains. Adopted 2026-09-13 as v1 (see LEGAL_DOCS_VERSION in
+ * lib/legal.ts).
  *
  * WHY THIS PAGE EXISTS: /legal says access is restricted by the Terms of Use rather than by a
  * technical control, and until 2026-09-12 there was no such document. A restriction that points
  * at nothing is not a restriction. This page is the thing that sentence points at, on the
  * indexed domain, canonical here and linked from app.callhouse.xyz rather than duplicated there.
  *
- * WHAT IT IS NOT: adopted terms. No operating entity has been designated, no governing law has
- * been chosen and no counsel has reviewed this text. The page renders those gaps in plain words
- * from lib/legal.ts instead of hiding them behind a placeholder, and shows a warn notice while
- * operatorIsDesignated() is false. leekzor/callhouse: `ops/launch-legal.md` is the list of
- * decisions that closes it.
+ * WHAT STILL GAPS: no operating entity has been designated and no governing law has been chosen.
+ * The page renders those gaps in plain words from lib/legal.ts instead of hiding them behind a
+ * placeholder, and shows a warn notice while operatorIsDesignated() is false.
+ * leekzor/callhouse: `ops/launch-legal.md` is the list of decisions that closes it. The text was
+ * adopted by the owner, reviewed against the code, without counsel; the DraftMarker machinery
+ * remains so a future revision can be published as a draft before it takes force.
  *
  * The eligibility section is copied VERBATIM from app/legal/page.tsx, because the terms cannot
  * describe the perimeter differently from the page that announces it. "not available to US
@@ -75,7 +77,7 @@ export default function TermsPage() {
 
       {designated ? null : (
         <div className="notice" data-tone="warn">
-          <strong>Not yet adopted.</strong>
+          <strong>No operator designated yet.</strong>
           {OPERATOR_GAP_NOTICE}
         </div>
       )}
@@ -116,6 +118,12 @@ export default function TermsPage() {
           smart contract on a public chain.
         </li>
       </ul>
+      {/* Terms-only: the age, capacity and sanctions representation is not restated on /legal. */}
+      <p>
+        You must be at least 18 years old and able to enter a binding agreement, and you must not
+        be barred from using the interface by sanctions or by the law of your jurisdiction. By
+        using the interface you represent that both are true.
+      </p>
 
       <h2>What this interface is</h2>
       <ul className="tight">
@@ -139,6 +147,21 @@ export default function TermsPage() {
         <li>
           The same contracts are reachable without this interface, from any tool that can send a
           transaction. Withdrawing does not depend on this site staying up.
+        </li>
+      </ul>
+
+      <h2>Acceptable use</h2>
+      <ul className="tight">
+        <li>Use the interface only for lawful purposes, in your jurisdiction and in general.</li>
+        <li>
+          Do not attack or interfere with the interface: no exploiting a weakness to take what is
+          not yours, no disruptive automation, no impersonation. If you find a vulnerability,{" "}
+          <Link href="/legal#reporting">report it</Link> instead of using it.
+        </li>
+        <li>
+          Do not misrepresent this interface as affiliated with Robinhood, {VENUE_NAME}, Valorem
+          or any other third party it names. It is not; <Link href="/legal">the legal page</Link>{" "}
+          says so in full.
         </li>
       </ul>
 
@@ -200,12 +223,51 @@ export default function TermsPage() {
         excluded.
       </p>
 
+      <h2>Indemnity</h2>
+      <p>
+        You indemnify the people who publish this interface against any claim, loss or expense
+        brought by a third party that arises from your breach of these terms or your unlawful use
+        of the interface, and you hold them harmless against it.
+      </p>
+
+      <h2>Intellectual property</h2>
+      <p>
+        The contracts the interface points at are published under the MIT licence. The text and
+        design of this site are not open-licensed: you may read them and link to them, and no
+        other right is granted. Nothing here gives you any right to the Callhouse name or mark, or
+        to the names and marks of the third parties this site names, which belong to their owners.
+      </p>
+
+      <h2>Ending these terms</h2>
+      <p>
+        You stop being bound by stopping using the interface. The interface may be suspended,
+        changed or withdrawn at any time, without notice. The contracts it points at are on a
+        public chain and do not depend on this site: withdrawing from the vault remains possible
+        without it, from any tool that can send a transaction.
+      </p>
+
       <h2>Changes</h2>
       <p>
-        These terms are versioned. The version in force is <code>{LEGAL_DOCS_VERSION}</code>, shown
-        at the top of this page. A change is a new version and a new date; there is no other notice.
-        Continuing to use the interface after a change is use under the new version.
+        These terms are versioned. The version in force is <code>{LEGAL_DOCS_VERSION}</code>. A
+        change is a new version and a new date; there is no other notice. Continuing to use the
+        interface after a change is use under the new version.
       </p>
+
+      <h2>General</h2>
+      <ul className="tight">
+        <li>If a clause of these terms is unenforceable, the rest still apply.</li>
+        <li>A failure to enforce a clause is not a waiver of it.</li>
+        <li>
+          These terms, the <Link href="/privacy">privacy notice</Link> and the{" "}
+          <Link href="/risks">risks page</Link> are the whole agreement between you and the people
+          who publish this interface about the interface.
+        </li>
+        <li>
+          You may not assign these terms. The operator may assign them to a successor operator of
+          the interface, who will be named on this page.
+        </li>
+        <li>There are no third-party beneficiaries to these terms.</li>
+      </ul>
 
       <h2>Governing law</h2>
       <p>

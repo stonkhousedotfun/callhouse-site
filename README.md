@@ -97,15 +97,18 @@ that is an explicit denial. It is not a way to ship the phrase.
 Never turn a weekly figure into a yearly one, by multiplication, compounding, illustration or
 "for example". No price chart. No candlesticks.
 
-**The legal-docs draft gate.** `lib/legal.ts` exports `LEGAL_DOCS_VERSION = "draft-…"`, and
-`/terms` and `/privacy` render "Draft — pending review by counsel" while the prefix is there.
-copy-lint requires the export line to still begin with `draft-`, so adopting the documents fails CI
-until that `REQUIRED` entry is removed in the same commit. That is deliberate: adoption must be an
-explicit act. The self-test proves the gate still fires.
+**The legal-docs version gate.** `lib/legal.ts` exports `LEGAL_DOCS_VERSION`; a value starting
+`draft-` makes `/terms` and `/privacy` render "Draft — pending review by counsel" top and bottom,
+and copy-lint requires the marker code to stay in both pages. The documents were adopted as
+`v1-2026-09-13` (owner review against the code, no counsel — leekzor/callhouse
+`ops/launch-legal.md` §2 item 9). Until adoption, copy-lint also pinned the literal
+`export const LEGAL_DOCS_VERSION = "draft-` line, so dropping the prefix failed CI unless the gate
+was removed in the same commit; that entry was removed in the adoption commit. A future revision
+can be published as a draft first by re-adding the prefix.
 
 Every run starts with a self-test on synthetic trees (forbidden phrase caught, wrapped phrase
-caught, allow-comment honoured, missing disclosure caught, wrapped disclosure passes, draft gate
-fires, `node_modules`/`.next` skipped, missing package root is a hard failure). A red self-test
+caught, allow-comment honoured, missing disclosure caught, wrapped disclosure passes,
+`node_modules`/`.next` skipped, missing package root is a hard failure). A red self-test
 fails the run before the real tree is looked at.
 
 ## The honest framing is the brand
