@@ -148,10 +148,12 @@ them as build `ARG`s — setting them as runtime variables on the service does n
 variables default to the production domains, so a local build with no `.env` produces exactly what
 production produces.
 
-**The Dockerfile declares only the two domain URLs today.** The six `NEXT_PUBLIC_OPERATOR_*` /
-`*_CONTACT_EMAIL` variables are intentionally blank until counsel decides them
-(leekzor/callhouse `ops/launch-legal.md`). Before they are set on Railway, add six `ARG`/`ENV`
-pairs (no defaults) to the build-time block of `Dockerfile`, or the values never reach `next build`.
+The Dockerfile declares all eight: the two domain URLs carry production defaults, the six
+`NEXT_PUBLIC_OPERATOR_*` / `*_CONTACT_EMAIL` variables are declared with **no default** — an
+unset value compiles to the "not yet designated" gap on the legal pages and a 404 on
+security.txt. That is the intended state until counsel decides them (leekzor/callhouse
+`ops/launch-legal.md`). Setting them on Railway then rebuilding closes the gap; a restart does
+nothing.
 
 ## Deploy
 
@@ -184,8 +186,9 @@ Railway, one service, Dockerfile build, **this repo root as the build context**.
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | `https://callhouse.xyz` | Dockerfile ARG default, same value. Safe |
 | `NEXT_PUBLIC_APP_URL` | `https://app.callhouse.xyz` | Dockerfile ARG default, same value. Safe |
+| `NEXT_PUBLIC_OPERATOR_*`, `NEXT_PUBLIC_*_CONTACT_EMAIL` (six) | As counsel decides — `ops/launch-legal.md` in leekzor/callhouse | "not yet designated" on the legal pages, `security.txt` 404. Intended pre-launch |
 
-Set them anyway; an explicit variable is what a preview environment overrides.
+Set the domain pair anyway; an explicit variable is what a preview environment overrides.
 
 > **`NEXT_PUBLIC_*` is compiled into the JavaScript by `next build`. It is not read at runtime.**
 > Railway passes a service variable into a Dockerfile build only if the Dockerfile declares it as

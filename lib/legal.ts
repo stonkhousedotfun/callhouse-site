@@ -18,9 +18,9 @@
  *
  * These are NEXT_PUBLIC_*, so like everything in lib/site.ts they are INLINED AT BUILD TIME.
  * Setting them on the Railway service and restarting changes nothing; the site must be rebuilt,
- * and this repo's Dockerfile must declare each one as a build ARG or the value never reaches
- * `next build` at all (README.md "Deploy"). As of the repo split it declares only the two domain
- * URLs. leekzor/callhouse: `ops/launch-legal.md` walks through the order.
+ * and this repo's Dockerfile declares each one as a build ARG or the value would never reach
+ * `next build` at all (README.md "Deploy"). leekzor/callhouse: `ops/launch-legal.md` walks
+ * through the order.
  *
  * Deliberately absent: a postal address (counsel decides whether one must be published), a
  * company number, a DPO or EU/UK representative line (whether one is needed is a counsel

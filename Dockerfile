@@ -10,10 +10,12 @@
 # THE LAYERING IS THE POINT: manifests → install → sources → build. Copy the sources before the
 # install and every one-line copy edit reinstalls node_modules from scratch.
 #
-# This image reads TWO build variables, because the site has no wallet code and makes no chain
-# reads at all. There is no RPC here, no vault address, no indexer URL — nothing to misconfigure
-# into a wrong-contract failure. If this list ever grows past the two domain URLs, something has
-# been added to this repo that belongs in the app (leekzor/callhouse, web/).
+# This image reads EIGHT build variables, and all eight are display strings: the two domain URLs
+# plus the six operator facts the legal pages render (lib/legal.ts). The site has no wallet code
+# and makes no chain reads at all — there is no RPC here, no vault address, no indexer URL,
+# nothing to misconfigure into a wrong-contract failure. If this list ever grows past display
+# strings — anything that smells of chain configuration — something has been added to this repo
+# that belongs in the app (leekzor/callhouse, web/).
 #
 # DELIBERATELY ABSENT:
 #   - No `corepack prepare pnpm@<x>`. package.json carries `packageManager`, so corepack resolves
@@ -59,7 +61,8 @@ RUN pnpm install --frozen-lockfile
 # =============================================================================================
 # BUILD-TIME CONFIGURATION. READ THIS BEFORE CHANGING A VARIABLE IN THE RAILWAY UI.
 #
-# Both values below are INLINED INTO THE JAVASCRIPT by `next build`. They are not read at runtime.
+# All eight values below are INLINED INTO THE JAVASCRIPT by `next build`. They are not read at
+# runtime.
 #
 #   1. A Railway service variable reaches a Dockerfile build ONLY if the Dockerfile declares it as
 #      an ARG. An undeclared variable is silently absent during the build and the compiled-in
@@ -71,8 +74,14 @@ RUN pnpm install --frozen-lockfile
 # absolute external link to app.callhouse.xyz. Get NEXT_PUBLIC_APP_URL wrong and the landing
 # page's only job — handing the reader to the dapp — stops working.
 #
-# Both carry the production defaults, so an unset variable ships a correct site rather than a
-# relative metadata base or a link to "undefined". Override them for a preview deploy only.
+# The domain pair carries the production defaults, so an unset variable ships a correct site
+# rather than a relative metadata base or a link to "undefined". Override them for a preview
+# deploy only.
+#
+# The six operator variables carry NO default, on purpose: unset compiles to "not yet designated"
+# on /terms, /privacy and /legal, and /.well-known/security.txt stays a 404. That gap is the
+# intended state until counsel decides the values (leekzor/callhouse: ops/launch-legal.md), and
+# declaring the ARGs changes nothing until then — lib/legal.ts trims an empty string to unset.
 #
 # This block sits AFTER the install on purpose: a URL change must not invalidate the node_modules
 # layer.
@@ -82,6 +91,21 @@ ARG NEXT_PUBLIC_SITE_URL="https://callhouse.xyz"
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_APP_URL="https://app.callhouse.xyz"
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+
+# ---- operator facts for /terms, /privacy, /legal#reporting and /.well-known/security.txt.
+#      Read by lib/legal.ts; every value is a counsel decision, and no default is provided. ----
+ARG NEXT_PUBLIC_OPERATOR_LEGAL_NAME
+ENV NEXT_PUBLIC_OPERATOR_LEGAL_NAME=$NEXT_PUBLIC_OPERATOR_LEGAL_NAME
+ARG NEXT_PUBLIC_OPERATOR_JURISDICTION
+ENV NEXT_PUBLIC_OPERATOR_JURISDICTION=$NEXT_PUBLIC_OPERATOR_JURISDICTION
+ARG NEXT_PUBLIC_GOVERNING_LAW
+ENV NEXT_PUBLIC_GOVERNING_LAW=$NEXT_PUBLIC_GOVERNING_LAW
+ARG NEXT_PUBLIC_LEGAL_CONTACT_EMAIL
+ENV NEXT_PUBLIC_LEGAL_CONTACT_EMAIL=$NEXT_PUBLIC_LEGAL_CONTACT_EMAIL
+ARG NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL
+ENV NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL=$NEXT_PUBLIC_PRIVACY_CONTACT_EMAIL
+ARG NEXT_PUBLIC_SECURITY_CONTACT_EMAIL
+ENV NEXT_PUBLIC_SECURITY_CONTACT_EMAIL=$NEXT_PUBLIC_SECURITY_CONTACT_EMAIL
 
 ENV NEXT_TELEMETRY_DISABLED=1
 ENV NODE_ENV=production
