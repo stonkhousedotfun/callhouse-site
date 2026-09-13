@@ -101,7 +101,8 @@ Never turn a weekly figure into a yearly one, by multiplication, compounding, il
 `draft-` makes `/terms` and `/privacy` render "Draft — pending review by counsel" top and bottom,
 and copy-lint requires the marker code to stay in both pages. The documents were adopted as
 `v1-2026-09-13` (owner review against the code, no counsel — leekzor/callhouse
-`ops/launch-legal.md` §2 item 9). Until adoption, copy-lint also pinned the literal
+`ops/launch-legal.md` §2 item 9) and corrected the same day as `v2-2026-09-13` (the Terms'
+third-party clause: an oracle pause stops writing and listing, not settlement). Until adoption, copy-lint also pinned the literal
 `export const LEGAL_DOCS_VERSION = "draft-` line, so dropping the prefix failed CI unless the gate
 was removed in the same commit; that entry was removed in the adoption commit. A future revision
 can be published as a draft first by re-adding the prefix.

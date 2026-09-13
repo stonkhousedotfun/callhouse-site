@@ -194,9 +194,11 @@ export default function TermsPage() {
           </a>
           , Valorem Clear, Seaport, the {MARKET} Stock Token, USDG and the RPC providers are third
           parties. None of them is operated by, or answerable to, the people who publish this
-          interface. Their contracts can be paused or upgraded by their own admin keys, and the
-          Stock Token issuer can freeze transfers or pause its oracle. When any of them stops, this
-          vault stops with it.
+          interface. Their contracts can be paused or upgraded by their own admin keys. The Stock
+          Token issuer can freeze transfers, which can stop this vault writing, settling and paying
+          out tokens; it can also pause its oracle, which stops the vault writing and listing new
+          calls but not settling, because settlement does not read the oracle. When a dependency
+          the vault needs stops, that part of the vault stops with it.
         </li>
         <li>
           The weekly cycle is set by a third-party registry key. A hostile or mistaken cycle is

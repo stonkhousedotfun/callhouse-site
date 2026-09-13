@@ -64,8 +64,10 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * from it (LEGAL_DOCS_ARE_DRAFT). v1 was adopted 2026-09-13 by the owner, reviewed against the
  * code, without counsel — leekzor/callhouse: `ops/launch-legal.md` §2 item 9. The copy-lint gate
  * that once pinned the draft prefix here was removed in the same commit as the adoption.
+ * v2 (same day): one factual correction in the Terms' third-party clause — an oracle pause stops
+ * writing and listing, not settlement; an issuer freeze can stop settlement.
  */
-export const LEGAL_DOCS_VERSION = "v1-2026-09-13";
+export const LEGAL_DOCS_VERSION = "v2-2026-09-13";
 
 /** True while LEGAL_DOCS_VERSION still carries the draft prefix. The pages mark themselves from this. */
 export const LEGAL_DOCS_ARE_DRAFT = LEGAL_DOCS_VERSION.startsWith("draft-");
