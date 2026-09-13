@@ -146,9 +146,9 @@ and `ops/addresses.json` remain the source of truth — update this file from th
 
 ## Environment
 
-Two domain variables, `NEXT_PUBLIC_SITE_URL` and `NEXT_PUBLIC_APP_URL`, plus six operator variables
+Three domain variables, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_DOCS_URL`, plus six operator variables
 for the legal pages; see `.env.example`. All are inlined at build time, so the Dockerfile has to take
-them as build `ARG`s — setting them as runtime variables on the service does nothing. The two domain
+them as build `ARG`s — setting them as runtime variables on the service does nothing. The three domain
 variables default to the production domains, so a local build with no `.env` produces exactly what
 production produces.
 

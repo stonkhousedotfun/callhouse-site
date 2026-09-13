@@ -28,6 +28,9 @@ function normalizeBase(url: string): string {
 /** This site. Used for canonical URLs and metadataBase. */
 export const SITE_URL = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL ?? "https://callhouse.finance");
 
+/** Depositor documentation and the protocol reference (GitBook, synced from leekzor/callhouse-docs). */
+export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.callhouse.finance");
+
 /** The dapp. Every CTA on this site points into it. */
 export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.callhouse.finance");
 

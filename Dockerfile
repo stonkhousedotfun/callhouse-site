@@ -91,6 +91,8 @@ ARG NEXT_PUBLIC_SITE_URL="https://callhouse.finance"
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
 ARG NEXT_PUBLIC_APP_URL="https://app.callhouse.finance"
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
+ARG NEXT_PUBLIC_DOCS_URL="https://docs.callhouse.finance"
+ENV NEXT_PUBLIC_DOCS_URL=$NEXT_PUBLIC_DOCS_URL
 
 # ---- operator facts for /terms, /privacy, /legal#reporting and /.well-known/security.txt.
 #      Read by lib/legal.ts; every value is a counsel decision, and no default is provided. ----

@@ -19,7 +19,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { APP_URL } from "@/lib/site";
+import { APP_URL, DOCS_URL } from "@/lib/site";
 
 const LINKS = [
   { href: "/", label: "Home" },
@@ -50,6 +50,10 @@ export function Nav() {
               {link.label}
             </Link>
           ))}
+          {/* The docs are another origin (GitBook), so a plain anchor; `.ext` draws the ↗. */}
+          <a className="ext" href={DOCS_URL} target="_blank" rel="noreferrer noopener">
+            Docs
+          </a>
         </nav>
         {/*
           The one control that leaves this domain, and the only call to action in the chrome.

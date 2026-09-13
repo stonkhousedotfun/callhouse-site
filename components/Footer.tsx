@@ -26,7 +26,7 @@
  */
 import Link from "next/link";
 
-import { APP_URL, CHAIN_ID, CHAIN_NAME, EXPLORER_URL, MARKET, SHARE_TICKER } from "@/lib/site";
+import { APP_URL, CHAIN_ID, DOCS_URL, CHAIN_NAME, EXPLORER_URL, MARKET, SHARE_TICKER } from "@/lib/site";
 
 export function Footer() {
   return (
@@ -35,13 +35,17 @@ export function Footer() {
         <div>
           Callhouse · {SHARE_TICKER} · {MARKET} on {CHAIN_NAME} {CHAIN_ID}
         </div>
-        {/* In-site routes are next/link. The last two are plain anchors on other origins, and
+        {/* In-site routes are next/link. The last three are plain anchors on other origins, and
             they carry `.ext`, which is what draws the ↗ the dapp's footer hardcodes — do not add
             a second glyph to the label. */}
         <div>
           <Link href="/legal">Legal</Link> · <Link href="/terms">Terms</Link> ·{" "}
           <Link href="/privacy">Privacy</Link> · <Link href="/risks">Risks</Link> ·{" "}
           <Link href="/how-it-works">How it works</Link> ·{" "}
+          <a className="ext" href={DOCS_URL} target="_blank" rel="noreferrer noopener">
+            Docs
+          </a>{" "}
+          ·{" "}
           <a className="ext" href={APP_URL} target="_blank" rel="noreferrer noopener">
             app.callhouse.finance
           </a>{" "}
