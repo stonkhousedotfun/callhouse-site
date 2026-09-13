@@ -58,7 +58,7 @@ export function Footer() {
         </div>
       </div>
       <div className="footer-inner" style={{ marginTop: 6 }}>
-        <div>The contracts in this repository have not been audited.</div>
+        <div>The Callhouse contracts have not been audited.</div>
       </div>
     </footer>
   );

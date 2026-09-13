@@ -110,7 +110,7 @@ export default function RisksPage() {
 
       <div className="notice" data-tone="bad">
         <strong>You can lose the collateral you deposit.</strong>
-        The contracts in this repository have not been audited, the token&apos;s issuer can freeze
+        The Callhouse contracts have not been audited, the token&apos;s issuer can freeze
         it, and a clearinghouse can take the collateral at the strike. Deposit accordingly.
       </div>
 
@@ -177,7 +177,7 @@ export default function RisksPage() {
           tone="warn"
           response={
             <>
-              v1 does not buy the token back. That is v2, and it is not in this repository — an
+              v1 does not buy the token back. That is v2, and it is not in the v1 contracts — an
               automated market buy is its own risk, and shipping one badly is worse than holding
               USDG. The vault does defend the accounting around assignment: deposits close at the
               cycle&apos;s exercise timestamp, whether or not the keeper is alive, so nobody can
@@ -328,7 +328,7 @@ export default function RisksPage() {
           }
         >
           <p>
-            <strong>The contracts in this repository have not been audited.</strong> An internal
+            <strong>The Callhouse contracts have not been audited.</strong> An internal
             adversarial review across thirteen surfaces raised 72 findings, of which 51 survived
             refutation; all of those are fixed and carry regression tests. That is a review by the
             people who wrote the code. It is not an audit, and it does not substitute for one.

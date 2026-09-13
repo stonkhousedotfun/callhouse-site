@@ -474,7 +474,7 @@ export default function HowItWorksPage() {
           The vault cannot be upgraded in place. Fixing anything means deploying Vault v2 and
           migrating to it, in public, with depositors moving their own funds. That is deliberate:
           an upgradeable vault is a key that can rewrite the rules under a position that is already
-          open. The contracts in this repository have not been audited.
+          open. The Callhouse contracts have not been audited.
         </div>
       </div>
 

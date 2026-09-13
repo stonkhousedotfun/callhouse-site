@@ -354,7 +354,7 @@ export default function HomePage() {
               the Stock Tokens themselves. Nothing on this site is an offer or investment advice.
             </li>
             <li>
-              <strong>The contracts in this repository have not been audited.</strong> Valorem
+              <strong>The Callhouse contracts have not been audited.</strong> Valorem
               Clear was audited by Zellic under its former name; this vault was not. There is no
               proxy, so a fix means a v2 and a migration. The 20–50 {MARKET} cap is the honest
               measure of how much confidence that deserves.
