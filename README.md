@@ -172,11 +172,9 @@ Railway, one service, Dockerfile build, **this repo root as the build context**.
 2026-09-13 about 19 minutes after the DNS below), and at `https://site-production-bea7.up.railway.app`.
 
 - Project `callhouse`, service `site`, created with the Railway CLI (`railway init` /
-  `railway add`). **The service is NOT connected to the GitHub repo**: the CLI's repo-linking
-  mutation was rejected (`Unauthorized`), so deploys so far are `railway up` uploads of the local
-  tree — pushes to `main` do NOT auto-deploy. Connect the repo once in the dashboard (service →
-  Settings → Source → `leekzor/callhouse-site`) to get push-to-deploy; until then redeploys are
-  `railway up -d` from this directory.
+  `railway add`). **Connected to `leekzor/callhouse-site`, branch `main`, on 2026-09-13** (in the
+  dashboard; the CLI's repo-linking mutation was rejected as `Unauthorized`). Every push to `main`
+  now builds `Dockerfile` per `railway.json` and deploys; `railway up -d` is no longer needed.
 - `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_APP_URL` were set before the first build, and the three
   `*_CONTACT_EMAIL` variables were set later followed by a rebuild (`railway up`), as the
   build-time inlining requires.
