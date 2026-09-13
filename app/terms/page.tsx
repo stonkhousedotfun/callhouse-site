@@ -213,7 +213,7 @@ export default function TermsPage() {
           <>These terms are governed by {GOVERNING_LAW}.</>
         ) : (
           <>
-            Governing law: <strong>{NOT_YET_DESIGNATED}</strong>. No law and no forum has been
+            Governing law: <strong>{NOT_YET_DESIGNATED}</strong>. No law and no forum have been
             chosen for these terms. That is a decision counsel has not yet made, and this page will
             say which when it has.
           </>

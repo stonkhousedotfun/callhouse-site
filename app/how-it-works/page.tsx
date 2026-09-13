@@ -244,7 +244,7 @@ export default function HowItWorksPage() {
 
           <div className="card" style={IN_GRID}>
             <div className="card-head">
-              <h3 className="card-title">Bought, expired OTM</h3>
+              <h3 className="card-title">Bought, expired worthless</h3>
               <span className="badge" data-tone="good">
                 Premium kept
               </span>
@@ -288,13 +288,13 @@ export default function HowItWorksPage() {
 
         <div className="flow">
           <div className="flow-node">Idle</div>
-          <div className="flow-arrow" />
+          <div className="flow-arrow" aria-hidden="true" />
           <div className="flow-node">Listed</div>
-          <div className="flow-arrow" />
+          <div className="flow-arrow" aria-hidden="true" />
           <div className="flow-node">Exercisable</div>
-          <div className="flow-arrow" />
+          <div className="flow-arrow" aria-hidden="true" />
           <div className="flow-node">Settling</div>
-          <div className="flow-arrow" />
+          <div className="flow-arrow" aria-hidden="true" />
           <div className="flow-node">Idle</div>
         </div>
 

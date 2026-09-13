@@ -34,7 +34,7 @@ import { SITE_URL } from "@/lib/site";
  * Last real change to the copy on these pages, ISO 8601. Hand-maintained. Passed as a string so
  * no Date is constructed during the build and the output is byte-identical every time.
  */
-const CONTENT_REVISED = "2026-09-12T00:00:00.000Z";
+const CONTENT_REVISED = "2026-09-13T00:00:00.000Z";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [

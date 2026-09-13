@@ -31,7 +31,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { NOT_YET_DESIGNATED, SECURITY_CONTACT_EMAIL } from "@/lib/legal";
+import { LEGAL_DOCS_ARE_DRAFT, NOT_YET_DESIGNATED, SECURITY_CONTACT_EMAIL } from "@/lib/legal";
 import { MARKET, SHARE_TICKER, appUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
@@ -176,7 +176,8 @@ export default function LegalPage() {
       </p>
       <p>
         The <Link href="/terms">Terms of Use</Link> and the <Link href="/privacy">privacy notice</Link>{" "}
-        are separate pages and are drafts pending review by counsel.
+        are separate pages
+        {LEGAL_DOCS_ARE_DRAFT ? ", and both are drafts pending review by counsel" : ""}.
       </p>
     </div>
   );

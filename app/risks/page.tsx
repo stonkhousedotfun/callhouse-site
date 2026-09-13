@@ -29,7 +29,10 @@ import Link from "next/link";
 import { MARKET, SHARE_TICKER, appUrl } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Risks — Callhouse",
+  // Bare route name: the layout's "%s — Callhouse" template applies the suffix. Stating it here
+  // rendered "Risks — Callhouse — Callhouse". The Open Graph title below is stated in full
+  // because the template does not apply inside openGraph.
+  title: "Risks",
   description:
     "Every way a week here pays nothing, or costs you the collateral: no buyer, assignment, issuer freeze, unaudited contracts, a keeper that can stop.",
   alternates: { canonical: "/risks" },
@@ -376,7 +379,7 @@ export default function RisksPage() {
               No off-chain component can move money. The vault is the Valorem writer and the
               Seaport offerer, it authorises each listing by hash on chain, and it re-validates
               every field the keeper proposes against caps compiled into the bytecode: the
-              out-of-the-money band, the premium floor, the utilisation ceiling, the contract cap,
+              out-of-the-money band, the premium floor, the utilization ceiling, the contract cap,
               and a 21-day ceiling on cycle length. The Admin Safe can move those knobs inside the
               caps and never outside them.
             </>
@@ -409,7 +412,7 @@ export default function RisksPage() {
         >
           <p>
             The Admin Safe sets policy within the compiled caps: the out-of-the-money band, the
-            premium floor, the utilisation ceiling, the protocol fee, the deposit cap, the fee
+            premium floor, the utilization ceiling, the protocol fee, the deposit cap, the fee
             recipient, and whether the Valorem engine fee is accepted. The Guardian can halt writes
             and invalidate listings, and can do nothing else.
           </p>
