@@ -2,30 +2,23 @@
   Favicon for callhouse.finance. Next serves this via the app/icon file convention and emits the
   <link rel="icon"> itself, so nothing imports it and nothing should.
 
-  THE MARK: a roof over two ledger rows. The roof is the "house" half of the name; the rows are
-  the weekly tape — one full row for a week that filled, one short row for a week that did not.
-  That second row is deliberately stunted. A week with no buyer pays zero and is published as a
-  row like any other, so the mark shows one, at 16px, forever.
+  THE MARK (Daylight): an emerald rounded square carrying a white base rule, the strike, with a
+  rising line above it. It is the same drawing as BrandMark in components/ui/Brand.tsx, on the same
+  26 unit grid, so the tab icon and the nav mark are one shape. Change them together. One optical
+  adjustment: the rising line carries a 0.7 unit stroke in its own colour. At 16px the nav mark's
+  hairline rise drops below one pixel and greys out; the stroke keeps it a white line in the tab.
 
   CONSTRAINTS THIS FILE IS BUILT AROUND:
-    - Palette is verbatim from the token block in app/globals.css: #0b0d10 is the bg token and
-      #7ee0a8 is the accent token. (Named rather than quoted as CSS custom properties, because a
-      doubled hyphen is illegal inside an XML comment and this file is parsed as XML.) No third
-      colour, no gradient, no opacity: a favicon is composited against unknown browser chrome and
-      anything translucent goes muddy.
-    - 32x32 viewBox and every coordinate an integer, with the roof edges at exactly 45 degrees.
-      Browsers rasterise this at 16, 32 and 180px; integers on a 32 grid land on pixel boundaries
-      at 16 and 32, which is where it actually has to read.
-    - No text. Type at this size is a smudge, and "ch" in a box is every other protocol's mark.
-    - No rounded corners on the ground. The design system is flat bordered boxes; a squircle here
-      would be the only rounded thing in the product.
-
-  Deliberately absent: a dark/light variant. The product is `color-scheme: dark` only, so the
-  mark carries its own dark ground rather than inheriting the browser's.
+    - Two colours, written as literals because a favicon cannot read CSS variables: the light
+      accent token (#0a7f55) and the light accent-ink token (#ffffff) from app/globals.css. No
+      gradient and no opacity: a favicon is composited against unknown browser chrome, light or
+      dark, and anything translucent goes muddy. Emerald with white reads on both.
+    - No dark variant. Safari ignores media queries inside SVG favicons, and the emerald square
+      already carries its own ground, so one version is correct everywhere.
+    - No text, and nothing that imitates another brand's mark (no feather, no neon green).
 -->
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <rect width="32" height="32" fill="#0b0d10" />
-  <path d="M16 4 L27 15 L22 15 L16 9 L10 15 L5 15 Z" fill="#7ee0a8" />
-  <rect x="8" y="18" width="16" height="4" fill="#7ee0a8" />
-  <rect x="8" y="24" width="9" height="4" fill="#7ee0a8" />
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 26 26" width="32" height="32">
+  <rect width="26" height="26" rx="8" fill="#0a7f55" />
+  <rect x="6" y="16.5" width="14" height="2.5" rx="1" fill="#ffffff" />
+  <path d="M7 15 12.04 8.7 14.68 11.58 19 6v1.98l-4.08 6.12-2.76-2.88L8.44 15Z" fill="#ffffff" stroke="#ffffff" stroke-width="0.7" stroke-linejoin="round" />
 </svg>

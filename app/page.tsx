@@ -1,71 +1,72 @@
 /**
  * callhouse.finance/ — the landing page, and the first thing a stranger reads about this product.
  *
- * One job: leave a reader who skims only the first screen with an ACCURATE expectation. That
- * expectation is not a number, it is a shape — the vault writes one call a week against pooled
- * collateral, the premium arrives only if somebody buys the call, and on a thin book the most
- * likely week is the one that pays nothing. The hero says that in words, the first figure on the
- * page says it as a zero, and the outcomes card says it again with the unfilled week listed
- * first. If a future edit moves that below the fold, the edit is wrong.
+ * Built to the approved "Daylight" mockup, section by section: hero with the example week card,
+ * the five-step week, why Callhouse with the fee slip, the three endings, what can go wrong, and
+ * the CTA band. The footer comes from the layout.
+ *
+ * One job: leave a reader who skims only the first screen with an ACCURATE expectation. Premium
+ * arrives only if somebody buys the call, assignment can take the collateral, the token is a debt
+ * security, and the vault is neither deployed nor audited. The hero's disclosure line says all of
+ * that next to the headline, not in a footer. If a future edit moves it below the fold, the edit
+ * is wrong.
  *
  * DELIBERATELY ABSENT:
- *   - Wallet code of any kind. No wagmi, no viem, no query client, no connect button. This is a
- *     server component with no "use client", no hooks and no fetch; it renders identically with
- *     JavaScript switched off, which is the whole reason this site is a separate repo from the
- *     dapp.
- *   - Live data. The vault is not deployed. A chain read here would render zeros, and a zero that
- *     really means "not deployed yet" is a lie told in a number. The notice below the hero says
- *     so in words instead.
- *   - Any forward-looking figure, and any figure scaled past one week. Every number on this page
- *     is a fixed policy parameter from README "Policy (launch)" or a protocol constant.
- *     scripts/copy-lint.mjs fails CI on the vocabulary; this file avoids the shape as well, and
- *     therefore needs no `copy-lint-allow` escape hatch anywhere in it. Do not add one: the
- *     escape hatch has to sit on the same physical line as the phrase, so any later reformat of
- *     this file would silently break the build.
- *   - The full policy table, the fee table, the phase machine and the addresses table. All four
- *     live on /how-it-works, which owns them. Repeating them here would push the material a
- *     depositor actually needs below three screens of reference data.
+ *   - Wallet code, chain reads and fetches. This is a server component; the only client code is
+ *     the endings tabs island (app/_components/EndingsTabs.tsx), whose first ending is server
+ *     rendered. The vault is not deployed, so a live read would render zeros that mean "not
+ *     deployed yet".
+ *   - Any forward-looking figure, and any figure scaled past one week. The numbers are either
+ *     launch policy (README "Policy (launch)", docs product/policy.md) or fork rehearsal figures,
+ *     and the rehearsal figures are labelled as examples where they appear.
+ *     scripts/copy-lint.mjs fails CI on the forbidden vocabulary; this page needs no
+ *     `copy-lint-allow` escape hatch anywhere, and should not gain one.
+ *   - The full policy table, the fee table, the phase machine and the addresses table. They live
+ *     on /how-it-works, which owns them.
  *
- * Three phrases are required verbatim on this route by scripts/copy-lint.mjs. They are written
- * into the sentences that carry the argument — the hero, the assignment card and the pre-deposit
- * list — and not parked in a disclaimer block, because a disclaimer is the part nobody reads:
+ * Three phrases are required verbatim in THIS file by scripts/copy-lint.mjs, and they sit in the
+ * hero's disclosure line:
  *   "Premium is paid only if a buyer fills"
  *   "Assignment can take the collateral at the strike"
  *   "Stock Tokens are debt securities"
- * Reword those sentences only with `node scripts/copy-lint.mjs` open.
+ * Reword that line only with `node scripts/copy-lint.mjs` open.
  *
- * Every "go do something" link leaves for app.callhouse.finance through appUrl(). A relative href on
- * this domain is a 404, not a route into the dapp.
+ * Every "go do something" link leaves for app.callhouse.finance through appUrl(). A relative href
+ * on this domain is a 404, not a route into the dapp.
  */
-import type { CSSProperties } from "react";
 import type { Metadata } from "next";
 import Link from "next/link";
 
+import { EndingsTabs } from "@/app/_components/EndingsTabs";
+import { FeeSlip } from "@/app/_components/FeeSlip";
+import { WeekCard } from "@/app/_components/WeekCard";
 import {
-  APP_URL,
-  CHAIN_ID,
-  CHAIN_NAME,
-  MARKET,
-  SHARE_TICKER,
-  VENUE_NAME,
-  VENUE_URL,
-  appUrl,
-} from "@/lib/site";
+  Button,
+  CheckCircleIcon,
+  Chip,
+  Container,
+  Figure,
+  Notice,
+  Section,
+  SectionHead,
+  WarnIcon,
+} from "@/components/ui";
+import { CHAIN_NAME, MARKET, SHARE_TICKER, VENUE_NAME, appUrl } from "@/lib/site";
 
-const DESCRIPTION =
-  "Deposit one tokenised stock, receive vault shares. Each week a keeper writes one Overcall call per whole token and lists it for USDG. Premium is paid only if a buyer fills, and a week with no buyer pays zero premium.";
+const TITLE = `Callhouse — pooled covered calls on ${MARKET} Stock Tokens`;
+
+const DESCRIPTION = `Deposit ${MARKET} Stock Tokens, receive ${SHARE_TICKER} vault shares. Each week the vault writes covered calls, one per whole token, and lists them on ${VENUE_NAME} for USDG. Premium is paid only if a buyer fills, and a week with no buyer pays zero premium.`;
 
 /**
  * `title.absolute` and not a bare string: the layout carries a "%s — Callhouse" template, so a
- * plain `title` here would render "Callhouse — … — Callhouse". The landing is the one route whose
- * title is the full positioning line rather than a route name.
+ * plain `title` here would render "Callhouse — … — Callhouse".
  */
 export const metadata: Metadata = {
-  title: { absolute: `Callhouse — pooled covered calls on ${MARKET} Stock Tokens` },
+  title: { absolute: TITLE },
   description: DESCRIPTION,
   alternates: { canonical: "/" },
   openGraph: {
-    title: `Callhouse — pooled covered calls on ${MARKET} Stock Tokens`,
+    title: TITLE,
     description: DESCRIPTION,
     url: "/",
     siteName: "Callhouse",
@@ -73,345 +74,322 @@ export const metadata: Metadata = {
   },
 };
 
-/**
- * `.card + .card` is a vertical-stack rule: 16px between two cards that follow one another down
- * the page. Inside a `.grid` the grid's own gap already does that, and the inherited margin drops
- * every card except the first out of line with its row. Cancelling it per element is cheaper than
- * adding a selector to a stylesheet that has to stay byte-compatible with the dapp's. Same
- * constant, same reason, as app/how-it-works/page.tsx.
- */
-const IN_GRID: CSSProperties = { marginTop: 0 };
+const OPEN_APP = appUrl("/vault/nvda");
 
-/**
- * The bounds a depositor is trusting, from README "Policy (launch)". Shown here as five rows
- * rather than the full nine-row table because the point of this card is "the limits are in the
- * bytecode, not in a dashboard", and five rows make that point. /how-it-works has the table.
- */
-const LIMITS: ReadonlyArray<readonly [string, string]> = [
-  ["Strike band", "3% to 12% above spot"],
-  ["Will not list below", "0.40% of spot / week"],
-  ["Collateral written", "at most 95% of idle"],
-  ["Listings signed per cycle", "at most 3"],
-  ["Deposit cap at launch", `20 ${MARKET}; only the Admin Safe can raise it`],
+type Step = { title: string; when: string; body: string; key?: boolean };
+
+/** Docs: getting-started/how-it-works.md and product/weekly-cycle.md. */
+const STEPS: readonly Step[] = [
+  {
+    title: "You deposit your stock",
+    when: "until the book closes",
+    body: `${MARKET} Stock Tokens in, ${SHARE_TICKER} shares out, priced at the ${MARKET} behind each share.`,
+  },
+  {
+    title: "The vault writes calls",
+    when: `when ${VENUE_NAME} opens the week`,
+    body: `Up to 95% of idle ${MARKET} becomes whole calls, one per token, 3% to 12% above spot at launch. No strike in that band, no write.`,
+    key: true,
+  },
+  {
+    title: `Buyers fill on ${VENUE_NAME}`,
+    when: "until Fri 20:00 UTC",
+    body: `USDG lands in the same transaction: 95% to the vault, 5% to ${VENUE_NAME}. Or nobody buys.`,
+    key: true,
+  },
+  {
+    title: "The week closes",
+    when: "from Sat 20:00 UTC",
+    body: `Unassigned ${MARKET} comes back, assigned ${MARKET} as strike USDG. The keeper closes at expiry; an hour later, anyone can.`,
+  },
+  {
+    title: "You claim USDG",
+    when: "whenever you like",
+    body: "Premium net of fees, and any strike proceeds, wait in your balance. No deadline.",
+  },
+];
+
+type Point = { title: string; body: string };
+
+/** Docs: product/fees.md, product/policy.md, protocol/roles.md, getting-started/withdrawing.md. */
+const BENEFITS: readonly Point[] = [
+  {
+    title: "Paid in USDG",
+    body: "Premium arrives as USDG, tracked per share and never folded into your shares. No protocol token, no points, no airdrop at launch.",
+  },
+  {
+    title: "Hands off",
+    body: "The keeper writes, lists and closes each week inside the vault's policy. You deposit once and check in when you like.",
+  },
+  {
+    title: "Fees only on premium",
+    body: `Callhouse takes 5% of the premium the vault receives, capped at 20% in the contracts. Nothing on deposits, idle ${MARKET} or strike proceeds.`,
+  },
+  {
+    title: "Every week published",
+    body: "Once the vault is live, each closed week is published in the app with its real figures: filled, unfilled or assigned, zeros included. No projections.",
+  },
+  {
+    title: "Two ways out",
+    body: "Withdraw instantly while the vault is idle, or queue during a week and settle at the close. Closing the week does not depend on the keeper.",
+  },
+  {
+    title: "Limits in the code",
+    body: "The 1% strike floor, the 20% fee ceiling and the one-token lot size are compiled in. The keeper and guardian cannot move a token.",
+  },
+];
+
+/** Docs: product/risks.md. The risks page carries the full list. */
+const RISKS: readonly Point[] = [
+  {
+    title: "Weeks can pay nothing",
+    body: "Premium is paid only if a buyer fills. On a thin book an unfilled week is the most likely outcome, and no dealer is obliged to buy.",
+  },
+  {
+    title: "Assignment caps your upside",
+    body: `If ${MARKET} runs past the strike, collateral leaves at the strike for USDG, even in a week the vault sold nothing. v1 does not buy it back.`,
+  },
+  {
+    title: "Withdrawals wait for the close",
+    body: "While a call is open, a withdrawal is queued, cannot be cancelled, and settles at the close, partly in USDG if the week was assigned.",
+  },
+  {
+    title: "Late deposits share the week",
+    body: "A deposit while a call is open is priced at face value and shares that week's result, including any assignment.",
+  },
+  {
+    title: "Stock Tokens are not shares",
+    body: "They are debt securities of Robinhood Assets (Jersey) Limited, with no vote or claim on Nvidia, and you carry the issuer's credit risk. The issuer can freeze transfers, which can hold up the close.",
+  },
+  {
+    title: "Unaudited contracts",
+    body: `The vault has had only an internal review, by the people who wrote it. There is no proxy, so a fix means a new vault. The 20 ${MARKET} launch cap is sized to that.`,
+  },
+  {
+    title: "Settings can change",
+    body: "The admin can change the strike band and the fee inside the compiled caps, and the deposit cap with no ceiling, at any time and with no timelock. At launch the admin is a single key.",
+  },
+  {
+    title: "Third parties in the path",
+    body: `${VENUE_NAME} runs the cycle and the book, Valorem settles assignment and USDG pays out; the vault cannot override any of them. An oracle pause stops writes and listings, never settlement.`,
+  },
 ];
 
 export default function HomePage() {
   return (
     <>
-      <header className="hero">
-        <div className="kicker">
-          {CHAIN_NAME} {CHAIN_ID} · {VENUE_NAME} · Valorem Clear · Seaport 1.6
-        </div>
-        <h1>One call a week, written against pooled {MARKET} Stock Tokens.</h1>
-        <p className="lede">
-          Deposit one tokenised stock, receive {SHARE_TICKER} shares. Each week a keeper writes an{" "}
-          {VENUE_NAME} call against the idle collateral and lists it for USDG.{" "}
-          <strong>Premium is paid only if a buyer fills</strong> the listing. A week with no buyer
-          pays zero premium, and on a book this thin that is the most likely outcome — published as a row
-          like any other week, not hidden as an error state.
-        </p>
-
-        <div className="cta">
-          <a
-            className="btn ext"
-            data-variant="primary"
-            href={appUrl("/vault/nvda")}
-            target="_blank"
-            rel="noreferrer noopener"
+      {/* ------------------------------------------------------------------ hero */}
+      <Container
+        as="section"
+        aria-labelledby="hero-h"
+        className="grid grid-cols-1 items-center gap-9 pb-[72px] pt-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-14 lg:pt-10"
+      >
+        <div>
+          <Chip tone="accent" dot wrap>
+            Stock Tokens · {CHAIN_NAME} · {MARKET} vault first
+          </Chip>
+          <h1
+            id="hero-h"
+            className="mt-5 text-[length:clamp(40px,5.6vw,66px)] font-extrabold leading-[1.02] tracking-[-0.035em]"
           >
-            Open the app
-          </a>
-          <Link className="btn" data-variant="ghost" href="/how-it-works">
-            Read the mechanics first
+            Put your stocks to work, <em className="not-italic text-accent">one week at a time.</em>
+          </h1>
+          <p className="mt-[22px] max-w-[34em] text-[19px] text-ink-2">
+            Deposit tokenised stocks into a vault. Each week it sells covered calls against them on {VENUE_NAME} and
+            credits what buyers actually pay, less fees, in USDG for you to claim. The first vault holds {MARKET}.
+          </p>
+
+          <div className="mt-[30px] flex flex-wrap gap-3">
+            <Button href={OPEN_APP}>Open the app</Button>
+            <Button variant="ghost" href="/how-it-works">
+              See how a week runs
+            </Button>
+          </div>
+
+          <dl className="mt-9 flex flex-wrap gap-x-7 gap-y-4">
+            <Figure label="You deposit" value="Stock Tokens" />
+            <Figure label="You claim" value="USDG" tone="usdg" />
+            <Figure label="Protocol fee" value="5% of premium" />
+            <Figure label="Launch cap" value={`20 ${MARKET}`} />
+          </dl>
+
+          <Notice variant="plain" className="mt-[26px]">
+            Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. Stock Tokens are
+            debt securities, not Nvidia shares. Not deployed and not audited yet.
+          </Notice>
+        </div>
+
+        <WeekCard />
+      </Container>
+
+      {/* ------------------------------------------------------------------ how it works */}
+      <Section id="how" labelledBy="how-h">
+        <SectionHead
+          id="how-h"
+          eyebrow="How it works"
+          title="Every week runs the same five steps."
+          intro={`Timing comes from ${VENUE_NAME}'s registry, not a calendar you have to watch. The keeper does the routine work; the contracts make sure nobody needs the keeper to get the week closed.`}
+        />
+
+        <ol className="grid grid-cols-1 gap-[26px] lg:grid-cols-5 lg:gap-0">
+          {STEPS.map((step, i) => {
+            const last = i === STEPS.length - 1;
+            return (
+              <li
+                key={step.title}
+                className="relative grid grid-cols-[44px_minmax(0,1fr)] gap-x-[18px] lg:block lg:pr-[18px]"
+              >
+                {last ? null : (
+                  <>
+                    {/* Dashed connector to the next step: down the left edge below lg, across above it. */}
+                    <span
+                      aria-hidden="true"
+                      className="absolute -bottom-[26px] left-[21px] top-11 w-0.5 lg:hidden"
+                      style={{
+                        backgroundImage: "repeating-linear-gradient(180deg, var(--line-2) 0 8px, transparent 8px 14px)",
+                      }}
+                    />
+                    <span
+                      aria-hidden="true"
+                      className="absolute left-11 right-0 top-[21px] hidden h-0.5 lg:block"
+                      style={{
+                        backgroundImage: "repeating-linear-gradient(90deg, var(--line-2) 0 8px, transparent 8px 14px)",
+                      }}
+                    />
+                  </>
+                )}
+                <span
+                  aria-hidden="true"
+                  className={
+                    step.key
+                      ? "num relative grid size-11 place-items-center rounded-full border-2 border-accent bg-accent text-[15px] font-bold text-accent-ink"
+                      : "num relative grid size-11 place-items-center rounded-full border-2 border-line-2 bg-surface text-[15px] font-bold text-ink-2"
+                  }
+                >
+                  {i + 1}
+                </span>
+                <h3 className="mt-2 text-[18.5px] font-bold tracking-[-0.015em] lg:mt-[18px]">
+                  <span className="sr-only">Step {i + 1}: </span>
+                  {step.title}
+                </h3>
+                <p className="num col-start-2 mt-1.5 text-[12.5px] font-medium leading-[1.3] text-accent-text">
+                  {step.when}
+                </p>
+                <p className="col-start-2 mt-2 text-[15px] text-ink-2">{step.body}</p>
+              </li>
+            );
+          })}
+        </ol>
+
+        <p className="mt-11">
+          <Link href="/how-it-works" className="link font-semibold text-accent-text">
+            Every phase, the policy limits and the contract addresses
+            <span aria-hidden="true"> →</span>
           </Link>
-          <Link className="btn" data-variant="ghost" href="/risks">
-            What can go wrong
-          </Link>
-        </div>
-      </header>
+        </p>
+      </Section>
 
-      {/* `.stack` supplies the 16px between every block below. `.card + .card` would cover the
-          cards but not the notice or the closing call-to-action row, and structural margins do
-          not belong in inline style objects. */}
-      <div className="stack">
-        {/* Said once, out loud, instead of rendering zeros a reader would price in. */}
-        <div className="notice" data-tone="info">
-          <strong>The vault is not deployed yet.</strong>
-          Nothing on this domain is live data and this site makes no chain reads. Every figure
-          below is a fixed policy parameter, and no number on this page is scaled past one week.
-          Realized weeks — including the unfilled ones — are published in the app once there are
-          any.
-        </div>
+      {/* ------------------------------------------------------------------ why callhouse */}
+      <Section id="benefits" labelledBy="benefits-h">
+        <SectionHead
+          id="benefits-h"
+          eyebrow="Why Callhouse"
+          title="A covered call desk you don't have to run."
+          intro="Selling calls yourself means picking strikes, posting orders and watching expiries. Callhouse does that on a published policy with its limits compiled into the contracts, and publishes every result, including the weeks that pay nothing."
+        />
 
-        <div className="card">
-          <div className="grid grid-3">
-            <div className="lead-stat">
-              <span className="v">0</span>
-              <span className="k">paid in a week nobody buys</span>
-            </div>
-            <div className="lead-stat">
-              <span className="v">1.0000</span>
-              <span className="k">{MARKET} locked per contract</span>
-            </div>
-            <div className="lead-stat">
-              <span className="v">20</span>
-              <span className="k">{MARKET} deposit cap at launch</span>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-head">
-            <h2 className="card-title">What happens to your token in one week</h2>
-            <span className="badge">
-              <span className="dot" />
-              Cycle → expiry
-            </span>
-          </div>
-
-          <p className="small muted">
-            The keeper binds to {VENUE_NAME}&apos;s registry cycle, not to a wall clock. One pass,
-            every week, in this order.
-          </p>
-
-          <ol className="steps">
-            <li className="step">
-              <strong>You deposit.</strong> {MARKET} Stock Tokens in, {SHARE_TICKER} shares out,
-              pro rata. While the vault is idle you can withdraw immediately.
-            </li>
-            <li className="step">
-              <strong>The vault writes.</strong> When the registry opens a cycle, idle collateral
-              is locked in Valorem Clear and one call is written per whole token, at the nearest
-              strike rung inside the out-of-the-money band. If no rung qualifies, nothing is
-              written and the collateral sits for the week.
-            </li>
-            <li className="step">
-              <strong>The call is listed for USDG</strong> on Seaport, with the vault as the
-              offerer. The book closes Friday 20:00 UTC. Until then a buyer may take it, or may
-              not.
-            </li>
-            <li className="step">
-              <strong>Saturday 20:00 UTC, the call expires.</strong> It was never bought, or was
-              bought and expired worthless, or was bought and exercised. Those are the only three
-              endings, and they are unpacked below.
-            </li>
-            <li className="step">
-              <strong>Harvest.</strong> Whatever USDG arrived is collected: 5% of the premium to
-              the fee Safe, the rest, including any strike proceeds in full, claimable pro rata by
-              share. A withdrawal requested while the call was open settles here, not before.
-            </li>
-          </ol>
-        </div>
-
-        <div className="card">
-          <div className="card-head">
-            <h2 className="card-title">How the week ends</h2>
-          </div>
-          <p className="small muted">
-            Three endings. Which one you get is decided by the order book and by what holders of
-            this week&apos;s calls do, not by anything the vault does.
-          </p>
-
-          <div className="grid grid-3">
-            <div className="card" style={IN_GRID}>
-              <div className="card-head">
-                <h3 className="card-title">Nobody bought</h3>
-                <span className="badge" data-tone="warn">
-                  Most likely
-                </span>
-              </div>
-              <p className="small" style={{ marginBottom: 0 }}>
-                There is no dealer obliged to take the other side. The listing sat on a thin book
-                and nobody filled it, so the week pays zero USDG and the unsold options are
-                worthless after expiry. The collateral can still be assigned: the vault writes the
-                same option series as other writers, and Valorem assigns exercises across all of
-                them. If their buyers exercise, tokens can leave at the strike for strike USDG in a
-                week that paid nothing. Whatever is not assigned comes back when the week closes.
-              </p>
-            </div>
-
-            <div className="card" style={IN_GRID}>
-              <div className="card-head">
-                <h3 className="card-title">Bought, expired worthless</h3>
-                <span className="badge" data-tone="good">
-                  Premium kept
-                </span>
-              </div>
-              <p className="small" style={{ marginBottom: 0 }}>
-                A buyer paid. The vault was credited 95% of the premium and {VENUE_NAME} took 5%
-                inside the order itself. No exercise was assigned to the vault, so the collateral
-                comes back when the week closes and the USDG is claimable after the protocol fee.
-              </p>
-            </div>
-
-            <div className="card" style={IN_GRID}>
-              <div className="card-head">
-                <h3 className="card-title">Bought and exercised</h3>
-                <span className="badge" data-tone="bad">
-                  Assigned
-                </span>
-              </div>
-              <p className="small" style={{ marginBottom: 0 }}>
-                Assignment can take the collateral at the strike. You keep the premium and those
-                tokens come back as strike USDG instead, with no protocol fee taken from it; the
-                upside above the strike is gone for that week. Valorem assigns by bucket, so a week can be assigned in part, and v1
-                does not buy the tokens back.
-              </p>
-            </div>
-          </div>
-        </div>
-
-        <div className="card">
-          <div className="card-head">
-            <h2 className="card-title">Where the money goes</h2>
-          </div>
-
-          <div className="flow">
-            <div className="flow-node">
-              <strong>Your {MARKET} Stock Tokens</strong>
-              <div className="tiny faint">in; {SHARE_TICKER} shares out</div>
-            </div>
-            <div className="flow-arrow" aria-hidden="true" />
-            <div className="flow-node">
-              <strong>Valorem Clear</strong>
-              <div className="tiny faint">collateral locked, one call per whole token</div>
-            </div>
-            <div className="flow-arrow" aria-hidden="true" />
-            <div className="flow-node">
-              <strong>Seaport 1.6</strong>
-              <div className="tiny faint">the call listed for USDG, vault as offerer</div>
-            </div>
-            <div className="flow-arrow" aria-hidden="true" />
-            <div className="flow-node">
-              <strong>A buyer, or nobody</strong>
-              <div className="tiny faint">a fill pays 95% to the vault, 5% to {VENUE_NAME}</div>
-            </div>
-            <div className="flow-arrow" aria-hidden="true" />
-            <div className="flow-node">
-              <strong>Saturday settlement</strong>
-              <div className="tiny faint">collateral or strike back · 5% fee on premium, the rest per share</div>
-            </div>
-          </div>
-
-          <hr className="hr" />
-
-          <p className="small muted" style={{ marginBottom: 0 }}>
-            Cut the path at Seaport and you have the other week: nobody fills and the premium is
-            zero. The collateral is still written into a series other writers share, so it can
-            still be assigned if their buyers exercise; whatever is not assigned comes back when
-            the week closes. Settlement never reads a price feed — whether the vault was assigned
-            is decided by what holders of the series did and by Valorem&apos;s assignment, and the
-            Chainlink feed is display and a gate on writing and listing, nothing more. The protocol
-            fee is 5% of the premium and nothing else: strike proceeds from an assignment carry no
-            fee, and a week that pays nothing is charged nothing.
-          </p>
-        </div>
-
-        <div className="card">
-          <div className="card-head">
-            <h2 className="card-title">The limits are compiled in</h2>
-            <span className="badge">On chain</span>
-          </div>
-          <p className="small muted">
-            These are contract bounds, not intentions. An admin can move a knob inside them and
-            cannot move them, so nobody can quietly start selling at-the-money calls against your
-            collateral.
-          </p>
-
-          <div className="rows">
-            {LIMITS.map(([k, v]) => (
-              <div className="row" key={k}>
-                <span className="k">{k}</span>
-                <span className="v">{v}</span>
-              </div>
+        <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
+          <ul className="grid grid-cols-1 gap-x-9 gap-y-[34px] sm:grid-cols-2">
+            {BENEFITS.map((b) => (
+              <li key={b.title}>
+                <h3 className="flex items-center gap-2.5 text-[19px] font-bold tracking-[-0.015em]">
+                  <CheckCircleIcon className="shrink-0 text-accent" />
+                  {b.title}
+                </h3>
+                <p className="mt-2 text-[15.5px] text-ink-2">{b.body}</p>
+              </li>
             ))}
-          </div>
-
-          <hr className="hr" />
-
-          <p className="small muted" style={{ marginBottom: 0 }}>
-            The keeper opens the week, signs the listing and closes the week. It never holds the
-            option tokens and can never move funds. A Guardian can halt writes and cancel listings
-            and nothing else; neither role can block an idle withdrawal or the close of a week. The
-            full policy table, the fees, the phase machine and every contract address are on{" "}
-            <Link href="/how-it-works">how it works</Link>. The venue is{" "}
-            <a className="ext" href={VENUE_URL} target="_blank" rel="noreferrer noopener">
-              {VENUE_NAME}
-            </a>
-            , a third party — Callhouse is not an options exchange and runs no book of its own.
-          </p>
-        </div>
-
-        <div className="card">
-          <div className="card-head">
-            <h2 className="card-title">Before you deposit</h2>
-          </div>
-          <ul className="tight" style={{ marginBottom: 0 }}>
-            <li>
-              <strong>Stock Tokens are debt securities</strong> issued by Robinhood Assets (Jersey)
-              Limited. Not shares: no vote, no claim on the company, and the issuer&apos;s credit
-              risk is yours. The issuer can freeze transfers, which can stop this vault writing,
-              closing the week and paying out tokens. The token can also pause its own price
-              oracle, which stops new writes and listings but not settlement.{" "}
-              <Link href="/legal">The legal page</Link> has the full form.
-            </li>
-            <li>
-              <strong>Not available to US persons.</strong> The same perimeter applies here as to
-              the Stock Tokens themselves. Nothing on this site is an offer or investment advice.
-            </li>
-            <li>
-              <strong>The Callhouse contracts have not been audited.</strong> Valorem
-              Clear was audited by Zellic under its former name; this vault was not. There is no
-              proxy, so a fix means a v2 and a migration. The 20 {MARKET} launch cap is the honest
-              measure of how much confidence that deserves.
-            </li>
-            <li>
-              <strong>There is no protocol token</strong>, no points programme and no airdrop at
-              launch. Depositing early accrues nothing but the USDG a buyer actually paid.
-            </li>
-            <li>
-              An empty book, assignment (including in a week nobody bought), partial assignment,
-              an issuer freeze, the Valorem fee
-              switch and an outage into the Friday window are each written out on{" "}
-              <Link href="/risks">the risks page</Link>. Read it before the app.
-            </li>
           </ul>
-        </div>
 
-        <div className="card">
-          <div className="card-head">
-            <h2 className="card-title">One action</h2>
-          </div>
-          <p className="small muted">
-            Depositing, withdrawing, this week&apos;s strike and every published week live in the
-            app at <span className="mono">{APP_URL.replace(/^https?:\/\//, "")}</span>. This domain
-            never asks for a wallet.
+          <FeeSlip />
+        </div>
+      </Section>
+
+      {/* ------------------------------------------------------------------ three endings */}
+      <Section id="endings" labelledBy="endings-h">
+        <SectionHead
+          id="endings-h"
+          eyebrow="Three endings"
+          title="Every week ends one of three ways."
+          intro={`Knowing all three before you deposit is the whole point. Which one you get is decided by the order book and by what holders of the week's calls do, not by the vault or a price feed. Pick one to see what happens to premium and to the ${MARKET} behind it.`}
+        />
+        <EndingsTabs />
+      </Section>
+
+      {/* ------------------------------------------------------------------ risks */}
+      <Section id="risks" labelledBy="risks-h">
+        <SectionHead
+          id="risks-h"
+          eyebrow="Before you deposit"
+          title="What can go wrong."
+          intro={
+            <p>
+              Plainly, before anything else. The full list, with what the contracts do about each one, is on{" "}
+              <Link href="/risks" className="link">
+                the risks page
+              </Link>
+              .
+            </p>
+          }
+        />
+
+        <ul className="grid grid-cols-1 gap-x-14 sm:grid-cols-2">
+          {RISKS.map((r) => (
+            <li
+              key={r.title}
+              className="grid grid-cols-[30px_minmax(0,1fr)] gap-x-3 gap-y-1 border-t border-line py-[22px]"
+            >
+              <WarnIcon size={18} className="mt-[3px] text-warn" />
+              <h3 className="text-[17.5px] font-bold tracking-[-0.01em]">{r.title}</h3>
+              <p className="col-start-2 text-[15px] text-ink-2">{r.body}</p>
+            </li>
+          ))}
+        </ul>
+
+        <div className="mt-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t border-line pt-8">
+          <p className="max-w-[44em] text-[15px] text-ink-2">
+            The risks page also covers partial assignment, keeper failure, USDG, the Valorem fee switch and an outage
+            near the Friday book close.
           </p>
-          <div className="cta">
-            <a
-              className="btn ext"
-              data-variant="primary"
-              href={appUrl("/vault/nvda")}
-              target="_blank"
-              rel="noreferrer noopener"
+          <Button variant="ghost" href="/risks">
+            Read every risk
+          </Button>
+        </div>
+      </Section>
+
+      {/* ------------------------------------------------------------------ cta band */}
+      <Container as="section" aria-labelledby="cta-h">
+        <div className="mb-[72px] mt-4 flex flex-wrap items-center justify-between gap-7 rounded-[28px] bg-ink px-[22px] py-[30px] text-ground sm:p-12 [&_:focus-visible]:outline-ground">
+          <div>
+            <h2
+              id="cta-h"
+              className="max-w-[18em] text-[length:clamp(28px,3.4vw,40px)] font-bold leading-[1.08] tracking-[-0.03em] text-ground"
             >
-              Open the app
-            </a>
-            <a
-              className="btn ext"
-              data-variant="ghost"
-              href={appUrl("/activity")}
-              target="_blank"
-              rel="noreferrer noopener"
-            >
-              Every published week, including the zeros
-            </a>
-            <Link className="btn" data-variant="ghost" href="/legal">
-              Legal
-            </Link>
+              Deposit your stock, and let the week run.
+            </h2>
+            <p className="mt-2.5 max-w-[34em] text-ground/75">
+              Read the risks first. Once the vault is live, connect a wallet in the app on {CHAIN_NAME} and deposit{" "}
+              {MARKET}, the first vault, up to the cap. This site never asks for a wallet.
+            </p>
+          </div>
+          <div className="flex flex-wrap gap-3">
+            <Button href={OPEN_APP}>Open the app</Button>
+            <Button variant="inverse" href="/risks">
+              Read the risks
+            </Button>
           </div>
         </div>
-      </div>
+      </Container>
     </>
   );
 }

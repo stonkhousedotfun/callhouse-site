@@ -1,10 +1,39 @@
 import type { Metadata, Viewport } from "next";
+import { Figtree, Geist_Mono, Schibsted_Grotesk } from "next/font/google";
 
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 
 import { SITE_URL } from "@/lib/site";
 import "./globals.css";
+
+/**
+ * Daylight type. next/font downloads these at BUILD time and serves them from this origin, so a
+ * visitor's browser never contacts Google; the build itself does need to reach Google Fonts.
+ * Each exposes a CSS variable on <html> that app/globals.css maps into font-display / font-body /
+ * font-mono.
+ *
+ * All three are loaded as variable fonts (one file per face instead of one per weight). The design
+ * uses Schibsted Grotesk 500–800 for display, Figtree 400–700 for body and Geist Mono 400–600 for
+ * every number; stay inside those weights.
+ */
+const display = Schibsted_Grotesk({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-schibsted-grotesk",
+});
+
+const body = Figtree({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-figtree",
+});
+
+const mono = Geist_Mono({
+  subsets: ["latin"],
+  display: "swap",
+  variable: "--font-geist-mono",
+});
 
 /**
  * Root layout for callhouse.finance.
@@ -64,21 +93,36 @@ export const metadata: Metadata = {
 };
 
 /**
- * Matches leekzor/callhouse: `web/app/layout.tsx` exactly. The two domains must not flash different
- * chrome colours.
+ * Browser chrome follows the page ground in each colour scheme: the --ground token in
+ * app/globals.css, light and dark. Change them together. The dapp (leekzor/callhouse:
+ * `web/app/layout.tsx`) should carry the same pair once it adopts Daylight, so the two domains do
+ * not flash different chrome colours.
  */
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#0b0d10",
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#f5f8f6" },
+    { media: "(prefers-color-scheme: dark)", color: "#0b1511" },
+  ],
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
-      <body>
+    <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
+      <body className="flex min-h-dvh flex-col">
+        <a
+          href="#main"
+          className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-[10px] focus:bg-surface focus:px-3.5 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-ink focus:shadow-lift"
+        >
+          Skip to content
+        </a>
         <Nav />
-        <main className="shell">{children}</main>
+        {/* No width or padding here: each page lays out its own full-width bands with
+            <Container> / <Section> from components/ui. */}
+        <main id="main" className="flex-1">
+          {children}
+        </main>
         <Footer />
       </body>
     </html>

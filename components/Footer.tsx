@@ -1,69 +1,80 @@
 /**
- * Footer for callhouse.finance. Server component — there is nothing here to hydrate, and this
- * package has no client runtime to spend on a row of links.
+ * Footer for callhouse.finance (the mockup's .footer). Server component: nothing here hydrates.
  *
- * The markup is the dapp's footer in leekzor/callhouse: `web/app/layout.tsx` (.footer /
- * .footer-inner, same type scale, same separators) so the bottom of the two domains matches. Three
- * rows, in this order:
+ * Four rows, in this order:
+ *   1. what this is: product, share ticker, collateral, chain.
+ *   2. where to go: the in-site pages, then the three links that leave this domain (docs, the
+ *      app, the explorer), each marked ↗ and opening a new tab.
+ *   3. the standing disclaimers. "Not affiliated with Robinhood Markets, Robinhood Assets (Jersey)
+ *      Limited, Overcall or Valorem" is carried word for word from the dapp's footer; if it is
+ *      reworded, reword both in paired commits across the two repos.
+ *   4. the audit status, stated outright.
  *
- *   1. what this is — product, share ticker, collateral, chain.
- *   2. where to go  — the four disclosure pages and the explainer first, then the two links that
- *                     leave this domain. Legal leads because it is the row's reason for existing;
- *                     Terms and Privacy follow it because they are the documents /legal cites.
- *   3. the standing disclaimers, carried word for word from the dapp's footer. They are copied
- *      rather than shared: this repo builds with no dependency on the dapp. If one is reworded,
- *      reword both in paired commits across the two repos, or the same sentence reads two ways on
- *      two hostnames.
- *
- * DELIBERATELY ABSENT: the dapp's "vault contract ↗" link. The vault is not deployed, lib/site.ts
- * carries no address for it, and a footer link to nothing is worse than no link.
- *
- * ALSO DELIBERATELY ABSENT: a link to the source repository. It may not be public, and a dead
- * "source" link in a footer reads as a withdrawn claim. What a reader actually needs from that
- * link is the audit status, so the last row states it outright instead: the contracts in this
- * repository have not been audited. That line is not in the dapp's footer; it belongs here,
- * where people read before they deposit.
+ * DELIBERATELY ABSENT: a vault contract link (the vault is not deployed and lib/site.ts carries
+ * no address for it) and a source-repository link (it may not be public; a dead link reads as a
+ * withdrawn claim, and what a reader needs from it is the audit status, which row 4 states).
  */
 import Link from "next/link";
 
-import { APP_URL, CHAIN_ID, DOCS_URL, CHAIN_NAME, EXPLORER_URL, MARKET, SHARE_TICKER } from "@/lib/site";
+import { Container } from "@/components/ui/Container";
+import { ExternalLink } from "@/components/ui/ExternalLink";
+import { APP_URL, CHAIN_ID, CHAIN_NAME, DOCS_URL, EXPLORER_URL, MARKET, SHARE_TICKER } from "@/lib/site";
+
+const PAGES = [
+  { href: "/how-it-works", label: "How it works" },
+  { href: "/risks", label: "Risks" },
+  { href: "/legal", label: "Legal" },
+  { href: "/terms", label: "Terms" },
+  { href: "/privacy", label: "Privacy" },
+] as const;
+
+const LINK = "rounded-sm text-ink-2 no-underline transition-colors duration-150 hover:text-ink";
+
+/** "app.callhouse.finance" in production; whatever host a preview build points at otherwise. */
+const APP_HOST = APP_URL.replace(/^https?:\/\//i, "");
 
 export function Footer() {
   return (
-    <footer className="footer">
-      <div className="footer-inner">
-        <div>
-          Callhouse · {SHARE_TICKER} · {MARKET} on {CHAIN_NAME} {CHAIN_ID}
+    <footer>
+      <Container>
+        <div className="grid gap-3.5 border-t border-line pb-12 pt-8 text-[13.5px] text-ink-3">
+          <p>
+            <span className="font-display font-bold text-ink-2">Callhouse</span> · <span className="num">{SHARE_TICKER}</span>{" "}
+            · {MARKET} on {CHAIN_NAME} <span className="num">{CHAIN_ID}</span>
+          </p>
+          <nav aria-label="Footer">
+            <ul className="flex flex-wrap gap-x-[18px] gap-y-2">
+              {PAGES.map((page) => (
+                <li key={page.href}>
+                  <Link href={page.href} className={LINK}>
+                    {page.label}
+                  </Link>
+                </li>
+              ))}
+              <li>
+                <ExternalLink href={DOCS_URL} arrow className={LINK}>
+                  Docs
+                </ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href={APP_URL} arrow className={LINK}>
+                  {APP_HOST}
+                </ExternalLink>
+              </li>
+              <li>
+                <ExternalLink href={EXPLORER_URL} arrow className={LINK}>
+                  Explorer
+                </ExternalLink>
+              </li>
+            </ul>
+          </nav>
+          <p className="max-w-[70em]">
+            Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited, Overcall or Valorem.
+            Nothing here is financial advice or an offer of securities.
+          </p>
+          <p className="max-w-[70em]">The Callhouse contracts have not been audited.</p>
         </div>
-        {/* In-site routes are next/link. The last three are plain anchors on other origins, and
-            they carry `.ext`, which is what draws the ↗ the dapp's footer hardcodes — do not add
-            a second glyph to the label. */}
-        <div>
-          <Link href="/legal">Legal</Link> · <Link href="/terms">Terms</Link> ·{" "}
-          <Link href="/privacy">Privacy</Link> · <Link href="/risks">Risks</Link> ·{" "}
-          <Link href="/how-it-works">How it works</Link> ·{" "}
-          <a className="ext" href={DOCS_URL} target="_blank" rel="noreferrer noopener">
-            Docs
-          </a>{" "}
-          ·{" "}
-          <a className="ext" href={APP_URL} target="_blank" rel="noreferrer noopener">
-            app.callhouse.finance
-          </a>{" "}
-          ·{" "}
-          <a className="ext" href={EXPLORER_URL} target="_blank" rel="noreferrer noopener">
-            Explorer
-          </a>
-        </div>
-      </div>
-      <div className="footer-inner" style={{ marginTop: 10 }}>
-        <div>
-          Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited, Overcall or
-          Valorem. Nothing here is financial advice or an offer of securities.
-        </div>
-      </div>
-      <div className="footer-inner" style={{ marginTop: 6 }}>
-        <div>The Callhouse contracts have not been audited.</div>
-      </div>
+      </Container>
     </footer>
   );
 }

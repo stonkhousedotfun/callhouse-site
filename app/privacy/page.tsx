@@ -13,9 +13,15 @@
  *
  *   site     (this repo) grep -rniE 'cookie|localStorage|sessionStorage|analytics|gtag|fetch\(|
  *            <script|posthog|plausible|sentry' . --include=*.ts --include=*.tsx --include=*.mjs
- *            --include=*.css (node_modules and .next excluded) returns one hit, and it is a
- *            comment in app/legal/page.tsx saying there is no cookie banner. package.json has
- *            three dependencies: next, react, react-dom. No form, no wallet, no fetch.
+ *            --include=*.css (node_modules and .next excluded) returns, outside this file, three
+ *            hits: a comment in app/legal/page.tsx saying there is no cookie banner, and two calls in
+ *            app/opengraph-image.tsx that ask Google Fonts for the share card's faces. Those run
+ *            at build time only, when the card is rendered into a static PNG. app/layout.tsx
+ *            loads its three families through next/font/google, which also downloads the faces
+ *            during `next build` and serves them from this origin (/_next/static/media), so a
+ *            visitor's browser never contacts Google. package.json has three runtime
+ *            dependencies: next, react, react-dom. No form, no wallet, no fetch at request time,
+ *            no third-party script.
  *   web/     (in leekzor/callhouse) lib/wagmi.ts: createConfig with `ssr: true` and the default
  *            storage, which @wagmi/core 3.6.5 createStorage.js keys as `wagmi.<name>` in
  *            localStorage. The
@@ -63,8 +69,23 @@
  * be the same lie as inventing a controller. Nothing here is legal advice.
  */
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import {
+  Callout,
+  DOC_LINK,
+  DRAFT_MARKER,
+  Code,
+  DocExternalLink,
+  DocH3,
+  DocIntro,
+  DocLink,
+  DocList,
+  DocSection,
+  LegalDocument,
+  VersionChip,
+  type TocEntry,
+} from "@/app/legal/_components/LegalDocument";
+import { cn } from "@/lib/cn";
 import {
   LEGAL_DOCS_ARE_DRAFT,
   LEGAL_DOCS_VERSION,
@@ -87,11 +108,26 @@ export const metadata: Metadata = {
   alternates: { canonical: "/privacy" },
 };
 
+/** The page's h2s, in render order. The section list and the headings both read from here. */
+const SECTIONS = {
+  process: { id: "what-we-process", title: "What we process" },
+  whereItGoes: { id: "where-it-goes", title: "Where it goes" },
+  doNot: { id: "what-we-do-not-do", title: "What we do not do" },
+  legalBases: { id: "legal-bases", title: "Legal bases" },
+  rights: { id: "your-rights", title: "Your rights" },
+  retention: { id: "retention", title: "Retention" },
+  security: { id: "security", title: "Security" },
+  transfers: { id: "international-transfers", title: "International transfers" },
+  children: { id: "children", title: "Children" },
+  changes: { id: "changes", title: "Changes to this notice" },
+  contact: { id: "contact", title: "Contact" },
+} as const satisfies Record<string, TocEntry>;
+
 /** The marker the page carries at the top and the bottom while LEGAL_DOCS_ARE_DRAFT. */
-function DraftMarker() {
+function DraftMarker({ className }: { className?: string }) {
   if (!LEGAL_DOCS_ARE_DRAFT) return null;
   return (
-    <p className="muted">
+    <p className={cn(DRAFT_MARKER, className)}>
       <strong>Draft — pending review by counsel.</strong> Version {LEGAL_DOCS_VERSION}.
     </p>
   );
@@ -104,245 +140,258 @@ export default function PrivacyPage() {
   const designated = operatorIsDesignated();
 
   return (
-    <div className="prose">
-      <div className="page-head">
-        <div className="eyebrow">Privacy</div>
-        <h1>What this interface sees, and what it keeps</h1>
-      </div>
+    <LegalDocument
+      eyebrow="Privacy"
+      title="What this interface sees, and what it keeps"
+      meta={<VersionChip />}
+      toc={Object.values(SECTIONS)}
+    >
+      <DocIntro>
+        <DraftMarker />
 
-      <DraftMarker />
-
-      {designated ? null : (
-        <div className="notice" data-tone="warn">
-          <strong>No controller has been named.</strong>
-          {OPERATOR_GAP_NOTICE}
-        </div>
-      )}
-
-      <p>
-        This notice covers callhouse.finance (this site) and app.callhouse.finance (the dapp). It is written
-        from the code, not from a template: each statement below names the file it was checked
-        against, and the source is listed in the header comment of this page. It does not cover
-        your wallet, the chain, or any third-party site linked from here.
-      </p>
-
-      <h2>What we process</h2>
-      <h3>On callhouse.finance</h3>
-      <ul className="tight">
-        <li>
-          Nothing beyond the HTTP request itself. This site sets no cookie, writes nothing to your
-          browser&apos;s storage, runs no analytics, has no form and loads no third-party script.
-          Its dependencies are Next.js and React and nothing else.
-        </li>
-        <li>
-          The server that answers the request is a Railway service. Railway records standard HTTP
-          logs for it: your IP address, user agent, the path requested and the time. See{" "}
-          <em>Retention</em> below.
-        </li>
-      </ul>
-      <h3>On app.callhouse.finance</h3>
-      <ul className="tight">
-        <li>
-          <strong>Your wallet address</strong>, once you connect. It is public chain data. The dapp
-          reads your balance, your shares and your claimable USDG straight from the chain, in the
-          browser. Today no request from the dapp carries your address to a server of ours, and
-          there is no account to attach it to.
-        </li>
-        <li>
-          <strong>Browser storage.</strong> The wallet library (wagmi) keeps, in your browser&apos;s
-          localStorage under keys beginning <code>wagmi.</code>, which connector you last used, the
-          addresses and chain it was connected to, and a flag recording that you disconnected. This
-          is what lets the page reconnect on your next visit. Nothing else is stored, no cookie is
-          set by us, and clearing site data removes all of it.
-        </li>
-        <li>
-          <strong>The HTTP request.</strong> Every page and one server route (
-          <code>/api/overcall/listings</code>) is answered by a Railway service, which records the
-          same standard HTTP logs as the site: IP address, user agent, path, time.
-        </li>
-      </ul>
-
-      <h2>Where it goes</h2>
-      <p>Each of these is a separate organisation with its own privacy terms. By name:</p>
-      <ul className="tight">
-        <li>
-          <strong>RPC providers.</strong> The dapp reads the chain from your browser, so your
-          browser talks directly to {RPC_HOSTS[0]} (Robinhood) and, as a fallback,{" "}
-          {RPC_HOSTS[1]} (PublicNode). They see your IP address and every call the page makes,
-          which includes your wallet address as call data once connected. We do not proxy those
-          requests and cannot see them.
-        </li>
-        <li>
-          <strong>The Callhouse indexer.</strong> A history service we run. It stores wallet
-          addresses, share balances and USDG amounts derived from public on-chain events, and
-          nothing that is not already on the chain. The dapp asks it for vault history and
-          listings; it does not ask it for your position today, although the indexer has an
-          endpoint keyed by address and the dapp contains an unused function that would call it.
-          If that is ever wired up, the address will appear in the indexer&apos;s request log
-          (which records method, path, status and timing, not IP) and the host it runs on may
-          keep a connection log holding your IP beside it. This notice changes in the same
-          commit.
-        </li>
-        <li>
-          <strong>
-            <a className="ext" href={VENUE_URL} target="_blank" rel="noreferrer noopener">
-              {VENUE_NAME}
-            </a>
-            .
-          </strong>{" "}
-          The cycle page asks our server for the vault&apos;s open listings, and our server asks
-          overcall.finance. What is forwarded is the vault&apos;s own address, a fixed status and
-          limit and, when asked, the market symbol — all compiled into the route, none taken from
-          your request. Your IP address and your wallet address are not forwarded; Overcall sees
-          a request from our server. The route is read-only.
-        </li>
-        <li>
-          <strong>Railway.</strong> Hosts both domains and the HTTP logs described above.
-        </li>
-        <li>
-          <strong>The explorer.</strong> Links to{" "}
-          <a className="ext" href={EXPLORER_URL} target="_blank" rel="noreferrer noopener">
-            Blockscout
-          </a>{" "}
-          open in a new tab. Following one is a visit to their site under their terms.
-        </li>
-        <li>
-          <strong>Your wallet.</strong> Whatever your wallet extension sends to its own vendor is
-          governed by that vendor, not by this notice.
-        </li>
-      </ul>
-
-      <h2>What we do not do</h2>
-      <ul className="tight">
-        <li>No cookies, on either domain.</li>
-        <li>No analytics, no tracking pixel, no session replay, no third-party script.</li>
-        <li>No accounts, no sign-up, no email list, no know-your-customer process.</li>
-        <li>No selling or sharing of anything for advertising. There is nothing to sell.</li>
-        <li>
-          No server-side record of which wallet visited which page. No dapp URL contains a wallet
-          address, so Railway&apos;s logs hold your IP and the path, not your address.
-        </li>
-        <li>
-          No request that would put an IP address and a wallet address on the same line of a log
-          we control — today. The one endpoint we run that takes an address in its path (the
-          indexer&apos;s account route, above) is not called by the dapp. If that changes, this
-          bullet goes and the indexer bullet says what is logged.
-        </li>
-      </ul>
-
-      <h2>Legal bases</h2>
-      <p>
-        Where the GDPR or the UK GDPR applies, the basis for the processing described above is the
-        legitimate interest in operating and securing the interface (Article 6(1)(f)) — the HTTP
-        logs exist to keep the service running and to investigate abuse. We do not rely on consent
-        because there is nothing to consent to: no cookies, no analytics, no marketing. Wallet
-        addresses and balances are public chain data that the indexer republishes, not data you
-        handed us.
-      </p>
-
-      <h2>Your rights</h2>
-      <p>
-        If you are in the EU, the EEA or the UK, the GDPR and the UK GDPR give you rights over
-        personal data about you. In plain words, you can:
-      </p>
-      <ul className="tight">
-        <li>ask what personal data is held about you and get a copy;</li>
-        <li>ask for it to be corrected if it is wrong;</li>
-        <li>ask for it to be deleted, where there is no reason to keep it;</li>
-        <li>ask for processing to be restricted, or object to it;</li>
-        <li>receive it in a portable form where it was provided by you;</li>
-        <li>complain to your data-protection authority.</li>
-      </ul>
-      <p>
-        Two honest limits. First, a wallet address and its transactions are on a public chain that
-        nobody can edit; the rights above apply to what we hold, and we cannot delete a block.
-        Second, the only personal data we hold ourselves is in Railway&apos;s HTTP logs and the
-        indexer&apos;s address table, so most requests will be answered by describing exactly that.
-      </p>
-      <p>
-        Controller:{" "}
-        {OPERATOR_LEGAL_NAME ? (
-          <>
-            <strong>{OPERATOR_LEGAL_NAME}</strong>
-            {OPERATOR_JURISDICTION ? <> ({OPERATOR_JURISDICTION})</> : null}.
-          </>
-        ) : (
-          <>
-            <strong>{NOT_YET_DESIGNATED}</strong>. No legal person has yet been named as the
-            controller for the processing described here, and whether an EU or UK representative
-            is required has not been decided. This line will name them when that is done.
-          </>
+        {designated ? null : (
+          <Callout tone="warn">
+            <strong>No controller has been named.</strong>
+            {OPERATOR_GAP_NOTICE}
+          </Callout>
         )}
-      </p>
 
-      <h2>Retention</h2>
-      <ul className="tight">
-        <li>
-          HTTP logs are retained by Railway for as long as Railway retains them. We have not
-          configured a retention period of our own, longer or shorter, and we do not export the
-          logs anywhere.
-        </li>
-        <li>
-          The indexer keeps address-level figures for as long as the chain does, because it is a
-          replay of the chain. Dropping and rebuilding it reproduces the same rows.
-        </li>
-        <li>
-          Browser storage written by the wallet library lasts until you clear it. We cannot clear
-          it for you.
-        </li>
-      </ul>
+        <p>
+          This notice covers callhouse.finance (this site) and app.callhouse.finance (the dapp). It is written
+          from the code, not from a template: each statement below names the file it was checked
+          against, and the source is listed in the header comment of this page. It does not cover
+          your wallet, the chain, or any third-party site linked from here.
+        </p>
+      </DocIntro>
 
-      <h2>Security</h2>
-      <p>
-        Both domains are served over TLS. There are no accounts, passwords or stored credentials
-        on either domain, so there is no credential store to breach; the main protection for your
-        data is that we collect almost none of it.
-      </p>
+      <DocSection {...SECTIONS.process}>
+        <DocH3>On callhouse.finance</DocH3>
+        <DocList>
+          <li>
+            Nothing beyond the HTTP request itself. This site sets no cookie, writes nothing to your
+            browser&apos;s storage, runs no analytics, has no form and loads no third-party script.
+            Its dependencies are Next.js and React and nothing else.
+          </li>
+          <li>
+            The server that answers the request is a Railway service. Railway records standard HTTP
+            logs for it: your IP address, user agent, the path requested and the time. See{" "}
+            <em>Retention</em> below.
+          </li>
+        </DocList>
+        <DocH3>On app.callhouse.finance</DocH3>
+        <DocList>
+          <li>
+            <strong>Your wallet address</strong>, once you connect. It is public chain data. The dapp
+            reads your balance, your shares and your claimable USDG straight from the chain, in the
+            browser. Today no request from the dapp carries your address to a server of ours, and
+            there is no account to attach it to.
+          </li>
+          <li>
+            <strong>Browser storage.</strong> The wallet library (wagmi) keeps, in your browser&apos;s
+            localStorage under keys beginning <Code>wagmi.</Code>, which connector you last used, the
+            addresses and chain it was connected to, and a flag recording that you disconnected. This
+            is what lets the page reconnect on your next visit. Nothing else is stored, no cookie is
+            set by us, and clearing site data removes all of it.
+          </li>
+          <li>
+            <strong>The HTTP request.</strong> Every page and one server route (
+            <Code>/api/overcall/listings</Code>) is answered by a Railway service, which records the
+            same standard HTTP logs as the site: IP address, user agent, path, time.
+          </li>
+        </DocList>
+      </DocSection>
 
-      <h2>International transfers</h2>
-      <p>
-        The providers named above — Railway, the RPC providers, {VENUE_NAME} and the explorer —
-        may process data in countries other than yours, including outside the EU and the UK. We
-        have not put transfer safeguards of our own in place beyond what those providers publish;
-        the only data that reaches them is what this page describes.
-      </p>
+      <DocSection {...SECTIONS.whereItGoes}>
+        <p>Each of these is a separate organisation with its own privacy terms. By name:</p>
+        <DocList>
+          <li>
+            <strong>RPC providers.</strong> The dapp reads the chain from your browser, so your
+            browser talks directly to {RPC_HOSTS[0]} (Robinhood) and, as a fallback,{" "}
+            {RPC_HOSTS[1]} (PublicNode). They see your IP address and every call the page makes,
+            which includes your wallet address as call data once connected. We do not proxy those
+            requests and cannot see them.
+          </li>
+          <li>
+            <strong>The Callhouse indexer.</strong> A history service we run. It stores wallet
+            addresses, share balances and USDG amounts derived from public on-chain events, and
+            nothing that is not already on the chain. The dapp asks it for vault history and
+            listings; it does not ask it for your position today, although the indexer has an
+            endpoint keyed by address and the dapp contains an unused function that would call it.
+            If that is ever wired up, the address will appear in the indexer&apos;s request log
+            (which records method, path, status and timing, not IP) and the host it runs on may
+            keep a connection log holding your IP beside it. This notice changes in the same
+            commit.
+          </li>
+          <li>
+            <strong>
+              <DocExternalLink href={VENUE_URL}>
+                {VENUE_NAME}
+              </DocExternalLink>
+              .
+            </strong>{" "}
+            The cycle page asks our server for the vault&apos;s open listings, and our server asks
+            overcall.finance. What is forwarded is the vault&apos;s own address, a fixed status and
+            limit and, when asked, the market symbol — all compiled into the route, none taken from
+            your request. Your IP address and your wallet address are not forwarded; Overcall sees
+            a request from our server. The route is read-only.
+          </li>
+          <li>
+            <strong>Railway.</strong> Hosts both domains and the HTTP logs described above.
+          </li>
+          <li>
+            <strong>The explorer.</strong> Links to{" "}
+            <DocExternalLink href={EXPLORER_URL} srNote={false}>
+              Blockscout
+            </DocExternalLink>{" "}
+            open in a new tab. Following one is a visit to their site under their terms.
+          </li>
+          <li>
+            <strong>Your wallet.</strong> Whatever your wallet extension sends to its own vendor is
+            governed by that vendor, not by this notice.
+          </li>
+        </DocList>
+      </DocSection>
 
-      <h2>Children</h2>
-      <p>
-        Neither domain is directed at anyone under 18, and we do not knowingly process data about
-        anyone under 18. The <Link href="/terms">terms</Link> require users to be adults.
-      </p>
+      <DocSection {...SECTIONS.doNot}>
+        <DocList>
+          <li>No cookies, on either domain.</li>
+          <li>No analytics, no tracking pixel, no session replay, no third-party script.</li>
+          <li>No accounts, no sign-up, no email list, no know-your-customer process.</li>
+          <li>No selling or sharing of anything for advertising. There is nothing to sell.</li>
+          <li>
+            No server-side record of which wallet visited which page. No dapp URL contains a wallet
+            address, so Railway&apos;s logs hold your IP and the path, not your address.
+          </li>
+          <li>
+            No request that would put an IP address and a wallet address on the same line of a log
+            we control — today. The one endpoint we run that takes an address in its path (the
+            indexer&apos;s account route, above) is not called by the dapp. If that changes, this
+            bullet goes and the indexer bullet says what is logged.
+          </li>
+        </DocList>
+      </DocSection>
 
-      <h2>Changes to this notice</h2>
-      <p>
-        This notice is versioned with the Terms of Use. The version in force is{" "}
-        <code>{LEGAL_DOCS_VERSION}</code>. A change is a new version and a new date, published on
-        this page; there is no other notice.
-      </p>
+      <DocSection {...SECTIONS.legalBases}>
+        <p>
+          Where the GDPR or the UK GDPR applies, the basis for the processing described above is the
+          legitimate interest in operating and securing the interface (Article 6(1)(f)) — the HTTP
+          logs exist to keep the service running and to investigate abuse. We do not rely on consent
+          because there is nothing to consent to: no cookies, no analytics, no marketing. Wallet
+          addresses and balances are public chain data that the indexer republishes, not data you
+          handed us.
+        </p>
+      </DocSection>
 
-      <h2>Contact</h2>
-      <p>
-        {PRIVACY_CONTACT_EMAIL ? (
-          <>
-            Requests about personal data go to{" "}
-            <a href={`mailto:${PRIVACY_CONTACT_EMAIL}`}>{PRIVACY_CONTACT_EMAIL}</a>.
-          </>
-        ) : (
-          <>
-            Privacy contact: <strong>{NOT_YET_DESIGNATED}</strong>. There is no address for
-            data-protection requests yet. That gap is on the launch checklist, not an oversight
-            that will be fixed quietly.
-          </>
-        )}{" "}
-        The terms are at <Link href="/terms">/terms</Link>, the perimeter at{" "}
-        <Link href="/legal">/legal</Link>, and the dapp this notice describes is at{" "}
-        <a className="ext" href={appUrl()} target="_blank" rel="noreferrer noopener">
-          app.callhouse.finance
-        </a>
-        .
-      </p>
+      <DocSection {...SECTIONS.rights}>
+        <p>
+          If you are in the EU, the EEA or the UK, the GDPR and the UK GDPR give you rights over
+          personal data about you. In plain words, you can:
+        </p>
+        <DocList>
+          <li>ask what personal data is held about you and get a copy;</li>
+          <li>ask for it to be corrected if it is wrong;</li>
+          <li>ask for it to be deleted, where there is no reason to keep it;</li>
+          <li>ask for processing to be restricted, or object to it;</li>
+          <li>receive it in a portable form where it was provided by you;</li>
+          <li>complain to your data-protection authority.</li>
+        </DocList>
+        <p>
+          Two honest limits. First, a wallet address and its transactions are on a public chain that
+          nobody can edit; the rights above apply to what we hold, and we cannot delete a block.
+          Second, the only personal data we hold ourselves is in Railway&apos;s HTTP logs and the
+          indexer&apos;s address table, so most requests will be answered by describing exactly that.
+        </p>
+        <p>
+          Controller:{" "}
+          {OPERATOR_LEGAL_NAME ? (
+            <>
+              <strong>{OPERATOR_LEGAL_NAME}</strong>
+              {OPERATOR_JURISDICTION ? <> ({OPERATOR_JURISDICTION})</> : null}.
+            </>
+          ) : (
+            <>
+              <strong>{NOT_YET_DESIGNATED}</strong>. No legal person has yet been named as the
+              controller for the processing described here, and whether an EU or UK representative
+              is required has not been decided. This line will name them when that is done.
+            </>
+          )}
+        </p>
+      </DocSection>
 
-      <DraftMarker />
-    </div>
+      <DocSection {...SECTIONS.retention}>
+        <DocList>
+          <li>
+            HTTP logs are retained by Railway for as long as Railway retains them. We have not
+            configured a retention period of our own, longer or shorter, and we do not export the
+            logs anywhere.
+          </li>
+          <li>
+            The indexer keeps address-level figures for as long as the chain does, because it is a
+            replay of the chain. Dropping and rebuilding it reproduces the same rows.
+          </li>
+          <li>
+            Browser storage written by the wallet library lasts until you clear it. We cannot clear
+            it for you.
+          </li>
+        </DocList>
+      </DocSection>
+
+      <DocSection {...SECTIONS.security}>
+        <p>
+          Both domains are served over TLS. There are no accounts, passwords or stored credentials
+          on either domain, so there is no credential store to breach; the main protection for your
+          data is that we collect almost none of it.
+        </p>
+      </DocSection>
+
+      <DocSection {...SECTIONS.transfers}>
+        <p>
+          The providers named above — Railway, the RPC providers, {VENUE_NAME} and the explorer —
+          may process data in countries other than yours, including outside the EU and the UK. We
+          have not put transfer safeguards of our own in place beyond what those providers publish;
+          the only data that reaches them is what this page describes.
+        </p>
+      </DocSection>
+
+      <DocSection {...SECTIONS.children}>
+        <p>
+          Neither domain is directed at anyone under 18, and we do not knowingly process data about
+          anyone under 18. The <DocLink href="/terms">terms</DocLink> require users to be adults.
+        </p>
+      </DocSection>
+
+      <DocSection {...SECTIONS.changes}>
+        <p>
+          This notice is versioned with the Terms of Use. The version in force is{" "}
+          <Code>{LEGAL_DOCS_VERSION}</Code>. A change is a new version and a new date, published on
+          this page; there is no other notice.
+        </p>
+      </DocSection>
+
+      <DocSection {...SECTIONS.contact}>
+        <p>
+          {PRIVACY_CONTACT_EMAIL ? (
+            <>
+              Requests about personal data go to{" "}
+              <a className={DOC_LINK} href={`mailto:${PRIVACY_CONTACT_EMAIL}`}>{PRIVACY_CONTACT_EMAIL}</a>.
+            </>
+          ) : (
+            <>
+              Privacy contact: <strong>{NOT_YET_DESIGNATED}</strong>. There is no address for
+              data-protection requests yet. That gap is on the launch checklist, not an oversight
+              that will be fixed quietly.
+            </>
+          )}{" "}
+          The terms are at <DocLink href="/terms">/terms</DocLink>, the perimeter at{" "}
+          <DocLink href="/legal">/legal</DocLink>, and the dapp this notice describes is at{" "}
+          <DocExternalLink href={appUrl()}>
+            app.callhouse.finance
+          </DocExternalLink>
+          .
+        </p>
+      </DocSection>
+
+      <DraftMarker className="mt-14" />
+    </LegalDocument>
   );
 }

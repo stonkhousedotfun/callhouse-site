@@ -28,8 +28,22 @@
  * sentence that promises an outcome. Nothing here is legal advice.
  */
 import type { Metadata } from "next";
-import Link from "next/link";
 
+import {
+  Callout,
+  DOC_LINK,
+  DRAFT_MARKER,
+  Code,
+  DocExternalLink,
+  DocIntro,
+  DocLink,
+  DocList,
+  DocSection,
+  LegalDocument,
+  VersionChip,
+  type TocEntry,
+} from "@/app/legal/_components/LegalDocument";
+import { cn } from "@/lib/cn";
 import {
   GOVERNING_LAW,
   LEGAL_CONTACT_EMAIL,
@@ -53,11 +67,30 @@ export const metadata: Metadata = {
   alternates: { canonical: "/terms" },
 };
 
+/** The page's h2s, in render order. The section list and the headings both read from here. */
+const SECTIONS = {
+  who: { id: "who-may-use-this", title: "Who may use this" },
+  what: { id: "what-this-interface-is", title: "What this interface is" },
+  acceptableUse: { id: "acceptable-use", title: "Acceptable use" },
+  noAdvice: { id: "no-advice", title: "No advice, no offer" },
+  risks: { id: "risks", title: "Risks" },
+  thirdParty: { id: "third-party-risk", title: "Smart-contract and third-party risk" },
+  noWarranty: { id: "no-warranty", title: "No warranty" },
+  liability: { id: "limitation-of-liability", title: "Limitation of liability" },
+  indemnity: { id: "indemnity", title: "Indemnity" },
+  ip: { id: "intellectual-property", title: "Intellectual property" },
+  ending: { id: "ending", title: "Ending these terms" },
+  changes: { id: "changes", title: "Changes" },
+  general: { id: "general", title: "General" },
+  governingLaw: { id: "governing-law", title: "Governing law" },
+  contact: { id: "contact", title: "Contact" },
+} as const satisfies Record<string, TocEntry>;
+
 /** The marker the page carries at the top and the bottom while LEGAL_DOCS_ARE_DRAFT. */
-function DraftMarker() {
+function DraftMarker({ className }: { className?: string }) {
   if (!LEGAL_DOCS_ARE_DRAFT) return null;
   return (
-    <p className="muted">
+    <p className={cn(DRAFT_MARKER, className)}>
       <strong>Draft — pending review by counsel.</strong> Version {LEGAL_DOCS_VERSION}.
     </p>
   );
@@ -67,258 +100,275 @@ export default function TermsPage() {
   const designated = operatorIsDesignated();
 
   return (
-    <div className="prose">
-      <div className="page-head">
-        <div className="eyebrow">Terms of Use</div>
-        <h1>Terms of Use for this interface</h1>
-      </div>
+    <LegalDocument
+      eyebrow="Terms of Use"
+      title="Terms of Use for this interface"
+      meta={<VersionChip />}
+      toc={Object.values(SECTIONS)}
+    >
+      <DocIntro>
+        <DraftMarker />
 
-      <DraftMarker />
+        {designated ? null : (
+          <Callout tone="warn">
+            <strong>No operator designated yet.</strong>
+            {OPERATOR_GAP_NOTICE}
+          </Callout>
+        )}
 
-      {designated ? null : (
-        <div className="notice" data-tone="warn">
-          <strong>No operator designated yet.</strong>
-          {OPERATOR_GAP_NOTICE}
-        </div>
-      )}
-
-      <p>
-        These terms cover callhouse.finance and app.callhouse.finance (together, &ldquo;the
-        interface&rdquo;). Using either domain is use under these terms. If you do not agree with
-        them, do not use the interface. The smart contracts the interface points at are on a public
-        chain and are not governed by these terms; nothing here can change what they do.
-      </p>
+        <p>
+          These terms cover callhouse.finance and app.callhouse.finance (together, &ldquo;the
+          interface&rdquo;). Using either domain is use under these terms. If you do not agree with
+          them, do not use the interface. The smart contracts the interface points at are on a public
+          chain and are not governed by these terms; nothing here can change what they do.
+        </p>
+      </DocIntro>
 
       {/* Copied verbatim from app/legal/page.tsx. The two phrases in bold are required, literally,
           by scripts/copy-lint.mjs. Do not reword here without rewording there. */}
-      <h2>Who may use this</h2>
-      <div className="notice" data-tone="bad">
-        <strong>This interface is not available to US persons.</strong>
-        The same perimeter applies as to the underlying Stock Tokens. If you are a US person, or you
-        are accessing this from a jurisdiction where these instruments are not offered, do not use
-        this interface.
-      </div>
-      <ul className="tight">
-        <li>
-          Callhouse is <strong>not available to US persons</strong>, and nothing on this site is an
-          offer or solicitation to any person in any jurisdiction where such an offer would be
-          unlawful.
-        </li>
-        <li>
-          Robinhood Chain Stock Tokens are offered outside the United States under their issuer&apos;s
-          own terms and eligibility rules. Those rules govern whether you may hold the collateral at
-          all; this interface does not widen them and cannot waive them.
-        </li>
-        <li>
-          Access is restricted by these terms, not by a technical control. You are responsible for
-          your own eligibility, and for any tax or reporting consequence of using this interface.
-        </li>
-        <li>
-          No know-your-customer process is run here, and none is implied. This is a permissionless
-          smart contract on a public chain.
-        </li>
-      </ul>
-      {/* Terms-only: the age, capacity and sanctions representation is not restated on /legal. */}
-      <p>
-        You must be at least 18 years old and able to enter a binding agreement, and you must not
-        be barred from using the interface by sanctions or by the law of your jurisdiction. By
-        using the interface you represent that both are true.
-      </p>
+      <DocSection {...SECTIONS.who}>
+        <Callout tone="bad">
+          <strong>This interface is not available to US persons.</strong>
+          The same perimeter applies as to the underlying Stock Tokens. If you are a US person, or you
+          are accessing this from a jurisdiction where these instruments are not offered, do not use
+          this interface.
+        </Callout>
+        <DocList>
+          <li>
+            Callhouse is <strong>not available to US persons</strong>, and nothing on this site is an
+            offer or solicitation to any person in any jurisdiction where such an offer would be
+            unlawful.
+          </li>
+          <li>
+            Robinhood Chain Stock Tokens are offered outside the United States under their issuer&apos;s
+            own terms and eligibility rules. Those rules govern whether you may hold the collateral at
+            all; this interface does not widen them and cannot waive them.
+          </li>
+          <li>
+            Access is restricted by these terms, not by a technical control. You are responsible for
+            your own eligibility, and for any tax or reporting consequence of using this interface.
+          </li>
+          <li>
+            No know-your-customer process is run here, and none is implied. This is a permissionless
+            smart contract on a public chain.
+          </li>
+        </DocList>
+        {/* Terms-only: the age, capacity and sanctions representation is not restated on /legal. */}
+        <p>
+          You must be at least 18 years old and able to enter a binding agreement, and you must not
+          be barred from using the interface by sanctions or by the law of your jurisdiction. By
+          using the interface you represent that both are true.
+        </p>
+      </DocSection>
 
-      <h2>What this interface is</h2>
-      <ul className="tight">
-        <li>
-          A front-end to public smart contracts on Robinhood Chain. It builds transactions; your
-          wallet signs them; the chain executes them. The interface never holds a key and never
-          holds a token.
-        </li>
-        <li>
-          There is no custody. {MARKET} Stock Tokens you deposit are held by the vault contract and,
-          during a written week, by the Valorem clearinghouse. The vault has no upgrade path and no
-          function that moves a depositor&apos;s tokens anywhere but back to the depositor or into
-          the written call; the Admin Safe can change policy inside compiled-in caps and cannot
-          move a token.
-        </li>
-        <li>
-          There is no account. Nothing is registered, no password exists, and no know-your-customer
-          check is run. Your wallet address is the only identity the interface sees, and it is
-          public chain data.
-        </li>
-        <li>
-          The same contracts are reachable without this interface, from any tool that can send a
-          transaction. Withdrawing does not depend on this site staying up.
-        </li>
-      </ul>
+      <DocSection {...SECTIONS.what}>
+        <DocList>
+          <li>
+            A front-end to public smart contracts on Robinhood Chain. It builds transactions; your
+            wallet signs them; the chain executes them. The interface never holds a key and never
+            holds a token.
+          </li>
+          <li>
+            There is no custody. {MARKET} Stock Tokens you deposit are held by the vault contract and,
+            during a written week, by the Valorem clearinghouse. The vault has no upgrade path and no
+            function that moves a depositor&apos;s tokens anywhere but back to the depositor or into
+            the written call; the Admin Safe can change policy inside compiled-in caps and cannot
+            move a token.
+          </li>
+          <li>
+            There is no account. Nothing is registered, no password exists, and no know-your-customer
+            check is run. Your wallet address is the only identity the interface sees, and it is
+            public chain data.
+          </li>
+          <li>
+            The same contracts are reachable without this interface, from any tool that can send a
+            transaction. Withdrawing does not depend on this site staying up.
+          </li>
+        </DocList>
+      </DocSection>
 
-      <h2>Acceptable use</h2>
-      <ul className="tight">
-        <li>Use the interface only for lawful purposes, in your jurisdiction and in general.</li>
-        <li>
-          Do not attack or interfere with the interface: no exploiting a weakness to take what is
-          not yours, no disruptive automation, no impersonation. If you find a vulnerability,{" "}
-          <Link href="/legal#reporting">report it</Link> instead of using it.
-        </li>
-        <li>
-          Do not misrepresent this interface as affiliated with Robinhood, {VENUE_NAME}, Valorem
-          or any other third party it names. It is not; <Link href="/legal">the legal page</Link>{" "}
-          says so in full.
-        </li>
-      </ul>
+      <DocSection {...SECTIONS.acceptableUse}>
+        <DocList>
+          <li>Use the interface only for lawful purposes, in your jurisdiction and in general.</li>
+          <li>
+            Do not attack or interfere with the interface: no exploiting a weakness to take what is
+            not yours, no disruptive automation, no impersonation. If you find a vulnerability,{" "}
+            <DocLink href="/legal#reporting">report it</DocLink> instead of using it.
+          </li>
+          <li>
+            Do not misrepresent this interface as affiliated with Robinhood, {VENUE_NAME}, Valorem
+            or any other third party it names. It is not; <DocLink href="/legal">the legal page</DocLink>{" "}
+            says so in full.
+          </li>
+        </DocList>
+      </DocSection>
 
-      <h2>No advice, no offer</h2>
-      <p>
-        Nothing on the interface is investment, legal, tax or accounting advice, and nothing here is
-        an offer of securities or an invitation to buy or sell anything. Published weekly results
-        describe what has already happened and say nothing about what any future week will do. The
-        interface does not know your circumstances and does not try to.
-      </p>
+      <DocSection {...SECTIONS.noAdvice}>
+        <p>
+          Nothing on the interface is investment, legal, tax or accounting advice, and nothing here is
+          an offer of securities or an invitation to buy or sell anything. Published weekly results
+          describe what has already happened and say nothing about what any future week will do. The
+          interface does not know your circumstances and does not try to.
+        </p>
+      </DocSection>
 
-      <h2>Risks</h2>
-      <p>
-        Premium is paid only if a buyer fills the weekly listing; a week with no buyer pays nothing.
-        Assignment can take the collateral at the strike. The collateral is a debt security whose
-        issuer can freeze transfers, and the vault cannot override that. You can lose the collateral
-        you deposit. <Link href="/risks">The risks page</Link> is the full list and is part of these
-        terms by reference; read it before depositing.
-      </p>
+      <DocSection {...SECTIONS.risks}>
+        <p>
+          Premium is paid only if a buyer fills the weekly listing; a week with no buyer pays nothing.
+          Assignment can take the collateral at the strike. The collateral is a debt security whose
+          issuer can freeze transfers, and the vault cannot override that. You can lose the collateral
+          you deposit. <DocLink href="/risks">The risks page</DocLink> is the full list and is part of these
+          terms by reference; read it before depositing.
+        </p>
+      </DocSection>
 
-      <h2>Smart-contract and third-party risk</h2>
-      <ul className="tight">
-        <li>
-          The Callhouse contracts have not been audited. They are published under the MIT licence,
-          as-is, and there is no upgrade path: a bug means a new vault and a migration, not a patch.
-        </li>
-        <li>
-          <a className="ext" href={VENUE_URL} target="_blank" rel="noreferrer noopener">
-            {VENUE_NAME}
-          </a>
-          , Valorem Clear, Seaport, the {MARKET} Stock Token, USDG and the RPC providers are third
-          parties. None of them is operated by, or answerable to, the people who publish this
-          interface. Their contracts can be paused or upgraded by their own admin keys. The Stock
-          Token issuer can freeze transfers, which can stop this vault writing, settling and paying
-          out tokens; it can also pause its oracle, which stops the vault writing and listing new
-          calls but not settling, because settlement does not read the oracle. When a dependency
-          the vault needs stops, that part of the vault stops with it.
-        </li>
-        <li>
-          The weekly cycle is set by a third-party registry key. A hostile or mistaken cycle is
-          bounded by the vault&apos;s compiled-in checks to a skipped week, and no better than that.
-        </li>
-      </ul>
+      <DocSection {...SECTIONS.thirdParty}>
+        <DocList>
+          <li>
+            The Callhouse contracts have not been audited. They are published under the MIT licence,
+            as-is, and there is no upgrade path: a bug means a new vault and a migration, not a patch.
+          </li>
+          <li>
+            <DocExternalLink href={VENUE_URL}>
+              {VENUE_NAME}
+            </DocExternalLink>
+            , Valorem Clear, Seaport, the {MARKET} Stock Token, USDG and the RPC providers are third
+            parties. None of them is operated by, or answerable to, the people who publish this
+            interface. Their contracts can be paused or upgraded by their own admin keys. The Stock
+            Token issuer can freeze transfers, which can stop this vault writing, settling and paying
+            out tokens; it can also pause its oracle, which stops the vault writing and listing new
+            calls but not settling, because settlement does not read the oracle. When a dependency
+            the vault needs stops, that part of the vault stops with it.
+          </li>
+          <li>
+            The weekly cycle is set by a third-party registry key. A hostile or mistaken cycle is
+            bounded by the vault&apos;s compiled-in checks to a skipped week, and no better than that.
+          </li>
+        </DocList>
+      </DocSection>
 
-      <h2>No warranty</h2>
-      <p>
-        The interface and the contracts it points at are provided as-is and as-available, with no
-        warranty of any kind, express or implied, including of merchantability, fitness for a
-        purpose, accuracy, or uninterrupted operation. Figures shown on app.callhouse.finance are read
-        from the chain or from an indexer and may lag or be wrong; the chain is the record, not the
-        page.
-      </p>
+      <DocSection {...SECTIONS.noWarranty}>
+        <p>
+          The interface and the contracts it points at are provided as-is and as-available, with no
+          warranty of any kind, express or implied, including of merchantability, fitness for a
+          purpose, accuracy, or uninterrupted operation. Figures shown on app.callhouse.finance are read
+          from the chain or from an indexer and may lag or be wrong; the chain is the record, not the
+          page.
+        </p>
+      </DocSection>
 
-      <h2>Limitation of liability</h2>
-      <p>
-        To the extent the applicable law allows, the people who publish this interface are not
-        liable for any loss arising from its use or from the contracts it points at, including lost
-        collateral, lost premium, assignment, a frozen token, a failed third party, an error on the
-        page, or downtime. Where that exclusion is not permitted, liability is limited to the
-        smallest amount the law allows. Nothing here excludes liability that cannot lawfully be
-        excluded.
-      </p>
+      <DocSection {...SECTIONS.liability}>
+        <p>
+          To the extent the applicable law allows, the people who publish this interface are not
+          liable for any loss arising from its use or from the contracts it points at, including lost
+          collateral, lost premium, assignment, a frozen token, a failed third party, an error on the
+          page, or downtime. Where that exclusion is not permitted, liability is limited to the
+          smallest amount the law allows. Nothing here excludes liability that cannot lawfully be
+          excluded.
+        </p>
+      </DocSection>
 
-      <h2>Indemnity</h2>
-      <p>
-        You indemnify the people who publish this interface against any claim, loss or expense
-        brought by a third party that arises from your breach of these terms or your unlawful use
-        of the interface, and you hold them harmless against it.
-      </p>
+      <DocSection {...SECTIONS.indemnity}>
+        <p>
+          You indemnify the people who publish this interface against any claim, loss or expense
+          brought by a third party that arises from your breach of these terms or your unlawful use
+          of the interface, and you hold them harmless against it.
+        </p>
+      </DocSection>
 
-      <h2>Intellectual property</h2>
-      <p>
-        The contracts the interface points at are published under the MIT licence. The text and
-        design of this site are not open-licensed: you may read them and link to them, and no
-        other right is granted. Nothing here gives you any right to the Callhouse name or mark, or
-        to the names and marks of the third parties this site names, which belong to their owners.
-      </p>
+      <DocSection {...SECTIONS.ip}>
+        <p>
+          The contracts the interface points at are published under the MIT licence. The text and
+          design of this site are not open-licensed: you may read them and link to them, and no
+          other right is granted. Nothing here gives you any right to the Callhouse name or mark, or
+          to the names and marks of the third parties this site names, which belong to their owners.
+        </p>
+      </DocSection>
 
-      <h2>Ending these terms</h2>
-      <p>
-        You stop being bound by stopping using the interface. The interface may be suspended,
-        changed or withdrawn at any time, without notice. The contracts it points at are on a
-        public chain and do not depend on this site: withdrawing from the vault remains possible
-        without it, from any tool that can send a transaction.
-      </p>
+      <DocSection {...SECTIONS.ending}>
+        <p>
+          You stop being bound by stopping using the interface. The interface may be suspended,
+          changed or withdrawn at any time, without notice. The contracts it points at are on a
+          public chain and do not depend on this site: withdrawing from the vault remains possible
+          without it, from any tool that can send a transaction.
+        </p>
+      </DocSection>
 
-      <h2>Changes</h2>
-      <p>
-        These terms are versioned. The version in force is <code>{LEGAL_DOCS_VERSION}</code>. A
-        change is a new version and a new date; there is no other notice. Continuing to use the
-        interface after a change is use under the new version.
-      </p>
+      <DocSection {...SECTIONS.changes}>
+        <p>
+          These terms are versioned. The version in force is <Code>{LEGAL_DOCS_VERSION}</Code>. A
+          change is a new version and a new date; there is no other notice. Continuing to use the
+          interface after a change is use under the new version.
+        </p>
+      </DocSection>
 
-      <h2>General</h2>
-      <ul className="tight">
-        <li>If a clause of these terms is unenforceable, the rest still apply.</li>
-        <li>A failure to enforce a clause is not a waiver of it.</li>
-        <li>
-          These terms, the <Link href="/privacy">privacy notice</Link> and the{" "}
-          <Link href="/risks">risks page</Link> are the whole agreement between you and the people
-          who publish this interface about the interface.
-        </li>
-        <li>
-          You may not assign these terms. The operator may assign them to a successor operator of
-          the interface, who will be named on this page.
-        </li>
-        <li>There are no third-party beneficiaries to these terms.</li>
-      </ul>
+      <DocSection {...SECTIONS.general}>
+        <DocList>
+          <li>If a clause of these terms is unenforceable, the rest still apply.</li>
+          <li>A failure to enforce a clause is not a waiver of it.</li>
+          <li>
+            These terms, the <DocLink href="/privacy">privacy notice</DocLink> and the{" "}
+            <DocLink href="/risks">risks page</DocLink> are the whole agreement between you and the people
+            who publish this interface about the interface.
+          </li>
+          <li>
+            You may not assign these terms. The operator may assign them to a successor operator of
+            the interface, who will be named on this page.
+          </li>
+          <li>There are no third-party beneficiaries to these terms.</li>
+        </DocList>
+      </DocSection>
 
-      <h2>Governing law</h2>
-      <p>
-        {GOVERNING_LAW ? (
-          <>These terms are governed by {GOVERNING_LAW}.</>
-        ) : (
-          <>
-            Governing law: <strong>{NOT_YET_DESIGNATED}</strong>. No law and no forum have been
-            chosen for these terms. That is a decision counsel has not yet made, and this page will
-            say which when it has.
-          </>
-        )}
-      </p>
+      <DocSection {...SECTIONS.governingLaw}>
+        <p>
+          {GOVERNING_LAW ? (
+            <>These terms are governed by {GOVERNING_LAW}.</>
+          ) : (
+            <>
+              Governing law: <strong>{NOT_YET_DESIGNATED}</strong>. No law and no forum have been
+              chosen for these terms. That is a decision counsel has not yet made, and this page will
+              say which when it has.
+            </>
+          )}
+        </p>
+      </DocSection>
 
-      <h2>Contact</h2>
-      <p>
-        {OPERATOR_LEGAL_NAME ? (
-          <>
-            These terms are published by {OPERATOR_LEGAL_NAME}
-            {OPERATOR_JURISDICTION ? <> ({OPERATOR_JURISDICTION})</> : null}.{" "}
-          </>
-        ) : (
-          <>
-            Operating entity: <strong>{NOT_YET_DESIGNATED}</strong>.{" "}
-          </>
-        )}
-        {LEGAL_CONTACT_EMAIL ? (
-          <>
-            Notices about these terms go to{" "}
-            <a href={`mailto:${LEGAL_CONTACT_EMAIL}`}>{LEGAL_CONTACT_EMAIL}</a>.
-          </>
-        ) : (
-          <>
-            Legal contact: <strong>{NOT_YET_DESIGNATED}</strong>. There is no address for notices
-            about these terms yet.
-          </>
-        )}
-      </p>
-      <p>
-        The privacy notice is at <Link href="/privacy">/privacy</Link>, the perimeter and the legal
-        form of the collateral are at <Link href="/legal">/legal</Link>, and {SHARE_TICKER} itself
-        lives at{" "}
-        <a className="ext" href={appUrl("/vault/nvda")} target="_blank" rel="noreferrer noopener">
-          app.callhouse.finance
-        </a>
-        .
-      </p>
+      <DocSection {...SECTIONS.contact}>
+        <p>
+          {OPERATOR_LEGAL_NAME ? (
+            <>
+              These terms are published by {OPERATOR_LEGAL_NAME}
+              {OPERATOR_JURISDICTION ? <> ({OPERATOR_JURISDICTION})</> : null}.{" "}
+            </>
+          ) : (
+            <>
+              Operating entity: <strong>{NOT_YET_DESIGNATED}</strong>.{" "}
+            </>
+          )}
+          {LEGAL_CONTACT_EMAIL ? (
+            <>
+              Notices about these terms go to{" "}
+              <a className={DOC_LINK} href={`mailto:${LEGAL_CONTACT_EMAIL}`}>{LEGAL_CONTACT_EMAIL}</a>.
+            </>
+          ) : (
+            <>
+              Legal contact: <strong>{NOT_YET_DESIGNATED}</strong>. There is no address for notices
+              about these terms yet.
+            </>
+          )}
+        </p>
+        <p>
+          The privacy notice is at <DocLink href="/privacy">/privacy</DocLink>, the perimeter and the legal
+          form of the collateral are at <DocLink href="/legal">/legal</DocLink>, and {SHARE_TICKER} itself
+          lives at{" "}
+          <DocExternalLink href={appUrl("/vault/nvda")}>
+            app.callhouse.finance
+          </DocExternalLink>
+          .
+        </p>
+      </DocSection>
 
-      <DraftMarker />
-    </div>
+      <DraftMarker className="mt-14" />
+    </LegalDocument>
   );
 }

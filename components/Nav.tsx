@@ -1,88 +1,39 @@
-"use client";
-
 /**
- * Marketing chrome for callhouse.finance.
+ * Top bar for callhouse.finance (the mockup's .topbar). Server component; the only client code is
+ * the link list in components/NavLinks.tsx, which needs usePathname for the active link.
  *
- * The markup is deliberately the same as leekzor/callhouse: `web/components/Nav.tsx` — .topbar /
- * .topbar-inner / .brand / .nav, the same exact-match active test — because the two domains sit one
- * click apart and a visitor who crosses from here to app.callhouse.finance should not feel the seam.
- * Only the link list and the right-hand control differ.
+ * DOM order is the reader's journey: brand, how the week runs, what can go wrong, the legal
+ * position, the docs, and only then "Open the app". On wide screens that is also the visual
+ * order. Below 960px the links drop to their own full-width row under the brand and the button,
+ * so the button stays reachable without a menu and every link stays one tap away at 390px.
  *
- * "use client" buys exactly one thing: usePathname, for the active link. That is the whole client
- * island on this domain. DELIBERATELY ABSENT: the dapp's <ConnectButton /> and everything behind
- * it. There is no wallet, no wagmi, no chain read anywhere in this package, so the right-hand slot
- * that holds a connect button on the app holds a link to the app instead.
+ * "Open the app" is the one control in the chrome that leaves this domain. It is a plain new-tab
+ * <a> (Button detects the absolute URL), not next/link: app.callhouse.finance is a different
+ * origin and a different Next application, so there is nothing to prefetch.
  *
- * The link order is the reader's journey and it is not the app's: land, understand the week, read
- * what can go wrong, read the legal position, and only then leave for the app.
+ * DELIBERATELY ABSENT: any wallet or connect control. This package has no wallet code.
  */
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-
-import { APP_URL, DOCS_URL } from "@/lib/site";
-
-const LINKS = [
-  { href: "/", label: "Home" },
-  { href: "/how-it-works", label: "How it works" },
-  { href: "/risks", label: "Risks" },
-  { href: "/legal", label: "Legal" },
-];
+import { NavLinks } from "@/components/NavLinks";
+import { Brand } from "@/components/ui/Brand";
+import { Button } from "@/components/ui/Button";
+import { Container } from "@/components/ui/Container";
+import { APP_URL } from "@/lib/site";
 
 export function Nav() {
-  const pathname = usePathname();
   return (
-    <header className="topbar">
-      <div className="topbar-inner">
-        {/* On this domain "/" is the landing page, so the brand and the first nav link are the
-            same destination. That is correct: the wordmark is the way back from /risks. */}
-        <Link href="/" className="brand">
-          call<span>house</span>
-        </Link>
-        <nav className="nav">
-          {LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              // Exact match only. A prefix test would light "/" up on every page, since every
-              // pathname starts with it.
-              data-active={pathname === link.href}
-            >
-              {link.label}
-            </Link>
-          ))}
-          {/* The docs are another origin (GitBook), so a plain anchor; `.ext` draws the ↗. */}
-          <a className="ext" href={DOCS_URL} target="_blank" rel="noreferrer noopener">
-            Docs
-          </a>
-        </nav>
-        {/*
-          The one control that leaves this domain, and the only call to action in the chrome.
-
-          It is a plain <a>, not next/link: app.callhouse.finance is a different origin and a
-          different Next application, so there is no route for the router to prefetch and no
-          client transition to make. next/link here would be a heavier anchor that does nothing
-          extra. target/rel are set for the same reason — the reader who came to read /risks
-          should still have this page when they come back from the app.
-
-          It is LAST because the order of this bar is the argument: what this is, how the week
-          runs, what can go wrong, the legal position, and only then "go and do it". It also
-          sits where the dapp puts its connect button, so the two topbars have the same shape.
-
-          The arrow is written into the label rather than left to `.ext[target]::after`, which
-          globals.css suppresses on a .btn on purpose. This is the one button on the site that
-          changes hostname, and it says so.
-        */}
-        <a
-          className="btn"
-          data-variant="primary"
-          data-size="sm"
-          href={APP_URL}
-          target="_blank"
-          rel="noreferrer noopener"
+    <header>
+      <Container className="flex flex-wrap items-center gap-x-7 gap-y-2 pb-3 pt-4 lg:py-[22px]">
+        <Brand className="order-1" />
+        <nav
+          aria-label="Site"
+          className="order-3 w-full overflow-x-auto [scrollbar-width:none] max-[22rem]:[mask-image:linear-gradient(to_right,#000_85%,transparent)] lg:order-2 lg:mr-auto lg:w-auto lg:overflow-visible"
         >
-          Open the app ↗
-        </a>
-      </div>
+          <NavLinks />
+        </nav>
+        <Button href={APP_URL} size="sm" className="order-2 ml-auto lg:order-3 lg:ml-0">
+          Open the app
+        </Button>
+      </Container>
     </header>
   );
 }

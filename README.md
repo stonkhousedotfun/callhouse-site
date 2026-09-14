@@ -1,8 +1,8 @@
 # callhouse-site
 
 `callhouse.finance` — the public landing. Static marketing pages for a product whose dapp lives on a
-different domain, in a different repo. Next.js 16 App Router, React 19, one stylesheet, no
-framework, zero wallet code.
+different domain, in a different repo. Next.js 16 App Router, React 19, Tailwind CSS v4, zero
+wallet code.
 
 This repo was split out of the Callhouse monorepo (it was `site/` there) on 2026-09-13. It builds,
 lints, typechecks and deploys on its own: its own `package.json`, its own `pnpm-lock.yaml`, its own
@@ -29,25 +29,77 @@ References in this repo's code comments of the form ``leekzor/callhouse: `web/ap
 name a file in the app repo. Nothing here imports from, builds against or deploys with either
 sibling; the links are for humans keeping paired files in step.
 
-## Design tokens are duplicated in leekzor/callhouse — change them in PAIRED COMMITS
+## Design: Daylight, on Tailwind CSS v4
 
-> **The `:root` token block in `app/globals.css` is duplicated in leekzor/callhouse
-> `web/app/globals.css`** — the same palette, the same radius, the same gap, the same two font
-> stacks, byte for byte. In the monorepo this was enforced as "change both in the same commit".
-> The two files now live in two repos, so no single commit can hold both sides.
->
-> **Rule:** a token change is a pair of commits, one in each repo, with the same message and each
-> naming the other's commit. Deploy both or neither. Nothing here should invent a palette value that
-> does not exist in the app's `web/app/globals.css`.
+The site's look is **Daylight**: a light, green-tinted ground with an emerald accent, and a matching
+dark palette. Both follow the visitor's `prefers-color-scheme`; there is no theme toggle. Styling
+is Tailwind CSS v4 utility classes in the components, driven by a small set of design tokens.
+
+### Where the tokens and the design live
+
+| What | Where |
+|---|---|
+| The tokens, as plain CSS variables: the light palette on `:root`, the dark palette under `@media (prefers-color-scheme: dark)` | `app/globals.css` |
+| The mapping from tokens to utilities (`bg-surface`, `text-ink-2`, `border-line`, `rounded-lg`, `shadow-lift`, `font-display`) | the `@theme inline` block in `app/globals.css` |
+| Breakpoints: `sm` is 560px and `lg` is 960px (redefined to match the design); `md`, `xl`, `2xl` keep Tailwind's defaults | the `@theme` block in `app/globals.css` |
+| Fonts: Schibsted Grotesk (display), Figtree (body), Geist Mono (every number, tabular) | `next/font/google` in `app/layout.tsx`, exposed as CSS variables on `<html>` |
+| Primitives: `Button`, `Chip`, `Container` / `Section`, `SectionHead`, `Panel`, `Notice`, `Figure` / `Num`, `Eyebrow`, `ExternalLink`, `Brand` | `components/ui/` (barrel: `@/components/ui`) |
+| The Tailwind build | `postcss.config.mjs`, which loads `@tailwindcss/postcss` and nothing else. There is no `tailwind.config` file; v4 reads its configuration from the CSS |
+
+The tokens:
+
+- **Colour:** `ground`, `surface`, `surface-2`, `ink`, `ink-2`, `ink-3`, `line`, `line-2`, `accent`,
+  `accent-hover`, `accent-ink` (text on an accent fill), `accent-soft`, `accent-text` (accent-coloured
+  type), `usdg`, `usdg-soft`, `warn`, `warn-soft`, `danger`. Every one has a light and a dark value.
+- **Elevation:** `--elevation-lift` and `--elevation-soft`, used as `shadow-lift` and `shadow-soft`.
+- **Radius:** `--r-lg` 22px (cards, panels), `--r-md` 14px (tiles, tabs), `--r-sm` 9px, used as
+  `rounded-lg`, `rounded-md` and `rounded-sm`. These replace Tailwind's defaults for those names.
+
+The raw shadow and radius variables are named `--elevation-*` and `--r-*`, not `--shadow-*` and
+`--radius-*`, because `@theme inline` would otherwise emit a variable that refers to itself.
+
+Rules that keep the tokens honest:
+
+- **The default Tailwind palette is switched off** (`--color-*: initial`). `bg-white` or
+  `text-gray-500` compiles to nothing. A new colour is a new token, added to both palettes in
+  `app/globals.css`, before any component uses it.
+- **No `dark:` variants for colour.** The tokens change value under `prefers-color-scheme`, so
+  `bg-surface` is already right in both themes.
+- **`app/globals.css` holds tokens, the mapping, a small base layer and two utilities (`num`, `link`),
+  and nothing else.** Do not grow it back into a class library; styling belongs in the components.
+- **Three files carry token values as literals**, because they cannot read CSS variables:
+  `app/icon.svg` (the mark: accent and accent-ink), `app/opengraph-image.tsx` (the share card, light
+  palette) and the `themeColor` pair in `app/layout.tsx` (`--ground`, light and dark). Change them
+  in the same commit as the token.
+- **The build needs to reach Google Fonts.** `next/font` downloads the three faces during
+  `next build` and serves them from this origin, so visitors never contact Google, but a Railway or
+  CI build with no outbound access fails. The Open Graph card also asks Google Fonts for its two
+  faces; that request is best effort and falls back to the face `next/og` bundles.
+
+### The app will adopt the same tokens (the old byte-identical rule is retired)
+
+Until this redesign, the rule here was that the `:root` token block in `app/globals.css` was
+byte-identical to leekzor/callhouse `web/app/globals.css`: the same dark palette, radius, gap and font
+stacks, changed only in paired commits. **That rule no longer holds, and nobody should restore the
+old dark palette to satisfy it.** This site moved to Daylight first. The app
+(leekzor/callhouse `web/`) keeps its old dark palette until its own rewrite adopts Daylight, so for
+that window the two domains look different on purpose. That is a known gap, not drift to be fixed
+by editing this repo.
+
+When the app's rewrite lands, it takes its token names and values, both palettes, from this repo's
+`app/globals.css`, and the same `themeColor` pair. From then on the pairing rule is back, in its new
+form: **a token change is a pair of commits, one in each repo, with the same message and each naming
+the other's commit. Deploy both or neither.** Neither side invents a token the other does not have.
 
 Why duplicated rather than shared: this site must build and deploy with no dependency on the app.
 The two domains sit one click apart, and a drifted palette reads as a phishing page when a user
 crosses the seam.
 
-The same pairing rule applies to the other files that mirror the app, each named in its header
-comment: `app/legal/page.tsx` (disclosure copy), `app/layout.tsx` and `app/robots.ts` (the
-index/noindex decision), `components/Nav.tsx` and `components/Footer.tsx` (chrome and standing
-disclaimers), and `scripts/copy-lint.mjs` (the forbidden-copy table).
+The pairing rule already applies, unchanged, to the other files that mirror the app, each named in
+its header comment: `app/legal/page.tsx` (disclosure copy), `app/layout.tsx` and `app/robots.ts`
+(the index/noindex decision), `components/Nav.tsx` and `components/Footer.tsx` (the standing
+disclaimers; their look follows Daylight here and follows the app's own design there until its
+rewrite), and `scripts/copy-lint.mjs` (the forbidden-copy table).
 
 ## What this is not
 
@@ -56,7 +108,8 @@ disclaimers), and `scripts/copy-lint.mjs` (the forbidden-copy table).
 - **No chain reads.** No RPC URL, no contract call, no indexer fetch, no `fetch()` at all.
 - **No live data.** Not "live data we cached" — none. The vault is not deployed, so every live
   figure would render as a zero, and a zero next to the word "realized" reads as a result rather
-  than as an absence. Every number here is a fixed policy parameter or an address.
+  than as an absence. Every number here is a fixed policy parameter, an address, or a worked
+  example from the fork rehearsal that is labelled as one.
 - **Not a second copy of the dapp.** Every call to action is an absolute external link to
   `https://app.callhouse.finance/...`, built with `appUrl()` from `lib/site.ts`. A relative
   `href="/vault/nvda"` on this domain is a 404, not a route into the app.
@@ -131,10 +184,22 @@ No exclamation marks, no marketing adjectives. The register is the app's `web/ap
 
 ## Display rules
 
-- Dark theme only (`color-scheme: dark`). Numbers are monospace and tabular. Every panel is a
-  flat bordered box.
-- **Must work at 400px wide**, with no horizontal scroll. Addresses and order hashes are single
-  unbreakable tokens; let them wrap rather than let one push the page sideways.
+- **Both themes, from `prefers-color-scheme`.** Check every change in light and in dark.
+- **Every number is Geist Mono with tabular figures**: the `num` utility, or `<Num>` / `<Figure>`
+  from `components/ui`.
+- **Panels are flat**: a surface with a 1px `line` border. Only the hero's week card and the fee
+  slip / key panels are lifted with `shadow-lift` (`<Panel lift>`). A page where everything floats
+  has no emphasis left.
+- **Worked example figures are labelled as examples** where they appear (the week card, the fee
+  slip). They come from the fork rehearsal, not from a live vault.
+- **Must work at 390px wide**, with no horizontal scroll and at least a 16px side gutter. `<main>`
+  has no padding of its own, so every page wraps its content in `<Container>` or `<Section>`.
+  Addresses and order hashes are single unbreakable tokens; let them wrap rather than let one push
+  the page sideways.
+- **Keep the focus ring and respect reduced motion.** Both are global in `app/globals.css`; do not
+  remove the `:focus-visible` outline, and do not add motion that ignores
+  `prefers-reduced-motion`.
+- **Nothing that imitates Robinhood**: no feather, no Robinhood neon green. The accent is emerald.
 - British-ish spellings already in use: "tokenised", "labelled". Match the file you are in.
 
 ## Addresses and constants are duplicated too
