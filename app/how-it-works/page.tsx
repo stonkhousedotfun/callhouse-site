@@ -635,9 +635,7 @@ export default function HowItWorksPage() {
             <Chip tone="accent" dot wrap>
               {STATUS.phase} · {CHAIN_NAME}
             </Chip>
-            <Chip tone="warn" wrap>
-              {STATUS.audit}
-            </Chip>
+
           </div>
           <h1 className="mt-5 text-[length:clamp(38px,5vw,60px)] font-extrabold leading-[1.03] tracking-[-0.035em]">
             One week. <span className="text-accent">Your stock.</span>
@@ -653,9 +651,7 @@ export default function HowItWorksPage() {
             </Button>
           </div>
           <Notice variant="plain" className="mt-[26px]">
-            Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. 1-lot accounts are
-            live on {CHAIN_NAME}. {STATUS.auditLine} Every figure here is a policy setting or a labelled example, not a
-            quote.
+            Premium is paid only if a buyer fills. Assignment can take the collateral at the strike.
           </Notice>
         </div>
 

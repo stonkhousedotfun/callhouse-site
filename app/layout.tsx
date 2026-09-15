@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     template: "%s — Stonkhouse",
   },
   description:
-    "Let your stonks work for you. Put NVDA in. Each week someone can pay you for the chance to buy it at a set price. Beta, pending audit.",
+    "Let your stonks work for you. Put NVDA in. Each week someone can pay you for the chance to buy it at a set price.",
   // Per-route canonicals override this; the default is the landing page.
   alternates: { canonical: "/" },
   openGraph: {
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     // share card on any route that sets its own title.
     title: "Stonkhouse — let your stonks work for you",
     description:
-      "Let your stonks work for you. Put NVDA in. Each week someone can pay you for the chance to buy it at a set price. Beta, pending audit.",
+      "Let your stonks work for you. Put NVDA in. Each week someone can pay you for the chance to buy it at a set price.",
     url: SITE_URL,
     siteName: "Stonkhouse",
     type: "website",

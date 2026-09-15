@@ -12,13 +12,12 @@ import Link from "next/link";
 
 import { FeeSlip } from "@/app/_components/FeeSlip";
 import { StatusCard } from "@/app/_components/StatusCard";
-import { Button, CheckCircleIcon, Chip, ClockNote, Container, Notice, Section, SectionHead } from "@/components/ui";
-import { WEEK } from "@/lib/clock";
+import { Button, CheckCircleIcon, Chip, Container, Notice, Section, SectionHead } from "@/components/ui";
 import { CHAIN_NAME, MARKET, OPEN_APP, STATUS } from "@/lib/site";
 
 const TITLE = "Stonkhouse — let your stonks work for you";
 
-const DESCRIPTION = `Put your ${MARKET} to work. Each week someone can pay you for the chance to buy it at a set price. If they don't, you keep the stock. Beta, pending audit.`;
+const DESCRIPTION = `Put your ${MARKET} to work. Each week someone can pay you for the chance to buy it at a set price. If they don't, you keep the stock.`;
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -37,7 +36,7 @@ const STEPS: readonly { title: string; when: string; body: string; key?: boolean
   {
     title: "Put your stock in",
     when: "your account",
-    body: `${MARKET} sits there until you say how much you are willing to sell this week.`,
+    body: `Say how much ${MARKET} is for sale.`,
   },
   {
     title: "Choose how much is for sale",
@@ -59,26 +58,16 @@ const STEPS: readonly { title: string; when: string; body: string; key?: boolean
   {
     title: "You keep what you earned",
     when: "whenever you like",
-    body: "The payment for the week, minus our fee. No deadline.",
+    body: "Minus our 5%.",
   },
 ];
 
 const ROADMAP: readonly { when: string; title: string; body: string; current?: boolean }[] = [
   {
     when: "Now",
-    title: "Beta, NVDA",
+    title: MARKET,
     current: true,
-    body: `${MARKET} on ${CHAIN_NAME}. Up to 20 per person.`,
-  },
-  {
-    when: "Next",
-    title: "External audit",
-    body: "A report on this site. The cap stays until it lands.",
-  },
-  {
-    when: "Then",
-    title: "Four published weeks",
-    body: "Zeros included, on the public record, before the cap moves.",
+    body: CHAIN_NAME,
   },
   {
     when: "Later",
@@ -99,9 +88,6 @@ export default function HomePage() {
           <div className="flex flex-wrap gap-2">
             <Chip tone="accent" dot wrap>
               {STATUS.phase} · {CHAIN_NAME}
-            </Chip>
-            <Chip tone="warn" wrap>
-              {STATUS.audit}
             </Chip>
           </div>
           <h1
@@ -125,7 +111,7 @@ export default function HomePage() {
 
           <Notice variant="plain" className="mt-[26px]">
             Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. Stock Tokens are
-            debt securities, not Nvidia shares. The contracts are unaudited; an external audit is pending.
+            debt securities, not Nvidia shares.
           </Notice>
         </div>
 
@@ -133,12 +119,7 @@ export default function HomePage() {
       </Container>
 
       <Section id="how" labelledBy="how-h">
-        <SectionHead
-          id="how-h"
-          eyebrow="How a week runs"
-          title="Five steps. Same every week."
-          intro={`The week follows the US market. It wraps up on ${WEEK.close}.`}
-        />
+        <SectionHead id="how-h" eyebrow="How a week runs" title="Five steps. Same every week." />
 
         <ol className="grid grid-cols-1 gap-[26px] lg:grid-cols-5 lg:gap-0">
           {STEPS.map((step, i) => {
@@ -189,8 +170,6 @@ export default function HomePage() {
           })}
         </ol>
 
-        <ClockNote className="mt-10" />
-
         <p className="mt-6">
           <Link href="/how-it-works" className="link font-semibold text-accent-text">
             The full week
@@ -204,7 +183,7 @@ export default function HomePage() {
           id="benefits-h"
           eyebrow="Why Stonkhouse"
           title="Your stock. Your week."
-          intro="The slip is one example week, labelled as one, not a quote."
+
         />
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -238,9 +217,8 @@ export default function HomePage() {
           id="roadmap-h"
           eyebrow="Roadmap"
           title="Where Stonkhouse is going."
-          intro="Product steps, not a return."
         />
-        <ol className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+        <ol className="grid grid-cols-1 gap-4 lg:grid-cols-2">
           {ROADMAP.map((step) => (
             <li
               key={step.title}

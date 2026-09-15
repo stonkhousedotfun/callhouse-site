@@ -43,8 +43,8 @@ export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https
 /** X (Twitter). Override with NEXT_PUBLIC_X_URL if the handle is not @stonkhouse. */
 export const X_URL = normalizeBase(process.env.NEXT_PUBLIC_X_URL ?? "https://x.com/stonkhouse");
 
-/** GitHub org. Repos may be private; the org page is still the public door. */
-export const GITHUB_URL = normalizeBase(process.env.NEXT_PUBLIC_GITHUB_URL ?? "https://github.com/leekzor");
+/** App and keeper repo. */
+export const GITHUB_URL = normalizeBase(process.env.NEXT_PUBLIC_GITHUB_URL ?? "https://github.com/leekzor/callhouse");
 
 /** The dapp. Every CTA on this site points into it. */
 export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.stonkhouse.fun");
