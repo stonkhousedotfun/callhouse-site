@@ -4,10 +4,10 @@
  * Every "who is behind this" fact on /terms, /privacy, /legal#reporting and
  * /.well-known/security.txt reads from here and nowhere else. The values are the legal name of
  * the operating entity, where it is organised, which law governs the terms, and the three
- * contact addresses. As of 2026-09-12 NONE of them has been decided: no entity has been formed
- * or chosen, no counsel has named a governing law, and no mailbox exists for legal, privacy or
- * vulnerability reports. leekzor/callhouse: `ops/launch-legal.md` is the list of decisions that
- * fills these in.
+ * contact addresses. As of 2026-09-15 only the three contact addresses are set, on the Railway site
+ * service (security@, legal@ and privacy@stonkhouse.fun); no entity has been formed or chosen and no
+ * counsel has named a governing law. leekzor/callhouse: `ops/launch-legal.md` is the list of
+ * decisions that fills these in.
  *
  * EVERY VALUE IS OPTIONAL AND NONE HAS A DEFAULT. `undefined` when unset, and the pages render
  * that as a visible gap in plain words ("not yet designated"). There is no placeholder name here
@@ -81,6 +81,16 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * from the request; the third-party listings recipient is removed. No change to what either domain
  * collects. Like v2 and v3, published as a correction to the adopted text, not as a draft;
  * re-adopting it, or re-publishing it as "draft-", is the owner's call.
+ * v4 accuracy pass (2026-09-15, same version, before v4 was published): the factual sentences of
+ * both documents and of /risks were checked against the live deployment on chain 4663 and the code.
+ * Corrected in the Terms: the Clear's fee switch is its feeTo(), a Safe with one owner and threshold
+ * one, NOT the admin key (the I-01 premise of feeTo = admin was not how the Clear was deployed); the
+ * admin is a single key with no timelock; "have not been audited" is now "no external audit, only
+ * internal reviews"; Cboe's delayed quotes are named as a third party the keeper prices from; the
+ * app's figures may also come from the keeper. The Privacy notice was re-checked against
+ * web/app/api/keeper/orders/route.ts, lib/api.ts (fetchAccount still uncalled) and lib/wagmi.ts and
+ * needed no change. No change to what either domain collects, and no clause's legal effect was
+ * changed beyond those factual corrections. The version string stays v4-2026-09-15.
  */
 export const LEGAL_DOCS_VERSION = "v4-2026-09-15";
 

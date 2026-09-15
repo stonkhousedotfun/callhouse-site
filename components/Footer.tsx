@@ -11,8 +11,8 @@
  *      across the two repos.
  *   4. the audit status, stated outright.
  *
- * DELIBERATELY ABSENT: a vault contract link (the vault is not deployed and lib/site.ts carries
- * no address for it) and a source-repository link (it may not be public; a dead link reads as a
+ * DELIBERATELY ABSENT: a vault contract link (the addresses live on /how-it-works#contracts, which
+ * says what each one is and how it is verified) and a source-repository link (it may not be public; a dead link reads as a
  * withdrawn claim, and what a reader needs from it is the audit status, which row 4 states).
  */
 import Link from "next/link";
@@ -73,7 +73,7 @@ export function Footer() {
             Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited or Valorem.
             Nothing here is financial advice or an offer of securities.
           </p>
-          <p className="max-w-[70em]">The Stonkhouse contracts have not been audited.</p>
+          <p className="max-w-[70em]">The Stonkhouse contracts have had no external audit.</p>
         </div>
       </Container>
     </footer>

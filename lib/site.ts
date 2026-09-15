@@ -12,20 +12,21 @@
  * dependency on the dapp — it is a separate repo and Railway service with its own container, and a
  * shared package would drag viem (and therefore a wallet-shaped dependency tree) into a landing
  * page that makes no chain calls at all. This file DISPLAYS these addresses; it never calls them.
- * If an address changes, leekzor/callhouse: `README.md` and `ops/addresses.json` are the source of
- * truth and this file is updated by hand to match.
+ * If an address changes, this file is updated by hand to match the chain.
  *
- * Deliberately absent: chain clients, ABIs, and anything that reads live state. Nothing Stonkhouse
- * deploys is live yet: the vault and the vault's own Valorem Clear instance are listed below with a
- * null address and render as "published at launch", never as a made-up or placeholder address.
- * Every number on this site is a fixed policy parameter or a labelled rehearsal example, not a
- * quote.
+ * Deliberately absent: chain clients, ABIs, and anything that reads live state. Every number on
+ * this site is a policy setting as read on chain on 2026-09-15, a compiled limit, or a labelled
+ * example, not a quote. What changes week to week (strike, ask, fills) lives in the app.
+ *
+ * LIVE ADDRESSES (confirmed on chain 4663, 2026-09-15): vault.clear(), vault.seaport(), vault.usdg(),
+ * vault.asset() and vault.priceFeed() return exactly the rows below, and the vault's runtime links
+ * both libraries. hasRole() confirms the three role holders in ROLE_KEYS, and the Clear's feeTo() is
+ * ROLE_KEYS.clearFeeTo.
  *
  * NO VENUE CONSTANT (redesign of 2026-09-13, leekzor/callhouse-contracts `src/lib/SeaportOrderLib.sol`
- * :179-181 and `README.md`:12-13). The vault sells through its own Seaport 1.6 listing, bought on the
- * app's fill page (FILL_PAGE_PATH) or through any Seaport 1.6 client. Earlier designs listed through
- * a third-party venue and read its registry; that constant and the registry row were removed with
- * them.
+ * :179-181 and `README.md`:12-13). The vault sells through its own Seaport 1.6 listing, served on the
+ * app's cycle page (FILL_PAGE_PATH). Earlier designs listed through a third-party venue and read its
+ * registry; that constant and the registry row were removed with them.
  */
 
 /** Strip trailing slashes so joins never produce `//`. */
@@ -54,7 +55,7 @@ export function appUrl(path = ""): string {
 }
 
 /**
- * First (and at launch, only) market. Matches MARKET / SHARE_TICKER in leekzor/callhouse:
+ * First (and so far only) market. Matches MARKET / SHARE_TICKER in leekzor/callhouse:
  * `web/lib/contracts.ts`.
  */
 export const MARKET = "NVDA";
@@ -71,40 +72,55 @@ export const CHAIN_NAME = "Robinhood Chain";
 export const EXPLORER_URL = "https://robinhoodchain.blockscout.com";
 
 /**
- * The app route where the vault's weekly calls are bought: leekzor/callhouse `web/app/vault/nvda/cycle`.
- * The only first-party venue; any Seaport 1.6 client can fill the same order with its parameters.
+ * The app route where the vault's weekly calls are bought and exercised: leekzor/callhouse
+ * `web/app/vault/nvda/cycle`. The only venue that serves the vault's order.
  */
 export const FILL_PAGE_PATH = "/vault/nvda/cycle";
 
 export type AddressRow = {
-  /** Label as it appears in the README addresses table. */
+  /** Label as it appears in the addresses table. */
   label: string;
-  /**
-   * Checksummed, as confirmed on chain 4663 by leekzor/callhouse: `ops/recon/`. `null` for a
-   * contract Stonkhouse deploys at launch: the page says "published at launch" instead.
-   */
-  address: string | null;
+  /** Checksummed, as confirmed on chain 4663. */
+  address: string;
   /** One line on what it does, for the table's second column. */
   what: string;
+  /** Source-verification status, for the contracts Stonkhouse deployed. Omitted for third parties. */
+  verified?: string;
 };
 
 /**
- * The contracts a week touches. Insertion order is display order. The first two are deployed by
- * Stonkhouse at launch and have no address yet (leekzor/callhouse-contracts `script/Deploy.s.sol`,
- * `script/DeployClear.s.sol`; the own-Clear decision is recorded in the 2026-09-14 audit findings,
- * I-01). The rest are third-party contracts already live on 4663. The fee Safe is an ops detail, not
- * a public integration point, and is not listed.
+ * The contracts a week touches. Insertion order is display order. The first four were deployed by
+ * the Stonkhouse admin key on 2026-09-15 (the Clear in block 63467465, the vault in 63467882); the
+ * rest are third-party contracts. Sourcify v2: the vault is `match` on creation and runtime code,
+ * both libraries `match` on runtime code (partial matches: everything but the metadata hash); the
+ * Clear is not verified, and its 16,110-byte runtime equals, outside the trailing CBOR metadata, a
+ * Clear that Sourcify verifies against valorem-core 6436c823.
  */
 export const ADDRESSES = {
   vault: {
     label: `Stonkhouse ${MARKET} vault (${SHARE_TICKER})`,
-    address: null,
-    what: "Holds the NVDA, issues cNVDA, and is both the offerer and the zone of its own listing. Not deployed yet.",
+    address: "0x88a98931E3682137E7e4D3426f623247f4A4ecbb",
+    what: `Holds the ${MARKET}, issues ${SHARE_TICKER}, and is both the offerer and the zone of its own listing. Its on-chain token name, "Callhouse ${MARKET}", predates the rename.`,
+    verified: "Verified on Sourcify as a partial match: the code matches, the metadata hash does not.",
   },
   clear: {
     label: "Valorem Clear, the vault's own instance",
-    address: null,
-    what: "Deployed with the vault from Valorem's unmodified code. Holds the collateral of calls sold, mints each call inside the fill that buys it, and settles exercise.",
+    address: "0x53d7A6d0489Daf3d67b9A314e0eAB2B78Acab9C6",
+    what: "Deployed from Valorem's code. Holds the collateral of calls sold, mints each call inside the fill that buys it, and settles exercise.",
+    verified:
+      "Not source-verified yet. Its runtime bytecode matches Valorem's published code at commit 6436c823 except the metadata hash.",
+  },
+  seaportOrderLib: {
+    label: "SeaportOrderLib",
+    address: "0x6B617a0B578Ef6EDCD07774468f08b3778272D8A",
+    what: "Library linked into the vault. Checks the shape of every listing the keeper proposes.",
+    verified: "Verified on Sourcify as a partial match.",
+  },
+  valoremLib: {
+    label: "ValoremLib",
+    address: "0xd3CB94893EAb55e425cCd77Db98458b38D75Fa3d",
+    what: "Library linked into the vault. The arm checks, the checks at each fill, and the price-feed read.",
+    verified: "Verified on Sourcify as a partial match.",
   },
   seaport: {
     label: "Seaport 1.6",
@@ -124,9 +140,21 @@ export const ADDRESSES = {
   priceFeed: {
     label: "Chainlink RHNVDA / USD",
     address: "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
-    what: "8 decimals. Display, and the price floors checked when a week is armed and a call is sold. Settlement never reads a price feed.",
+    what: "8 decimals. Display, and the price floors checked when a week is armed, a listing is approved and a call is sold. Settlement never reads a price feed.",
   },
 } as const satisfies Record<string, AddressRow>;
+
+/**
+ * Who holds the keys, as read on chain 2026-09-15 (vault hasRole; Clear feeTo; Safe getOwners and
+ * getThreshold). The admin is also the
+ * vault's feeRecipient(). The Clear's fee address is a Safe v1.4.1 with one owner and threshold 1.
+ */
+export const ROLE_KEYS = {
+  admin: "0xEb82c3D0F89d47453F94f0C2b2a2752e27a19d9b",
+  keeper: "0x06c131cfEd73A56893f5eB52D17252856FAFC1d2",
+  guardian: "0x29741A8d283a253E8Ce10aDfd04C6507438b6F39",
+  clearFeeTo: "0xff1454009F024507f3E455eb2027E98fAF4ccF61",
+} as const;
 
 /** Same rows, ordered, for rendering a table without Object.values() at the call site. */
 export const ADDRESS_ROWS: readonly AddressRow[] = Object.values(ADDRESSES);

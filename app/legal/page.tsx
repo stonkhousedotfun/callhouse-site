@@ -125,7 +125,7 @@ export default function LegalPage() {
           <li>
             The issuer can <strong>freeze or restrict transfers</strong>, which can stop this vault
             writing, settling, or paying out tokens until it is lifted. The token can also pause its
-            own price oracle, which stops this vault writing and listing new calls; settlement does
+            own price oracle, which stops this vault arming, listing and writing new calls; settlement does
             not read the oracle. No Stonkhouse contract can override either.
           </li>
           <li>
@@ -162,7 +162,8 @@ export default function LegalPage() {
             offer of securities.
           </li>
           <li>
-            The Stonkhouse smart contracts have not been audited. They are provided as-is,
+            The Stonkhouse smart contracts have had no external audit, only the project&apos;s own internal
+            reviews. They are provided as-is,
             under the MIT licence, with no warranty of any kind. You can lose the collateral you
             deposit.
           </li>
@@ -202,8 +203,8 @@ export default function LegalPage() {
               rather than a file with no contact line. Setting one is a launch step.
             </>
           )}{" "}
-          A bug bounty with its own disclosure channel opens in the second week after mainnet
-          launch. Until then the contracts are unaudited, and a report is a favour, not a claim.
+          There is no bug bounty, and the contracts have had no external audit, so a report is a
+          favour, not a claim.
         </p>
         <p>
           The <DocLink href="/terms">Terms of Use</DocLink> and the <DocLink href="/privacy">privacy notice</DocLink>{" "}

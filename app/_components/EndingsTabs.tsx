@@ -72,7 +72,7 @@ const ENDINGS: readonly Ending[] = [
     key: "stranded",
     title: "Closed, claim stranded",
     hint: "Rare: a token issuer blocks the close",
-    body: "Closing the week asks Valorem to hand back the vault's claim. If USDG is paused, the vault or Valorem is frozen on USDG, or the vault is blocklisted on the Stock Token in a week not fully assigned, that fails. The week closes anyway and the claim is kept: deposits, instant withdrawals and the next week stay shut, queued withdrawals settle their share of the idle NVDA at once and take their share of the claim when it clears, and anyone can retry. It clears only when the issuer lets it. In the rehearsal a USDG freeze of the vault stranded week 3; after the unfreeze the retry brought back 1 NVDA and 239 USDG.",
+    body: "Closing the week asks Valorem to hand back the vault's claim. That fails if, in a week where any of the vault's calls were exercised, USDG is paused or the vault or Valorem is frozen on USDG, or if, in a week not fully assigned, the vault is blocklisted on the Stock Token. The week closes anyway and the claim is kept: deposits, instant withdrawals and the next week stay shut, queued withdrawals settle their share of the idle NVDA at once and take their share of the claim when it clears, and anyone can retry. It clears only when the issuer lets it. In the rehearsal a USDG freeze of the vault stranded week 3; after the unfreeze the retry brought back 1 NVDA and 239 USDG.",
     premium: "Credited; USDG claims wait on USDG",
     nvda: "Held in the claim until a retry succeeds",
     upside: "As the week ended",

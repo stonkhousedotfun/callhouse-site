@@ -108,10 +108,11 @@ rewrite), and `scripts/copy-lint.mjs` (the forbidden-copy table).
 - **No wallet.** `wagmi`, `viem` and `@tanstack/react-query` are not dependencies and must not
   become dependencies. There is no connect button on this domain.
 - **No chain reads.** No RPC URL, no contract call, no indexer fetch, no `fetch()` at all.
-- **No live data.** Not "live data we cached" — none. The vault is not deployed, so every live
-  figure would render as a zero, and a zero next to the word "realized" reads as a result rather
-  than as an absence. Every number here is a fixed policy parameter, an address, or a worked
-  example from the fork rehearsal that is labelled as one.
+- **No live data.** Not "live data we cached" — none. The vault is live on Robinhood Chain, but a
+  static page cannot keep a live figure current, and a stale figure next to the word "realized"
+  reads as a result. Every number here is a policy setting (given as its current value, which the
+  admin can change), a compiled limit, an address, or a labelled worked example (the fork rehearsal,
+  or a named past cycle). Live figures belong on app.stonkhouse.fun.
 - **Not a second copy of the dapp.** Every call to action is an absolute external link to
   `https://app.stonkhouse.fun/...`, built with `appUrl()` from `lib/site.ts`. A relative
   `href="/vault/nvda"` on this domain is a 404, not a route into the app.
@@ -123,18 +124,32 @@ If a page here ever needs a number that changes, it belongs on the dapp instead.
 | Route | Content |
 |---|---|
 | `/` | what the vault does, the weekly cycle in one screen, how a week can end (three endings and a stranded close), and the link to the app |
-| `/how-it-works` | the cycle in detail: the phase machine, the policy table, write on fill, the addresses (published at launch for what Stonkhouse deploys), who may call what |
-| `/risks` | the unabridged risk list. No buyer, a fill refused after a rally, assignment, partial assignment, issuer freeze and burn, USDG, a stranded claim, fee switch, admin, unaudited contracts |
+| `/how-it-works` | the cycle in detail: the phase machine, the policy table, write on fill, the addresses, who may call what |
+| `/risks` | the unabridged risk list. No buyer, a fill refused after a rally, assignment, partial assignment, issuer freeze and burn, USDG, a stranded claim, fee switch, admin, contracts with no external audit |
 | `/legal` | geographic restrictions and the legal form of the Stock Token |
 | `/terms`, `/privacy` | adopted by the owner (no counsel), versioned by `LEGAL_DOCS_VERSION`; a revision can be published as a draft first (see "Copy rules") |
 
 **What the pages describe** is the vault as redesigned on 2026-09-13 (leekzor/callhouse-contracts
 `README.md`): the keeper creates and arms a weekly Valorem call and nothing is written at arm; the vault
 lists one Seaport 1.6 order whose zone is the vault, and each fill writes exactly the calls it buys,
-after re-checking the price floors at the spot of the fill; the venue is the app's own fill page
-(`FILL_PAGE_PATH` in `lib/site.ts`) or any Seaport 1.6 client. There is no third-party venue, registry
-or venue fee. Times are New York time (Friday 16:00 ET close, Thursday on an NYSE holiday). Earlier
-designs listed through a third-party venue; only history notes may say so.
+after re-checking the price floors at the spot of the fill; the only place the order is served is
+the app's cycle page (`FILL_PAGE_PATH` in `lib/site.ts`), and any Seaport 1.6 client can fill it from
+what that page serves. The keeper prices each week from Cboe's free delayed NVDA option quotes (strike
+at a delta of about 0.15). There is no third-party venue, registry or venue fee. Times are New York
+time (Friday 16:00 ET close, Thursday when NYSE is shut on the Friday). Earlier designs listed through
+a third-party venue; only history notes may say so.
+
+**Live facts the pages rely on (checked on chain 2026-09-15; update the pages if any changes):** the
+vault is `0x88a98931E3682137E7e4D3426f623247f4A4ecbb` (on-chain name "Callhouse NVDA", symbol
+cNVDA, from before the rename) and its Clear is `0x53d7A6d0489Daf3d67b9A314e0eAB2B78Acab9C6`.
+`policy()` is minOtm 300, maxOtm 1200, minPremium 10 (0.10%, the compiled minimum), maxUtilization
+9500, protocolFee 500, maxContractsCap 50; `depositCap()` 20 NVDA; `maxPriceAge()` 4 days. The admin
+(`DEFAULT_ADMIN_ROLE`) and `feeRecipient()` are one hot EOA with no timelock; the handover to a Safe
+has not happened. The Clear's `feeTo()` is a Safe with one owner, and its fees are off. There is no
+external audit (internal review 2026-09-14: no Critical, High or Medium) and no bug bounty; reports go
+to security@stonkhouse.fun. Alerts are not wired. The vault and its libraries are a Sourcify partial
+match; the Clear is not source-verified, and its bytecode equals Valorem upstream `6436c823` except
+the metadata hash.
 
 Four product routes. Adding a fifth means asking whether it is marketing or product; product goes
 to the app (leekzor/callhouse `web/`).
@@ -170,8 +185,11 @@ third-party clause: an oracle pause stops writing and listing, not settlement), 
 `v4-2026-09-15`: the rename plus the corrections for the contracts redesign (no third-party venue or
 registry, the vault's own Valorem Clear instance and its fee switch, the dapp's own order-feed route
 in the privacy notice). Those corrections were first drafted 2026-09-14 and never published on their
-own; they went live together with the rename as v4. v3 and v4 are corrections published like v2,
-not drafts; v4 still wants the owner's re-adoption. Until adoption, copy-lint also pinned the literal
+own; they went live together with the rename as v4. An accuracy pass on 2026-09-15, still under
+`v4-2026-09-15`, corrected the Terms against the live deployment (the Clear's fee switch is a
+one-owner Safe, not the admin key; the admin is one key with no timelock; "no external audit"; Cboe
+named as a third party); the privacy notice needed no change. v3 and v4 are corrections published
+like v2, not drafts; v4 still wants the owner's re-adoption. Until adoption, copy-lint also pinned the literal
 `export const LEGAL_DOCS_VERSION = "draft-` line, so dropping the prefix failed CI unless the gate
 was removed in the same commit; that entry was removed in the adoption commit. A future revision
 can be published as a draft first by re-adding the prefix.
@@ -193,7 +211,7 @@ Do not write around any of these. They are the pitch, not the fine print:
   vote, and the issuer can freeze transfers.
 - Not available to US persons.
 - No protocol token, no points, no airdrop at launch.
-- The contracts have not been audited.
+- The contracts have had no external audit.
 
 No exclamation marks, no marketing adjectives. The register is the app's `web/app/page.tsx`:
 "Deposit one tokenised stock, receive vault shares."
@@ -207,7 +225,8 @@ No exclamation marks, no marketing adjectives. The register is the app's `web/ap
   slip / key panels are lifted with `shadow-lift` (`<Panel lift>`). A page where everything floats
   has no emphasis left.
 - **Worked example figures are labelled as examples** where they appear (the week card, the fee
-  slip). They come from the fork rehearsal, not from a live vault.
+  slip, cycle 1's listing on /risks). They come from the fork rehearsal or a named past cycle, never
+  from a live reading.
 - **Must work at 390px wide**, with no horizontal scroll and at least a 16px side gutter. `<main>`
   has no padding of its own, so every page wraps its content in `<Container>` or `<Section>`.
   Addresses and order hashes are single unbreakable tokens; let them wrap rather than let one push
@@ -236,9 +255,9 @@ production produces.
 The Dockerfile declares all eight: the two domain URLs carry production defaults, the six
 `NEXT_PUBLIC_OPERATOR_*` / `*_CONTACT_EMAIL` variables are declared with **no default** — an
 unset value compiles to the "not yet designated" gap on the legal pages and a 404 on
-security.txt. As of 2026-09-13 the three `*_CONTACT_EMAIL` variables are set on Railway
-(`legal@` / `privacy@` / `security@callhouse.finance`, Cloudflare Email Routing; they move to
-`@stonkhouse.fun` with the domain) and `security.txt` returns 200; the operator name,
+security.txt. As of 2026-09-15 the three `*_CONTACT_EMAIL` variables are set on Railway to
+`legal@`, `privacy@` and `security@stonkhouse.fun` (they were `@callhouse.finance` until the
+rename) and `https://stonkhouse.fun/.well-known/security.txt` returns 200; the operator name,
 jurisdiction and governing law remain deliberately unset and the gap notice stays up until they
 exist (leekzor/callhouse `ops/launch-legal.md`). Setting a variable on Railway then rebuilding is what closes a gap; a
 restart does nothing.
@@ -247,14 +266,18 @@ restart does nothing.
 
 Railway, one service, Dockerfile build, **this repo root as the build context**.
 
-### Current state (2026-09-13)
+### Current state (2026-09-15)
 
-This records the `callhouse.finance` deployment as it stood on 2026-09-13. The site moves to
-`stonkhouse.fun` on 2026-09-15; rewrite this block after the cutover with the new domains, the
-CNAME targets and `_railway-verify` tokens Railway issues for them, and the Email Routing status.
+**Live at `https://stonkhouse.fun` and `https://www.stonkhouse.fun`** (both attached to the `site`
+service as custom domains, both answer 200; `www` is served directly, not redirected), and at
+`https://site-production-bea7.up.railway.app`. The serving deployment is `d82ebdeb`
+(2026-09-15 14:33 UTC), built from `main` at `2e40746`. The `callhouse.finance` domains are no longer
+attached to the service. The DNS records, `_railway-verify` tokens and Email Routing setup for
+`stonkhouse.fun` are not recorded here yet; the rest of this block is the `callhouse.finance` record
+of 2026-09-13, kept as history.
 
-**Live at `https://callhouse.finance` and `https://www.callhouse.finance`** (Let's Encrypt, issued
-2026-09-13 about 19 minutes after the DNS below), and at `https://site-production-bea7.up.railway.app`.
+**Was live at `https://callhouse.finance` and `https://www.callhouse.finance`** (Let's Encrypt, issued
+2026-09-13 about 19 minutes after the DNS below).
 
 - Project `callhouse`, service `site`, created with the Railway CLI (`railway init` /
   `railway add`). **Connected to `leekzor/callhouse-site`, branch `main`, on 2026-09-13** (in the

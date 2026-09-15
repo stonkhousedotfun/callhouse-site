@@ -2,8 +2,11 @@
  * /terms — Terms of Use for both domains. Adopted 2026-09-13 as v1, corrected as v2 the same day,
  * renamed to Stonkhouse as v3 on 2026-09-15, and corrected as v4 the same day for the contracts
  * redesign (first drafted 2026-09-14): no third-party venue or registry, the vault's own Valorem
- * Clear instance with its fee switch on the admin key, and the admin's value levers stated (see
- * LEGAL_DOCS_VERSION in lib/legal.ts).
+ * Clear instance, and the admin's value levers stated. The v4 accuracy pass the same day checked
+ * the factual sentences against the live deployment: the Clear's fee switch is its feeTo(), a
+ * one-owner Safe (0xff14…CF61), not the admin key; the admin is a single hot key with no timelock;
+ * "not audited" became "no external audit"; the keeper's Cboe price source and its order feed were
+ * named (see LEGAL_DOCS_VERSION in lib/legal.ts).
  *
  * WHY THIS PAGE EXISTS: /legal says access is restricted by the Terms of Use rather than by a
  * technical control, and until 2026-09-12 there was no such document. A restriction that points
@@ -177,8 +180,8 @@ export default function TermsPage() {
             vault has no upgrade path and no function that moves a depositor&apos;s tokens anywhere but
             back to the depositor or into a call a buyer has paid for. The admin can change policy
             inside compiled-in caps and has no function that transfers a depositor&apos;s tokens,
-            although its settings, including the Valorem fee switch on the vault&apos;s own
-            clearinghouse, can still cost depositors value.
+            although its settings, including whether the vault accepts a Valorem engine fee, can still
+            cost depositors value. The admin is currently a single key with no timelock.
           </li>
           <li>
             There is no account. Nothing is registered, no password exists, and no know-your-customer
@@ -231,11 +234,13 @@ export default function TermsPage() {
       <DocSection {...SECTIONS.thirdParty}>
         <DocList>
           <li>
-            The Stonkhouse contracts have not been audited. They are published under the MIT licence,
+            The Stonkhouse contracts have had no external audit, only internal reviews. They are
+            published under the MIT licence,
             as-is, and there is no upgrade path: a bug means a new vault and a migration, not a patch.
           </li>
           <li>
-            Seaport, the {MARKET} Stock Token, USDG and the RPC providers are third parties. None of
+            Seaport, the {MARKET} Stock Token, USDG, the RPC providers and Cboe, whose delayed option
+            quotes the keeper prices each week from, are third parties. None of
             them is operated by, or answerable to, the people who publish this interface. The Stock
             Token and USDG can be paused, frozen or upgraded by their issuers&apos; keys. The Stock
             Token issuer can freeze transfers, which can stop this vault selling calls and paying out
@@ -247,8 +252,9 @@ export default function TermsPage() {
           </li>
           <li>
             Valorem Clear is third-party code. The instance this vault settles on is deployed from
-            that code alongside the vault, and its fee switch is held by the vault&apos;s admin key.
-            The upstream code has had no commit since 2023, and there is no patch path behind it.
+            that code alongside the vault. Its fee switch is held by a separate Safe with a single
+            owner, and the vault&apos;s admin key decides whether the vault accepts that fee. The
+            upstream code has had no commit since 2023, and there is no patch path behind it.
           </li>
           <li>
             There is no third-party venue or registry. The keeper creates each week&apos;s call and
@@ -264,8 +270,8 @@ export default function TermsPage() {
           The interface and the contracts it points at are provided as-is and as-available, with no
           warranty of any kind, express or implied, including of merchantability, fitness for a
           purpose, accuracy, or uninterrupted operation. Figures shown on app.stonkhouse.fun are read
-          from the chain or from an indexer and may lag or be wrong; the chain is the record, not the
-          page.
+          from the chain, from an indexer or from the keeper, and may lag or be wrong; the chain is the
+          record, not the page.
         </p>
       </DocSection>
 

@@ -1,7 +1,9 @@
 /**
- * The hero's example week card ("This week's call").
+ * The hero's example week card ("An example week").
  *
- * EVERY FIGURE HERE IS AN EXAMPLE, and the card says so twice. They are week 2 of the keeper's fork
+ * EVERY FIGURE HERE IS AN EXAMPLE, and the card says so in its heading, its chip and its footnote.
+ * It must never be titled or styled as the live week: the vault is live, and a static page showing
+ * "this week" would be wrong within days. The live week is linked to the app's cycle page instead. They are week 2 of the keeper's fork
  * rehearsal of the redesigned vault (2026-09-15T03:44Z UTC run, keeper/run-final/report.md, "Week 2"):
  * strike 223.00 (strikeUsdg6 223000000), spot when the week was armed 211.93 (spotAtArmUsdg6
  * 211927750, the live Chainlink print at the fork block), ask 0.856189 USDG per call (unitPrice6
@@ -14,9 +16,16 @@
  * (leekzor/callhouse keeper/src/calendar.ts); after daylight time ends (2026-11-01) the same close is
  * 21:00 UTC, and a Friday NYSE holiday moves it to Thursday. The footnote says so.
  *
- * Nothing here reads a chain. The vault is not deployed.
+ * The rehearsal priced its ask at the then-launch 0.40% premium floor plus a 1% margin, with the
+ * strike fixed at 5% above spot. Cycle 1's live listing (0.856436 USDG, strike 223) was also priced
+ * from the floor, by the keeper version before vol mode (/api/keeper/orders serves it with pricing
+ * null), so its figures sit close to this example's. The keeper now running prices new listings from
+ * option quotes (vol mode); the footnote says both.
+ *
+ * Nothing here reads a chain.
  */
-import { Chip, Figure, Num, Panel } from "@/components/ui";
+import { Chip, ExternalLink, Figure, Num, Panel } from "@/components/ui";
+import { FILL_PAGE_PATH, appUrl } from "@/lib/site";
 
 /** Calls the listing offered: the vault's capacity that week. */
 const OFFERED = 14;
@@ -29,18 +38,16 @@ export function WeekCard() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
           <h2 id="week-card-h" className="text-lg font-bold tracking-[-0.01em]">
-            This week&apos;s call
+            An example week
           </h2>
-          <p className="text-[13.5px] text-ink-3">Example week from the fork rehearsal</p>
+          <p className="text-[13.5px] text-ink-3">From a keeper rehearsal on a fork, not live data</p>
         </div>
-        <Chip tone="accent" dot>
-          Listed
-        </Chip>
+        <Chip>Example</Chip>
       </div>
 
       <dl className="my-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Figure boxed size="lg" label="Strike" value="223.00" unit="USDG" />
-        <Figure boxed size="lg" label="Spot at listing" value="211.93" unit="USDG" />
+        <Figure boxed size="lg" label="Spot when listed" value="211.93" unit="USDG" />
         <Figure boxed size="lg" label="Ask per call" value="0.856" unit="USDG" tone="usdg" />
       </dl>
 
@@ -54,8 +61,8 @@ export function WeekCard() {
             <Num>{SOLD}</Num> calls, as bought
           </li>
           <li>
-            <b className="block text-[13px] font-semibold text-accent-text">Listed now</b>
-            on the app&apos;s fill page
+            <b className="block text-[13px] font-semibold text-accent-text">Sold</b>
+            through one listing
           </li>
           <li>
             <b className="block text-[13px] font-semibold text-ink">Book closes</b>
@@ -80,7 +87,7 @@ export function WeekCard() {
             <b className="num font-semibold text-ink">
               {SOLD} of {OFFERED}
             </b>{" "}
-            calls bought so far
+            calls bought
           </span>
           <span aria-hidden="true" className="flex flex-wrap gap-[3px]">
             {Array.from({ length: OFFERED }, (_, i) => (
@@ -89,10 +96,20 @@ export function WeekCard() {
           </span>
         </div>
         <p className="text-xs text-ink-3">
-          Not live data. Week <span className="num">2</span> of a keeper rehearsal on a fork of Robinhood Chain: two buyers took <span className="num">2</span> and <span className="num">3</span> calls, and
-          the <span className="num">9</span> nobody bought were never written. Times are New York time; the close is{" "}
+          Not live data. Week <span className="num">2</span> of a keeper rehearsal on a fork of Robinhood Chain: two
+          buyers took <span className="num">2</span> and <span className="num">3</span> calls, and the{" "}
+          <span className="num">9</span> nobody bought were never written. The rehearsal priced the ask from the vault&apos;s
+          premium floor, and so did the earlier keeper version behind cycle 1&apos;s live listing; the keeper now running
+          prices new listings from option quotes. Times are New York time; the close is{" "}
           <span className="num">21:00 UTC</span> once US daylight saving time ends, and Thursday when Friday is an NYSE
           holiday.
+        </p>
+        <p className="text-xs text-ink-3">
+          The live week&apos;s strike, ask and fills are on{" "}
+          <ExternalLink href={appUrl(FILL_PAGE_PATH)} arrow className="link text-ink-2">
+            the app&apos;s cycle page
+          </ExternalLink>
+          .
         </p>
       </div>
     </Panel>

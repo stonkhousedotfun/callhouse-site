@@ -34,8 +34,8 @@
  *            (app/providers.tsx) caches in memory only.
  *            lib/hooks.ts useAccountPosition reads your position with useReadContracts, i.e.
  *            from the RPCs, in the browser, so the address reaches them as call data.
- *            lib/api.ts reads /v1/vault, /v1/cycles and /v1/health from the indexer, none keyed
- *            by address. It also exports fetchAccount(), which would GET /v1/account/{address} on
+ *            lib/api.ts defines readers for /v1/vault, /v1/cycles and /v1/health, none keyed by
+ *            address; only fetchCycles (/v1/cycles) is imported, by lib/history.ts. It also exports fetchAccount(), which would GET /v1/account/{address} on
  *            the indexer; NOTHING CALLS IT (grep fetchAccount web/ — the definition is the only
  *            hit), and no dapp route path contains an address (web/app has no dynamic
  *            segment). If either changes, the "not sent to a server of ours" sentences below
@@ -164,8 +164,8 @@ export default function PrivacyPage() {
 
         <p>
           This notice covers stonkhouse.fun (this site) and app.stonkhouse.fun (the dapp). It is written
-          from the code, not from a template: each statement below names the file it was checked
-          against, and the source is listed in the header comment of this page. It does not cover
+          from the code, not from a template: each statement below was checked against the file that
+          implements it. It does not cover
           your wallet, the chain, or any third-party site linked from here.
         </p>
       </DocIntro>
@@ -220,8 +220,8 @@ export default function PrivacyPage() {
           <li>
             <strong>The Stonkhouse indexer.</strong> A history service we run. It stores wallet
             addresses, share balances and USDG amounts derived from public on-chain events, and
-            nothing that is not already on the chain. The dapp asks it for vault state and weekly
-            history; it does not ask it for your position today, although the indexer has an
+            nothing that is not already on the chain. The dapp asks it only for weekly history; it
+            does not ask it for your position today, although the indexer has an
             endpoint keyed by address and the dapp contains an unused function that would call it.
             If that is ever wired up, the address will appear in the indexer&apos;s request log
             (which records method, path, status and timing, not IP) and the host it runs on may

@@ -14,18 +14,24 @@
  *
  * One job: leave a reader who skims only the first screen with an ACCURATE expectation. Premium
  * arrives only if somebody buys the call, assignment can take the collateral, the token is a debt
- * security, and the vault is neither deployed nor audited. The hero's disclosure line says all of
+ * security, and the contracts have had no external audit. The hero's disclosure line says all of
  * that next to the headline, not in a footer. If a future edit moves it below the fold, the edit
- * is wrong. "Unaudited" is stated plainly: there is no external audit (owner decision D14).
+ * is wrong. The audit status is stated plainly: no external audit (owner decision D14), one
+ * internal review dated 2026-09-14.
+ *
+ * LIVE STATE (2026-09-15): the vault 0x88a9…ecbb and its Clear 0x53d7…C6 are deployed on chain 4663;
+ * policy() = (300, 1200, 10, 9500, 500, 50); depositCap() = 20e18. The keeper prices in vol mode
+ * (keeper/src/config.ts: KEEPER_PRICING_MODE default "vol", unset on Railway): strike at delta about
+ * 0.15 from Cboe's delayed NVDA chain, clamped to [minOtm + 200, maxOtm − 50] bps = 5% to 11.5%.
  *
  * DELIBERATELY ABSENT:
  *   - Wallet code, chain reads and fetches. This is a server component; the only client code is
  *     the endings tabs island (app/_components/EndingsTabs.tsx), whose first ending is server
- *     rendered. The vault is not deployed, so a live read would render zeros that mean "not
- *     deployed yet".
- *   - Any forward-looking figure, and any figure scaled past one week. The numbers are either
- *     launch policy (README "Policy (launch)", docs product/policy.md) or fork rehearsal figures,
- *     and the rehearsal figures are labelled as examples where they appear.
+ *     rendered. The live week (strike, ask, fills) is on the app's cycle page, not here: a static
+ *     page cannot keep it current.
+ *   - Any forward-looking figure, and any figure scaled past one week. The numbers are either the
+ *     policy as read on chain on 2026-09-15 or fork rehearsal figures, and the rehearsal figures are
+ *     labelled as examples where they appear.
  *     scripts/copy-lint.mjs fails CI on the forbidden vocabulary; this page needs no
  *     `copy-lint-allow` escape hatch anywhere, and should not gain one.
  *   - The full policy table, the fee table, the phase machine and the addresses table. They live
@@ -90,8 +96,8 @@ type Step = { title: string; when: string; body: string; key?: boolean };
  * keeper sets exercise at the NYSE Friday 16:00 ET close (Thursday on a Friday holiday) and expiry
  * 24 h later (leekzor/callhouse keeper/src/calendar.ts:1-30, :203-241). Deposits close at the
  * exercise time (src/Vault.sol _depositRefused); the keeper may close from expiry and anyone an
- * hour later (src/Vault.sol rollClose). Strike about 5% above spot: KEEPER_STRIKE_OTM_BPS 500
- * (keeper/README.md "The week"); band 3% to 12%: Policy.sol:131-132; utilisation 95%: Policy.sol:134.
+ * hour later (src/Vault.sol rollClose). Strike: keeper/src/vol.ts:668-730 (delta 0.15, clamped 5% to
+ * 11.5% under the live band); band 3% to 12%, utilisation 95%, 50 contracts: live policy().
  */
 const STEPS: readonly Step[] = [
   {
@@ -101,8 +107,8 @@ const STEPS: readonly Step[] = [
   },
   {
     title: "The vault lists this week's calls",
-    when: "from the start of the week",
-    body: `The keeper creates this week's call, about 5% above spot, and the vault checks it against its band, 3% to 12% at launch. Up to 95% of the ${MARKET} is offered, one call per token. Nothing is written yet.`,
+    when: "after the last close",
+    body: `The keeper picks a strike from delayed ${MARKET} option quotes, 5% to 11.5% above spot, and the vault checks it against its band, 3% to 12% today. Up to 95% of the ${MARKET} is offered, one call per token and at most 50. Nothing is written yet.`,
     key: true,
   },
   {
@@ -129,7 +135,7 @@ type Point = { title: string; body: string };
 const BENEFITS: readonly Point[] = [
   {
     title: "Paid in USDG",
-    body: "Premium arrives as USDG, tracked per share and never folded into your shares. No protocol token, no points, no airdrop at launch.",
+    body: "Premium arrives as USDG, tracked per share and never folded into your shares. There is no protocol token and no points.",
   },
   {
     title: "Hands off",
@@ -137,19 +143,19 @@ const BENEFITS: readonly Point[] = [
   },
   {
     title: "Fees only on premium",
-    body: `Stonkhouse takes 5% of the premium buyers pay, capped at 20% in the contracts. Nothing on deposits, idle ${MARKET} or strike proceeds.`,
+    body: `Stonkhouse takes 5% of the premium buyers pay today, and the contracts cap it at 20%. Nothing on deposits, idle ${MARKET} or strike proceeds.`,
   },
   {
-    title: "Every week published",
-    body: "Once the vault is live, each closed week is published in the app with its real figures: filled, unfilled or assigned, zeros included. No projections.",
+    title: "Every week on the record",
+    body: "The app's activity page lists each week the vault arms, from its own events: filled, unfilled or assigned, zeros included. A week the keeper skips leaves no row. No projections.",
   },
   {
     title: "Two ways out",
-    body: "Withdraw instantly while the vault is idle, or queue during a week and settle at the close. Closing the week and settling the queue do not depend on the keeper.",
+    body: "Withdraw instantly while the vault is idle with no calls written, or queue during a week and settle at the close. Closing the week and settling the queue do not depend on the keeper.",
   },
   {
     title: "Limits in the code",
-    body: "The 1% strike floor, the 20% fee ceiling and the one-token lot size are compiled in, and a call is written only inside the fill that buys it. The keeper and guardian cannot move a token.",
+    body: `The 1% minimum strike distance, the 20% fee ceiling and the one-token lot size are compiled in, and a call is written only inside the fill that buys it. No key, the admin's included, can transfer depositors' ${MARKET}, USDG or ${SHARE_TICKER}.`,
   },
 ];
 
@@ -157,7 +163,7 @@ const BENEFITS: readonly Point[] = [
 const RISKS: readonly Point[] = [
   {
     title: "Weeks can pay nothing",
-    body: "Premium is paid only if a buyer fills. On a thin book an unfilled week is the most likely outcome, no dealer is obliged to buy, and after a rally the vault refuses fills until the keeper reprices.",
+    body: "Premium is paid only if a buyer fills. On a thin book an unfilled week is the most likely outcome and no dealer is obliged to buy. If a rally leaves the strike less than 3% above spot, the vault refuses fills for as long as that lasts, and no reprice can help.",
   },
   {
     title: "Assignment caps your upside",
@@ -165,7 +171,7 @@ const RISKS: readonly Point[] = [
   },
   {
     title: "Withdrawals wait for the close",
-    body: "While a week is listed, a withdrawal is queued, cannot be cancelled, and settles at the close, partly in USDG if the week was assigned.",
+    body: "While a week is listed, a withdrawal is queued, cannot be cancelled, and settles at the close: NVDA, plus the USDG your queued shares earned while queued, strike USDG included if the week was assigned.",
   },
   {
     title: "Late deposits share the week",
@@ -177,15 +183,15 @@ const RISKS: readonly Point[] = [
   },
   {
     title: "Unaudited contracts",
-    body: `The vault is unaudited: it has had internal reviews only, by the team that built it, and no external audit. There is no proxy, so a fix means a new vault. The 20 ${MARKET} launch cap is sized to that.`,
+    body: `The contracts have had no external audit, only an internal review dated 14 September 2026, and there is no bug bounty. There is no proxy, so a fix means a new vault. Deposits are capped at 20 ${MARKET} today.`,
   },
   {
     title: "Settings can change",
-    body: "The admin can change the strike band and the fee inside the compiled caps, the deposit cap with no ceiling, and Valorem's fee switch on the vault's own clearinghouse, at any time and with no timelock. At launch the admin is a single key.",
+    body: "The admin can change the strike band, the premium floor and the fee inside the compiled caps, and the deposit cap with no ceiling, at any time, with no timelock and effective at once. Today the admin is a single hot key, and a handover to a Safe has not happened.",
   },
   {
     title: "Third parties in the path",
-    body: "Valorem settles assignment, Seaport settles fills, and USDG and the Stock Token have issuers who can freeze them; the vault cannot override any of them. A freeze at the close strands the week's claim until it lifts.",
+    body: "Valorem settles assignment, Seaport settles fills, and USDG and the Stock Token have issuers who can freeze them; the vault cannot override any of them. A freeze at the close can strand the week's claim until it lifts.",
   },
 ];
 
@@ -225,12 +231,12 @@ export default function HomePage() {
             <Figure label="You deposit" value="Stock Tokens" />
             <Figure label="You claim" value="USDG" tone="usdg" />
             <Figure label="Protocol fee" value="5% of premium" />
-            <Figure label="Launch cap" value={`20 ${MARKET}`} />
+            <Figure label="Deposit cap" value={`20 ${MARKET}`} />
           </dl>
 
           <Notice variant="plain" className="mt-[26px]">
             Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. Stock Tokens are
-            debt securities, not Nvidia shares. Not deployed yet, and unaudited.
+            debt securities, not Nvidia shares. The contracts are live on {CHAIN_NAME} and have had no external audit.
           </Notice>
         </div>
 
@@ -243,7 +249,7 @@ export default function HomePage() {
           id="how-h"
           eyebrow="How it works"
           title="Every week runs the same five steps."
-          intro="The book closes at the US market close, Friday 16:00 New York time: 20:00 UTC while US daylight saving time is in effect, 21:00 UTC after it ends, and Thursday when Friday is an NYSE holiday. The keeper does the routine work; the contracts make sure nobody needs the keeper to get the week closed."
+          intro="The book closes on Friday at 16:00 New York time, the regular US market close, even on a day NYSE closes early: 20:00 UTC while US daylight saving time is in effect and 21:00 UTC after it ends. When Friday is an NYSE holiday it closes on Thursday, and expiry is on Friday. The keeper does the routine work; the contracts make sure nobody needs the keeper to get the week closed."
         />
 
         <ol className="grid grid-cols-1 gap-[26px] lg:grid-cols-5 lg:gap-0">
@@ -310,7 +316,7 @@ export default function HomePage() {
           id="benefits-h"
           eyebrow="Why Stonkhouse"
           title="A covered call desk you don't have to run."
-          intro="Selling calls yourself means picking strikes, posting orders and watching expiries. Stonkhouse does that on a published policy with its limits compiled into the contracts, and publishes every result, including the weeks that pay nothing."
+          intro="Selling calls yourself means picking strikes, posting orders and watching expiries. Stonkhouse does that on a published policy with its limits compiled into the contracts, and publishes the result of every week it arms, including the weeks that pay nothing."
         />
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -393,8 +399,8 @@ export default function HomePage() {
               Deposit your stock, and let the week run.
             </h2>
             <p className="mt-2.5 max-w-[34em] text-ground/75">
-              Read the risks first. Once the vault is live, connect a wallet in the app on {CHAIN_NAME} and deposit{" "}
-              {MARKET}, the first vault, up to the cap. This site never asks for a wallet.
+              Read the risks first. Then connect a browser wallet in the app on {CHAIN_NAME} and deposit {MARKET}, the
+              first vault, up to the cap. This site never asks for a wallet.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
