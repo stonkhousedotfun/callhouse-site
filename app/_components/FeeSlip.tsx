@@ -48,7 +48,7 @@ export function FeeSlip() {
     <Panel as="article" lift pad="none" aria-labelledby="slip-h" className="overflow-hidden">
       <div className="flex flex-wrap items-baseline justify-between gap-2.5 px-6 pb-4 pt-[22px]">
         <h3 id="slip-h" className="text-[17px] font-bold">
-          What reaches depositors
+          What the writer receives
         </h3>
         <span className="num text-xs font-medium text-ink-3">example · {EXAMPLE.sold} calls filled</span>
       </div>
@@ -81,28 +81,22 @@ export function FeeSlip() {
 
       <dl>
         <div className="flex flex-wrap items-baseline justify-between gap-3 bg-accent-soft px-6 pb-[22px] pt-[18px]">
-          <dt className="font-bold text-accent-text">Credited to depositors</dt>
+          <dt className="font-bold text-accent-text">Paid to the writer</dt>
           <dd className="num text-[28px] font-semibold leading-none text-accent-text">{EXAMPLE.net}</dd>
         </div>
       </dl>
 
       <dl className="px-6 pt-1.5">
         <Row
-          label="Per cNVDA share"
-          note={
-            <>
-              over the <Num>{EXAMPLE.shares}</Num> shares then in the vault
-            </>
-          }
+          label="Per filled lot"
+          note="premium on that contract, net of the fee"
           value={EXAMPLE.perShare}
         />
       </dl>
 
       <p className="px-6 pb-5 pt-3.5 text-[13px] text-ink-3">
-        USDG, split pro rata across all cNVDA shares. The same week had <span className="num">{EXAMPLE.assigned}</span>{" "}
-        calls exercised at <span className="num">{EXAMPLE.strike}</span>: their{" "}
-        <span className="num">{EXAMPLE.strikeProceeds}</span> USDG of strike proceeds were added in full, with no fee.
-        Figures from a fork rehearsal, not a live week or a forecast.
+        Premium goes to the account that sold the lot. Strike proceeds, if assigned, go to that same account with no
+        fee. Figures from a labelled example, not a live week or a forecast.
       </p>
     </Panel>
   );

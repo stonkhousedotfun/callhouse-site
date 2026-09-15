@@ -640,11 +640,11 @@ export default function HowItWorksPage() {
             </Chip>
           </div>
           <h1 className="mt-5 text-[length:clamp(38px,5vw,60px)] font-extrabold leading-[1.03] tracking-[-0.035em]">
-            One week, <span className="text-accent">start to finish.</span>
+            One week. <span className="text-accent">Your stock.</span>
           </h1>
           <p className="mt-[22px] max-w-[34em] text-[18px] text-ink-2 sm:text-[19px]">
-            Deposit {MARKET} into your own account and choose how many 1-lot calls to write. A fill writes only your
-            lots and pays you in USDG. Unfilled lots come back. This page is that week in detail.
+            Put your {MARKET} in and choose how much is for sale this week. If someone pays you, that amount can be
+            sold at the set price. If they don&apos;t, you keep it. This page is that week in detail.
           </p>
           <div className="mt-[30px] flex flex-wrap gap-3">
             <Button href={OPEN_APP}>Open the app</Button>

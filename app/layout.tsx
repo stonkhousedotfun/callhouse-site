@@ -67,19 +67,19 @@ const mono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Stonkhouse — pooled covered calls on Robinhood Chain",
+    default: "Stonkhouse — let your stonks work for you",
     template: "%s — Stonkhouse",
   },
   description:
-    "Pooled covered calls on tokenised stocks. The first vault is NVDA on Robinhood Chain; more stocks follow. Each week the vault lists calls and writes them only when a buyer fills. A week with no buyer pays zero premium. Beta, pending audit.",
+    "Let your stonks work for you. Put NVDA in. Each week someone can pay you for the chance to buy it at a set price. Beta, pending audit.",
   // Per-route canonicals override this; the default is the landing page.
   alternates: { canonical: "/" },
   openGraph: {
     // Stated in full rather than inherited: the template above would otherwise leak "%s" into a
     // share card on any route that sets its own title.
-    title: "Stonkhouse — pooled covered calls on Robinhood Chain",
+    title: "Stonkhouse — let your stonks work for you",
     description:
-      "Pooled covered calls on tokenised stocks. The first vault is NVDA on Robinhood Chain; more stocks follow. Each week the vault lists calls and writes them only when a buyer fills. A week with no buyer pays zero premium. Beta, pending audit.",
+      "Let your stonks work for you. Put NVDA in. Each week someone can pay you for the chance to buy it at a set price. Beta, pending audit.",
     url: SITE_URL,
     siteName: "Stonkhouse",
     type: "website",

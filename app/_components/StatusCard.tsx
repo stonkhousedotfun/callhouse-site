@@ -17,10 +17,10 @@ export function StatusCard() {
       </div>
 
       <dl className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Figure boxed size="lg" label="First market" value={MARKET} />
-        <Figure boxed size="lg" label="Lot size" value="1" unit={MARKET} />
-        <Figure boxed size="md" label="Protocol fee" value={`${fmtPct(5)} of premium`} />
-        <Figure boxed size="md" label="Per-account cap" value="20" unit={MARKET} />
+        <Figure boxed size="lg" label="First stock" value={MARKET} />
+        <Figure boxed size="lg" label="You get paid in" value="USDG" />
+        <Figure boxed size="md" label="Our fee" value={`${fmtPct(5)} of what you earn`} />
+        <Figure boxed size="md" label="Cap" value="20" unit={MARKET} />
       </dl>
     </Panel>
   );

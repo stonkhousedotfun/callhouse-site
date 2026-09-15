@@ -128,12 +128,6 @@ export const ADDRESSES = {
     address: "0x7850Ae4ac03b651263cE78EC5FcED11b0d0e05A7",
     what: `Deploys each user's isolated 1-lot account. A fill writes that user's ${MARKET} and pays that user.`,
   },
-  vault: {
-    label: `Retired pooled vault (${SHARE_TICKER})`,
-    address: "0x88a98931E3682137E7e4D3426f623247f4A4ecbb",
-    what: `Wound down. Not used for new deposits. Its on-chain token name, "Callhouse ${MARKET}", predates the rename.`,
-    verified: "Verified on Sourcify as a partial match: the code matches, the metadata hash does not.",
-  },
   clear: {
     label: "Valorem Clear, the vault's own instance",
     address: "0x53d7A6d0489Daf3d67b9A314e0eAB2B78Acab9C6",

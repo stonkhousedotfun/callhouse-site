@@ -1,21 +1,11 @@
 /**
- * stonkhouse.fun/ — the product landing. Say each fact once. The week in detail is /how-it-works;
- * the failure list is /risks. "Open the app" goes to the app frontpage, not /vault/nvda.
- *
- * One job: a skimmer of the first screen leaves with an accurate expectation. The hero's
- * disclosure line carries the three required phrases next to the headline, not in a footer.
- *
- * LIVE STATE (2026-09-15): the vault 0x88a9…ecbb and its Clear 0x53d7…9C6 are deployed on chain 4663.
- * The keeper prices in vol mode: strike at delta about 0.15 from Cboe's delayed NVDA chain, clamped
- * 5% to 11.5% inside the 3% to 12% band. Addresses live on /how-it-works#contracts.
+ * stonkhouse.fun/ — the product landing. Plain English. The week in detail is /how-it-works;
+ * the failure list is /risks. "Open the app" goes to the app frontpage.
  *
  * Three phrases are required verbatim in THIS file by scripts/copy-lint.mjs:
  *   "Premium is paid only if a buyer fills"
  *   "Assignment can take the collateral at the strike"
  *   "Stock Tokens are debt securities"
- *
- * DELIBERATELY ABSENT: wallet code, chain reads, live figures, any forward-looking return, and
- * any figure scaled past one week. Roadmap items are product steps, not yield.
  */
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -26,9 +16,9 @@ import { Button, CheckCircleIcon, Chip, ClockNote, Container, Notice, Section, S
 import { WEEK } from "@/lib/clock";
 import { CHAIN_NAME, MARKET, OPEN_APP, STATUS } from "@/lib/site";
 
-const TITLE = `Stonkhouse — 1-lot covered calls on ${MARKET} Stock Tokens`;
+const TITLE = "Stonkhouse — let your stonks work for you";
 
-const DESCRIPTION = `Stonkhouse is 1-lot covered calls on tokenised stocks on ${CHAIN_NAME}. You deposit ${MARKET}, choose how many of yours to write, and a fill writes only those lots. Premium is paid only if a buyer fills. Beta, pending audit.`;
+const DESCRIPTION = `Put your ${MARKET} to work. Each week someone can pay you for the chance to buy it at a set price. If they don't, you keep the stock. Beta, pending audit.`;
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -45,40 +35,40 @@ export const metadata: Metadata = {
 
 const STEPS: readonly { title: string; when: string; body: string; key?: boolean }[] = [
   {
-    title: "You deposit",
-    when: "into your account",
-    body: `${MARKET} sits idle until you choose to write.`,
+    title: "Put your stock in",
+    when: "your account",
+    body: `${MARKET} sits there until you say how much you are willing to sell this week.`,
   },
   {
-    title: "You pick how many lots",
-    when: `each lot is 1 ${MARKET}`,
-    body: `Write up to X of yours. The rest cannot be assigned.`,
+    title: "Choose how much is for sale",
+    when: "you pick the amount",
+    body: "Only that amount can be sold. The rest stays yours.",
     key: true,
   },
   {
-    title: "A buyer fills — then a call is written",
+    title: "Someone pays you — or they don't",
     when: "until Friday 4:00pm",
-    body: "That fill writes your lot and pays you USDG. Or nobody buys, and you keep the stock.",
+    body: "If they buy, you get paid. If they don't, you keep the stock.",
     key: true,
   },
   {
-    title: "The week closes",
+    title: "The week ends",
     when: "from Saturday 4:00pm",
-    body: `Unfilled lots come back as ${MARKET}. Exercised lots come back as strike USDG.`,
+    body: "Unsold stock comes back. Sold stock comes back as cash at the agreed price.",
   },
   {
-    title: "You keep the USDG",
-    when: "on the fill, and at settle",
-    body: "Premium net of the fee on fill. Strike proceeds if assigned.",
+    title: "You keep what you earned",
+    when: "whenever you like",
+    body: "The payment for the week, minus our fee. No deadline.",
   },
 ];
 
 const ROADMAP: readonly { when: string; title: string; body: string; current?: boolean }[] = [
   {
     when: "Now",
-    title: "Beta, NVDA live",
+    title: "Beta, NVDA",
     current: true,
-    body: `${MARKET} 1-lot accounts on ${CHAIN_NAME}. Cap 20 per account.`,
+    body: `${MARKET} on ${CHAIN_NAME}. Up to 20 per person.`,
   },
   {
     when: "Next",
@@ -92,8 +82,8 @@ const ROADMAP: readonly { when: string; title: string; body: string; current?: b
   },
   {
     when: "Later",
-    title: "More stock books",
-    body: "One underlying each, same week, same rules. We will not name the next ticker until that book is being built.",
+    title: "More stocks",
+    body: "We will not name the next ticker until we are building it.",
   },
 ];
 
@@ -118,11 +108,12 @@ export default function HomePage() {
             id="hero-h"
             className="mt-5 text-[length:clamp(40px,5.6vw,66px)] font-extrabold leading-[1.02] tracking-[-0.035em]"
           >
-            Covered calls on tokenised stocks. <em className="not-italic text-accent">NVDA first.</em>
+            Let your stonks work for you.{" "}
+            <em className="not-italic text-accent">{MARKET} first.</em>
           </h1>
           <p className="mt-[22px] max-w-[34em] text-[19px] text-ink-2">
-            Deposit {MARKET}. Choose how many of yours to write. A fill writes only those lots and pays you in USDG.
-            Unfilled lots come back. Assignment cannot take someone else&apos;s stock.
+            Put your {MARKET} in. Each week, someone can pay you for the chance to buy it at a set price. If they
+            don&apos;t, you keep the stock. If they do, you get paid that price.
           </p>
 
           <div className="mt-[30px] flex flex-wrap gap-3">
@@ -145,8 +136,8 @@ export default function HomePage() {
         <SectionHead
           id="how-h"
           eyebrow="How a week runs"
-          title="Five steps, the same every week."
-          intro={`The book closes with the US market on ${WEEK.close}. The keeper does the routine work; the contracts make sure nobody needs the keeper to get the week closed.`}
+          title="Five steps. Same every week."
+          intro={`The week follows the US market. It wraps up on ${WEEK.close}.`}
         />
 
         <ol className="grid grid-cols-1 gap-[26px] lg:grid-cols-5 lg:gap-0">
@@ -202,7 +193,7 @@ export default function HomePage() {
 
         <p className="mt-6">
           <Link href="/how-it-works" className="link font-semibold text-accent-text">
-            Policy, phases and addresses
+            The full week
             <span aria-hidden="true"> →</span>
           </Link>
         </p>
@@ -212,8 +203,8 @@ export default function HomePage() {
         <SectionHead
           id="benefits-h"
           eyebrow="Why Stonkhouse"
-          title="Hands off, and on the record."
-          intro="The fee slip is one rehearsal week, labelled as one, not a quote."
+          title="Your stock. Your week."
+          intro="The slip is one example week, labelled as one, not a quote."
         />
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -221,21 +212,19 @@ export default function HomePage() {
             <li>
               <h3 className="flex items-center gap-2.5 text-[19px] font-bold tracking-[-0.015em]">
                 <CheckCircleIcon className="shrink-0 text-accent" />
-                Hands off
+                Only what you offer
               </h3>
               <p className="mt-2 text-[15.5px] text-ink-2">
-                You pick the lots. The keeper lists and closes the week inside a published policy. No protocol token, no
-                points, no airdrop.
+                You choose how much of your {MARKET} is for sale each week. The rest cannot be taken.
               </p>
             </li>
             <li>
               <h3 className="flex items-center gap-2.5 text-[19px] font-bold tracking-[-0.015em]">
                 <CheckCircleIcon className="shrink-0 text-accent" />
-                Every week published
+                Every week on the record
               </h3>
               <p className="mt-2 text-[15.5px] text-ink-2">
-                The app&apos;s activity page lists each week the vault arms, zeros included. A week the keeper skips
-                leaves no row. No projections.
+                Weeks that pay nothing are published too. No projections.
               </p>
             </li>
           </ul>
@@ -278,7 +267,7 @@ export default function HomePage() {
               id="cta-h"
               className="max-w-[18em] text-[length:clamp(28px,3.4vw,40px)] font-bold leading-[1.08] tracking-[-0.03em] text-ground"
             >
-              Deposit, and let the week run.
+              Let your stonks work for you.
             </h2>
             <p className="mt-2.5 max-w-[34em] text-ground/75">This site never asks for a wallet.</p>
           </div>
