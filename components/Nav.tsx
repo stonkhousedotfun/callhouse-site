@@ -1,19 +1,17 @@
 /**
- * Top bar for stonkhouse.fun (the mockup's .topbar). Server component; the only client code is
- * the link list in components/NavLinks.tsx, which needs usePathname for the active link.
+ * Top bar for stonkhouse.fun. Server component; the only client code is NavLinks
+ * (usePathname for the active "How it works" link).
  *
- * DOM order is the reader's journey: brand, how the week runs, what can go wrong, the legal
- * position, the docs, and only then "Open the app". On wide screens that is also the visual
- * order. Below 960px the links drop to their own full-width row under the brand and the button,
- * so the button stays reachable without a menu and every link stays one tap away at 390px.
+ * Visual order: brand, how a week runs, then on the right X / GitHub / GitBook and "Open the app".
+ * Risks and legal live in the footer, not here. Below 960px the how-it-works link drops under the
+ * brand and the right cluster, so the button and the marks stay reachable without a menu.
  *
- * "Open the app" is the one control in the chrome that leaves this domain. It is a plain new-tab
- * <a> (Button detects the absolute URL), not next/link: app.stonkhouse.fun is a different
- * origin and a different Next application, so there is nothing to prefetch.
+ * "Open the app" and the three marks leave this origin. They are plain new-tab <a>s.
  *
  * DELIBERATELY ABSENT: any wallet or connect control. This package has no wallet code.
  */
 import { NavLinks } from "@/components/NavLinks";
+import { SocialLinks } from "@/components/SocialLinks";
 import { Brand } from "@/components/ui/Brand";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
@@ -26,13 +24,16 @@ export function Nav() {
         <Brand className="order-1" />
         <nav
           aria-label="Site"
-          className="order-3 w-full overflow-x-auto [scrollbar-width:none] max-[22rem]:[mask-image:linear-gradient(to_right,#000_85%,transparent)] lg:order-2 lg:mr-auto lg:w-auto lg:overflow-visible"
+          className="order-3 w-full overflow-x-auto [scrollbar-width:none] lg:order-2 lg:mr-auto lg:w-auto lg:overflow-visible"
         >
           <NavLinks />
         </nav>
-        <Button href={OPEN_APP} size="sm" className="order-2 ml-auto lg:order-3 lg:ml-0">
-          Open the app
-        </Button>
+        <div className="order-2 ml-auto flex items-center gap-2 lg:order-3 lg:ml-0">
+          <SocialLinks />
+          <Button href={OPEN_APP} size="sm">
+            Open the app
+          </Button>
+        </div>
       </Container>
     </header>
   );

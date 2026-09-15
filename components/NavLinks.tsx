@@ -5,25 +5,18 @@
  * one thing: usePathname, for aria-current on the active link. Everything around it (brand, the
  * app button, the header) is rendered by the server component in components/Nav.tsx.
  *
- * DELIBERATELY ABSENT: a "Home" link (the wordmark is the way home), any wallet or connect
- * control, and any JS menu. Four short links fit one row at 390px, starting at the page gutter;
- * below about 350px the row scrolls sideways rather than wrapping the header, and Nav.tsx fades its
- * right edge there so the clipped link reads as more to scroll.
+ * DELIBERATELY ABSENT: a "Home" link (the wordmark is the way home), Risks and Legal (those live
+ * in the footer), Docs-as-text (the GitBook mark in the top-right is the docs), any wallet or
+ * connect control, and any JS menu.
  *
  * Exact-match active test only: a prefix test would light every link that shares a prefix.
  */
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { ExternalLink } from "@/components/ui/ExternalLink";
 import { cn } from "@/lib/cn";
-import { DOCS_URL } from "@/lib/site";
 
-const LINKS = [
-  { href: "/how-it-works", label: "How it works" },
-  { href: "/risks", label: "Risks" },
-  { href: "/legal", label: "Legal" },
-] as const;
+const LINKS = [{ href: "/how-it-works", label: "How it works" }] as const;
 
 /* The outline is inset (-2px offset) because the mobile row is an overflow container, which would
    clip an outline drawn outside the link. */
@@ -50,11 +43,6 @@ export function NavLinks() {
           </li>
         );
       })}
-      <li>
-        <ExternalLink href={DOCS_URL} arrow className={cn(LINK, IDLE)}>
-          Docs
-        </ExternalLink>
-      </li>
     </ul>
   );
 }

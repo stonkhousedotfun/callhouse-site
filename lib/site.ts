@@ -40,6 +40,12 @@ export const SITE_URL = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL ?? "https
 /** Depositor documentation and the protocol reference (GitBook, synced from leekzor/callhouse-docs). */
 export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.stonkhouse.fun");
 
+/** X (Twitter). Override with NEXT_PUBLIC_X_URL if the handle is not @stonkhouse. */
+export const X_URL = normalizeBase(process.env.NEXT_PUBLIC_X_URL ?? "https://x.com/stonkhouse");
+
+/** GitHub org. Repos may be private; the org page is still the public door. */
+export const GITHUB_URL = normalizeBase(process.env.NEXT_PUBLIC_GITHUB_URL ?? "https://github.com/leekzor");
+
 /** The dapp. Every CTA on this site points into it. */
 export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.stonkhouse.fun");
 

@@ -3,17 +3,17 @@
  *
  * Four rows, in this order:
  *   1. what this is: product, share ticker, collateral, chain.
- *   2. where to go: the in-site pages, then the three links that leave this domain (docs, the
- *      app, the explorer), each marked ↗ and opening a new tab.
+ *   2. where to go: how it works, risks, legal, terms, privacy, then the links that leave this
+ *      domain (docs, the app, the explorer), each marked ↗ and opening a new tab. Risks and legal
+ *      live here, not in the top bar.
  *   3. the standing disclaimers. "Not affiliated with Robinhood Markets, Robinhood Assets (Jersey)
  *      Limited or Valorem" is carried word for word from the dapp's footer (leekzor/callhouse
  *      `web/app/layout.tsx`, as ported 2026-09-14); if it is reworded, reword both in paired commits
  *      across the two repos.
  *   4. the audit status, stated outright.
  *
- * DELIBERATELY ABSENT: a vault contract link (the addresses live on /how-it-works#contracts, which
- * says what each one is and how it is verified) and a source-repository link (it may not be public; a dead link reads as a
- * withdrawn claim, and what a reader needs from it is the audit status, which row 4 states).
+ * DELIBERATELY ABSENT: a vault contract link (the addresses live on /how-it-works#contracts). GitHub
+ * and GitBook sit in the top bar, not here.
  */
 import Link from "next/link";
 
