@@ -663,10 +663,8 @@ export default function HowItWorksPage() {
             <Chip>Current settings</Chip>
           </div>
           <dl className="grid grid-cols-2 gap-3">
-            <Figure boxed size="md" label="Deposit cap" value="20" unit={MARKET} />
-            <Figure boxed size="md" label="Sold at most" value="≤ 95%" unit={`of the ${MARKET}`} />
+            <Figure boxed size="md" label="Our fee" value="5%" />
             <Figure boxed size="md" label="Strike above spot" value="3–12%" />
-            <Figure boxed size="md" label="Protocol fee" value="5%" unit="of premium" />
             <Figure boxed size="md" label="Book closes" value="Friday 4:00pm" unit="New York" />
             <Figure boxed size="md" label="Expiry" value="Saturday 4:00pm" unit="New York" />
           </dl>

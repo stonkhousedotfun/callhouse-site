@@ -126,12 +126,17 @@ export const ADDRESSES = {
   factory: {
     label: `Stonkhouse ${MARKET} account factory`,
     address: "0xc4A5Cd0DE91CaB7F5Ebe2114bc63Fbb43E642BBb",
-    what: `Deploys each user's isolated 1-lot account. A fill writes that user's ${MARKET} and pays that user.`,
+    what: `Deploys each user's account. A fill writes that user's ${MARKET} and pays that user.`,
+  },
+  implementation: {
+    label: "Account implementation",
+    address: "0xe412A596B000f73ad19B39f51dfd0B17A15F45EC",
+    what: "Logic each user account clones.",
   },
   clear: {
-    label: "Valorem Clear, the vault's own instance",
+    label: "Valorem Clear",
     address: "0x53d7A6d0489Daf3d67b9A314e0eAB2B78Acab9C6",
-    what: "Deployed from Valorem's code. Holds the collateral of calls sold, mints each call inside the fill that buys it, and settles exercise.",
+    what: "Holds collateral of calls sold and settles exercise.",
     verified:
       "Not source-verified yet. Its runtime bytecode matches Valorem's published code at commit 6436c823 except the metadata hash.",
   },
