@@ -125,7 +125,7 @@ export type AddressRow = {
 export const ADDRESSES = {
   factory: {
     label: `Stonkhouse ${MARKET} account factory`,
-    address: "0x7850Ae4ac03b651263cE78EC5FcED11b0d0e05A7",
+    address: "0xc4A5Cd0DE91CaB7F5Ebe2114bc63Fbb43E642BBb",
     what: `Deploys each user's isolated 1-lot account. A fill writes that user's ${MARKET} and pays that user.`,
   },
   clear: {
