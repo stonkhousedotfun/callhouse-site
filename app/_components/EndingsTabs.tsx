@@ -29,6 +29,8 @@ import { useId, useRef, useState, type KeyboardEvent } from "react";
 import { Figure } from "@/components/ui/Figure";
 import { Panel } from "@/components/ui/Panel";
 import { cn } from "@/lib/cn";
+import { EXAMPLE } from "@/lib/exampleWeek";
+import { fmtPct } from "@/lib/format";
 
 type Ending = {
   key: string;
@@ -45,7 +47,7 @@ const ENDINGS: readonly Ending[] = [
     key: "none",
     title: "Nobody bought",
     hint: "The most likely week on a thin book",
-    body: "The listing stayed open until the Friday close and no buyer filled it. Calls are written only when bought, so nothing was written: no premium, no fee, nothing that can be assigned, and the NVDA never left the vault. In the fork rehearsal's first week, 23 calls were offered and the week closed with 0 USDG.",
+    body: `The listing stayed open until the Friday close and no buyer filled it. Calls are written only when bought, so nothing was written: no premium, no fee, nothing that can be assigned, and the NVDA never left the vault. In the fork rehearsal's first week, 23 calls were offered and the week closed with 0 USDG.`,
     premium: "None",
     nvda: "Never left the vault",
     upside: "Kept",
@@ -54,7 +56,7 @@ const ENDINGS: readonly Ending[] = [
     key: "otm",
     title: "Bought, expired worthless",
     hint: "Usually: NVDA stayed under the strike",
-    body: "Buyers paid for some or all of the calls on offer, each fill wrote exactly the calls it bought, and none was exercised against the vault, usually because NVDA stayed under the strike. Premium, less Stonkhouse's 5%, is credited to depositors in USDG, and the NVDA behind the calls comes back at the close.",
+    body: `Buyers paid for some or all of the calls on offer, each fill wrote exactly the calls it bought, and none was exercised against the vault, usually because NVDA stayed under the strike. Premium, less Stonkhouse's ${fmtPct(5)}, is credited to depositors in USDG, and the NVDA behind the calls comes back at the close.`,
     premium: "Kept, net of the fee",
     nvda: "Back at close",
     upside: "Kept",
@@ -63,7 +65,7 @@ const ENDINGS: readonly Ending[] = [
     key: "itm",
     title: "Bought and exercised",
     hint: "Usually: NVDA ran past the strike",
-    body: "Holders exercised, usually because NVDA ran past the strike, and Valorem assigned some or all of the vault's contracts. Valorem spreads exercise across everyone who wrote the same call, so the vault can be assigned on part of what it sold, but never on more than it sold. Premium is still credited. Assigned NVDA leaves the vault at the strike and comes back as strike USDG, credited to depositors in full with no fee. The gain above the strike on the assigned NVDA is given up for that week, and v1 does not buy the NVDA back. In the rehearsal's second week, 2 of the 5 calls sold were exercised at 223, and 446 USDG came back fee-free.",
+    body: `Holders exercised, usually because NVDA ran past the strike, and Valorem assigned some or all of the vault's contracts. Valorem spreads exercise across everyone who wrote the same call, so the vault can be assigned on part of what it sold, but never on more than it sold. Premium is still credited. Assigned NVDA leaves the vault at the strike and comes back as strike USDG, credited to depositors in full with no fee. The gain above the strike on the assigned NVDA is given up for that week, and v1 does not buy the NVDA back. In the rehearsal's second week, ${EXAMPLE.assigned} of the ${EXAMPLE.sold} calls sold were exercised at ${EXAMPLE.strike}, and ${EXAMPLE.strikeProceeds} USDG came back fee-free.`,
     premium: "Kept, net of the fee",
     nvda: "Assigned part leaves at the strike, paid in USDG",
     upside: "Given up that week",

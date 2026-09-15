@@ -42,7 +42,7 @@ const mono = Geist_Mono({
  * because the dapp needs wagmi, viem and @tanstack/react-query mounted above every route. This
  * package has none of those as dependencies and must never acquire them — that is the entire point
  * of splitting the two domains. A marketing page that ships a wallet runtime pays for a connect
- * flow it will never offer, and the vault is not deployed yet, so every live figure it could render
+ * flow it will never offer, and this site never reads the chain, so every live figure it could render
  * would be a zero. Nothing under this layout fetches, reads a chain, or holds client state beyond
  * the nav's active link. If a page here ever needs a provider, the page belongs on
  * app.stonkhouse.fun.
@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     template: "%s — Stonkhouse",
   },
   description:
-    "Deposit one tokenised stock, receive vault shares. Each week the vault lists covered calls against it, writes each call only when a buyer pays for it, and credits depositors whatever premium actually fills. A week with no buyer pays zero premium.",
+    "Pooled covered calls on tokenised stocks. The first vault is NVDA on Robinhood Chain; more stocks follow. Each week the vault lists calls and writes them only when a buyer fills. A week with no buyer pays zero premium. Beta, pending audit.",
   // Per-route canonicals override this; the default is the landing page.
   alternates: { canonical: "/" },
   openGraph: {
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     // share card on any route that sets its own title.
     title: "Stonkhouse — pooled covered calls on Robinhood Chain",
     description:
-      "Deposit one tokenised stock, receive vault shares. Each week the vault lists covered calls against it, writes each call only when a buyer pays for it, and credits depositors whatever premium actually fills. A week with no buyer pays zero premium.",
+      "Pooled covered calls on tokenised stocks. The first vault is NVDA on Robinhood Chain; more stocks follow. Each week the vault lists calls and writes them only when a buyer fills. A week with no buyer pays zero premium. Beta, pending audit.",
     url: SITE_URL,
     siteName: "Stonkhouse",
     type: "website",

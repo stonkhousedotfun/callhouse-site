@@ -163,9 +163,8 @@ export default function LegalPage() {
           </li>
           <li>
             The Stonkhouse smart contracts have had no external audit, only the project&apos;s own internal
-            reviews. They are provided as-is,
-            under the MIT licence, with no warranty of any kind. You can lose the collateral you
-            deposit.
+            reviews. An external audit is pending. They are provided as-is, under the MIT licence, with
+            no warranty of any kind. You can lose the collateral you deposit.
           </li>
           <li>
             Past weekly results, including any published on{" "}

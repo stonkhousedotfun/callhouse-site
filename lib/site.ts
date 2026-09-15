@@ -47,6 +47,9 @@ export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https:/
  * Join a dapp route onto APP_URL. `appUrl("/vault/nvda")` and `appUrl("vault/nvda")` both give
  * `https://app.stonkhouse.fun/vault/nvda`, and `appUrl()` gives the bare origin with no trailing
  * slash. An absolute URL is passed through untouched so callers can hand this any href.
+ *
+ * "Open the app" goes to the app frontpage (`OPEN_APP`), not the vault. A visitor who is ready to
+ * deposit is sent to `VAULT_APP`. The two are different pages; do not collapse them.
  */
 export function appUrl(path = ""): string {
   if (/^[a-z][a-z0-9+.-]*:/i.test(path)) return path;
@@ -54,12 +57,29 @@ export function appUrl(path = ""): string {
   return rest ? `${APP_URL}/${rest}` : APP_URL;
 }
 
+/** App frontpage. "Open the app" on this site lands here. */
+export const OPEN_APP = APP_URL;
+
+/** Deposit, withdraw and claim for the first vault. */
+export const VAULT_APP = appUrl("/vault/nvda");
+
 /**
  * First (and so far only) market. Matches MARKET / SHARE_TICKER in leekzor/callhouse:
  * `web/lib/contracts.ts`.
  */
 export const MARKET = "NVDA";
 export const SHARE_TICKER = "cNVDA";
+
+/**
+ * Public product status. The landing, footer and risks glance read these so "beta" and
+ * "pending audit" cannot drift across pages. "Pending" means no report yet, not that one has
+ * started on a named firm. The contracts remain unaudited until a report is published.
+ */
+export const STATUS = {
+  phase: "Beta",
+  audit: "Pending audit",
+  auditLine: "The Stonkhouse contracts have not been audited. An external audit is pending.",
+} as const;
 
 /** Robinhood Chain mainnet, an Arbitrum Orbit L2. 4663 = 0x1237. */
 export const CHAIN_ID = 4663;

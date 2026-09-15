@@ -61,7 +61,7 @@ import {
   OPERATOR_LEGAL_NAME,
   operatorIsDesignated,
 } from "@/lib/legal";
-import { MARKET, SHARE_TICKER, appUrl } from "@/lib/site";
+import { MARKET, OPEN_APP, SHARE_TICKER } from "@/lib/site";
 
 // The draft sentence is appended from the same flag the in-page marker reads, so the search
 // snippet and the page stop saying "draft" in the same build rather than one lagging the other.
@@ -234,9 +234,9 @@ export default function TermsPage() {
       <DocSection {...SECTIONS.thirdParty}>
         <DocList>
           <li>
-            The Stonkhouse contracts have had no external audit, only internal reviews. They are
-            published under the MIT licence,
-            as-is, and there is no upgrade path: a bug means a new vault and a migration, not a patch.
+            The Stonkhouse contracts have had no external audit, only internal reviews. An external
+            audit is pending. They are published under the MIT licence, as-is, and there is no upgrade
+            path: a bug means a new vault and a migration, not a patch.
           </li>
           <li>
             Seaport, the {MARKET} Stock Token, USDG, the RPC providers and Cboe, whose delayed option
@@ -379,7 +379,7 @@ export default function TermsPage() {
           The privacy notice is at <DocLink href="/privacy">/privacy</DocLink>, the perimeter and the legal
           form of the collateral are at <DocLink href="/legal">/legal</DocLink>, and {SHARE_TICKER} itself
           lives at{" "}
-          <DocExternalLink href={appUrl("/vault/nvda")}>
+          <DocExternalLink href={OPEN_APP}>
             app.stonkhouse.fun
           </DocExternalLink>
           .

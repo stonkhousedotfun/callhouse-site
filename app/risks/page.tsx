@@ -59,9 +59,10 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 
-import { Button, Container, Eyebrow, ExternalLink, Figure, Num, Panel, Section, SectionHead, WarnIcon } from "@/components/ui";
+import { Button, Chip, Container, Eyebrow, ExternalLink, Figure, Num, Panel, Section, SectionHead, WarnIcon } from "@/components/ui";
+import { WEEK } from "@/lib/clock";
 import { SECURITY_CONTACT_EMAIL } from "@/lib/legal";
-import { ADDRESSES, CHAIN_ID, CHAIN_NAME, DOCS_URL, MARKET, SHARE_TICKER, addressUrl, appUrl } from "@/lib/site";
+import { ADDRESSES, CHAIN_ID, CHAIN_NAME, DOCS_URL, MARKET, SHARE_TICKER, STATUS, addressUrl, appUrl } from "@/lib/site";
 
 import { GlanceGroup, ImpactLegend, RiskEntry, type RiskGroup } from "./_components/risk-ui";
 
@@ -105,12 +106,10 @@ const GROUPS: readonly RiskGroup[] = [
             <p>
               Premium is paid only if a buyer fills. The vault&apos;s order for the week&apos;s calls
               is served only on the app&apos;s cycle page, and any Seaport 1.6 client can fill the
-              same order from what that page serves. If nobody buys before the book closes (
-              <Num>16:00 ET</Num> on Friday, or on Thursday when NYSE is shut that Friday, which is{" "}
-              <Num>20:00 UTC</Num> while US daylight saving time is in effect and <Num>21:00 UTC</Num>{" "}
-              after it ends; the call&apos;s own exercise time is what counts), the week&apos;s premium
-              is zero. Calls are
-              written only when bought, so nothing was written.
+              same order from what that page serves. If nobody buys before the book closes at{" "}
+              <Num>{WEEK.close}</Num> — or Thursday when NYSE is shut that Friday; the call&apos;s own
+              exercise time is what counts — the week&apos;s premium is zero. Calls are written only
+              when bought, so nothing was written.
             </p>
             <p>
               This is the most likely outcome on a thin book, and the book for weekly calls on a
@@ -189,7 +188,7 @@ const GROUPS: readonly RiskGroup[] = [
         body: (
           <p>
             Anyone holding a call of the week&apos;s option type may exercise it inside the exercise
-            window (<Num>Fri 16:00</Num> to <Num>Sat 16:00 ET</Num>), and Valorem can assign that
+            window (<Num>{WEEK.window}</Num>), and Valorem can assign that
             exercise to the vault whether or not that particular call was bought from the vault, up to
             the number the vault sold. Valorem takes the collateral at the strike and leaves the strike
             proceeds in USDG, credited to depositors in full: the protocol fee is charged on premium,
@@ -632,7 +631,7 @@ const GROUPS: readonly RiskGroup[] = [
             The deposit cap is the real statement of confidence: <Num>20 {MARKET}</Num> today, not an
             open door. The admin sets it and can change it at any time; it has no compiled ceiling.
             There is no proxy and no upgrade key, so a bug means a new vault and a migration, not a
-            silent patch. No external audit has been done or is scheduled. There is no bug bounty;
+            silent patch. No external audit has been completed. One is pending. There is no bug bounty;
             report a vulnerability to{" "}
             {SECURITY_CONTACT_EMAIL ? (
               <a className="link" href={`mailto:${SECURITY_CONTACT_EMAIL}`}>
@@ -906,7 +905,13 @@ export default function RisksPage() {
       {/* Page head: the lede and how to read the page on the left, the standing disclosures on the right. */}
       <Container className="grid grid-cols-1 items-start gap-9 pb-16 pt-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 lg:pb-20 lg:pt-12">
         <div>
-          <Eyebrow>Risks</Eyebrow>
+          <div className="flex flex-wrap gap-2">
+            <Chip tone="accent" dot>
+              {STATUS.phase}
+            </Chip>
+            <Chip tone="warn">{STATUS.audit}</Chip>
+          </div>
+          <Eyebrow className="mt-5">Risks</Eyebrow>
           <h1 className="mt-3 text-[length:clamp(36px,4.8vw,56px)] font-extrabold leading-[1.04] tracking-[-0.03em]">
             Everything that can go wrong.
           </h1>
@@ -981,7 +986,7 @@ export default function RisksPage() {
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Figure boxed size="sm" label="Deposit cap today" value="20" unit={MARKET} />
             <Figure boxed size="sm" label="Strike band today" value="3–12%" unit="above spot" />
-            <Figure boxed size="sm" mono={false} label="External audit" value="None" />
+            <Figure boxed size="sm" mono={false} label="External audit" value={STATUS.audit} />
           </dl>
         </Panel>
       </Container>

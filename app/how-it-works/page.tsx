@@ -48,12 +48,14 @@ import {
   Container,
   ExternalLink,
   Figure,
+  ClockNote,
   Notice,
   Num,
   Panel,
   Section,
   SectionHead,
 } from "@/components/ui";
+import { WEEK } from "@/lib/clock";
 import {
   ADDRESS_ROWS,
   CHAIN_ID,
@@ -61,8 +63,11 @@ import {
   DOCS_URL,
   FILL_PAGE_PATH,
   MARKET,
+  OPEN_APP,
   ROLE_KEYS,
   SHARE_TICKER,
+  STATUS,
+  VAULT_APP,
   addressUrl,
   appUrl,
 } from "@/lib/site";
@@ -157,12 +162,12 @@ const STEPS: TimelineStep[] = [
   },
   {
     title: "The book closes",
-    when: "Fri 16:00 ET",
-    body: "This is the call's exercise time, fixed when the option type was created, and it is the real deadline: 20:00 UTC while US daylight saving time is in effect, 21:00 UTC after it ends. From that moment deposits close, nothing more can be sold or written, and anyone can lock the book, which cancels a listing still live. Nothing depends on anyone calling it, so a stopped keeper cannot hold the week open.",
+    when: WEEK.close,
+    body: "This is the call's exercise time, fixed when the option type was created, and it is the real deadline. From that moment deposits close, nothing more can be sold or written, and anyone can lock the book, which cancels a listing still live. Nothing depends on anyone calling it, so a stopped keeper cannot hold the week open.",
   },
   {
     title: "The exercise window runs to expiry",
-    when: "Fri 16:00 → Sat 16:00 ET",
+    when: WEEK.window,
     body: "Holders of this week's calls can exercise them on the Clear, from the exercise time until expiry. Nothing is exercised automatically, and a call not exercised by expiry expires worthless. The vault does nothing in this phase: whether a call is exercised is decided by whoever holds it. NVDA taken by an exercise leaves the vault's claim at once; the strike USDG for it arrives at the close.",
     note: (
       <>
@@ -186,7 +191,7 @@ const STEPS: TimelineStep[] = [
   },
   {
     title: "The week closes",
-    when: "From Sat 16:00 ET",
+    when: `From ${WEEK.expiry}`,
     accent: true,
     body: "The keeper can close from expiry, and anyone can one hour later. One transaction cancels any listing still live, redeems the Valorem claim if anything was sold (NVDA back, or strike USDG where it was assigned), takes the protocol fee from the premium alone, credits the rest per share with any strike USDG in full, settles the withdrawal queue and returns the vault to Idle.",
     note: "If a token issuer makes the redeem fail, the close still completes and keeps the claim, stranded, until a retry succeeds. The phases section below says what that shuts.",
@@ -626,9 +631,14 @@ export default function HowItWorksPage() {
       {/* ---------------------------------------------------------------- page head ----------- */}
       <Container className="grid grid-cols-1 items-center gap-9 pb-14 pt-4 sm:pb-[72px] lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-14 lg:pt-10">
         <div>
-          <Chip tone="accent" dot wrap>
-            {CHAIN_NAME} {CHAIN_ID} · Valorem Clear · Seaport 1.6
-          </Chip>
+          <div className="flex flex-wrap gap-2">
+            <Chip tone="accent" dot wrap>
+              {STATUS.phase} · {CHAIN_NAME}
+            </Chip>
+            <Chip tone="warn" wrap>
+              {STATUS.audit}
+            </Chip>
+          </div>
           <h1 className="mt-5 text-[length:clamp(38px,5vw,60px)] font-extrabold leading-[1.03] tracking-[-0.035em]">
             One week, <span className="text-accent">start to finish.</span>
           </h1>
@@ -639,14 +649,14 @@ export default function HowItWorksPage() {
             and the ways it can end.
           </p>
           <div className="mt-[30px] flex flex-wrap gap-3">
-            <Button href={appUrl("/vault/nvda")}>Open the app</Button>
+            <Button href={OPEN_APP}>Open the app</Button>
             <Button variant="ghost" href={DOCS_URL}>
               Read the docs
             </Button>
           </div>
           <Notice variant="plain" className="mt-[26px]">
             Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. The vault is live
-            on {CHAIN_NAME} and the contracts have had no external audit. Every figure here is a policy setting, a
+            on {CHAIN_NAME}. {STATUS.auditLine} Every figure here is a policy setting, a
             dated figure from the first week or a labelled example, not a quote.
           </Notice>
         </div>
@@ -663,14 +673,14 @@ export default function HowItWorksPage() {
             <Figure boxed size="md" label="Sold at most" value="≤ 95%" unit={`of the ${MARKET}`} />
             <Figure boxed size="md" label="Strike above spot" value="3–12%" />
             <Figure boxed size="md" label="Protocol fee" value="5%" unit="of premium" />
-            <Figure boxed size="md" label="Book closes" value="Fri 16:00" unit="ET" />
-            <Figure boxed size="md" label="Expiry" value="Sat 16:00" unit="ET" />
+            <Figure boxed size="md" label="Book closes" value="Friday 4:00pm" unit="New York" />
+            <Figure boxed size="md" label="Expiry" value="Saturday 4:00pm" unit="New York" />
           </dl>
-          <p className="border-t border-line pt-4 text-[13.5px] text-ink-3">
-            New York time: <Num>20:00 UTC</Num> while US daylight saving time is in effect, <Num>21:00 UTC</Num> after
-            it ends. When Friday is an NYSE holiday the book closes on Thursday and expiry is on Friday. The admin can
-            change these settings at any time, inside the compiled limits where the contracts set one; the deposit cap
-            has none.
+          <ClockNote className="border-t border-line pt-4" />
+          <p className="text-[13.5px] text-ink-3">
+            When Friday is an NYSE holiday the book closes on Thursday and expiry is on Friday. The admin can change
+            these settings at any time, inside the compiled limits where the contracts set one; the deposit cap has
+            none.
           </p>
         </Panel>
 
@@ -1172,7 +1182,7 @@ export default function HowItWorksPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Button href={appUrl("/activity")}>See every published week</Button>
-            <Button variant="inverse" href={appUrl("/vault/nvda")}>
+            <Button variant="inverse" href={VAULT_APP}>
               Open the {SHARE_TICKER} vault
             </Button>
           </div>

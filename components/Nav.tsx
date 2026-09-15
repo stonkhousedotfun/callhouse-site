@@ -17,7 +17,7 @@ import { NavLinks } from "@/components/NavLinks";
 import { Brand } from "@/components/ui/Brand";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { APP_URL } from "@/lib/site";
+import { OPEN_APP } from "@/lib/site";
 
 export function Nav() {
   return (
@@ -30,7 +30,7 @@ export function Nav() {
         >
           <NavLinks />
         </nav>
-        <Button href={APP_URL} size="sm" className="order-2 ml-auto lg:order-3 lg:ml-0">
+        <Button href={OPEN_APP} size="sm" className="order-2 ml-auto lg:order-3 lg:ml-0">
           Open the app
         </Button>
       </Container>
