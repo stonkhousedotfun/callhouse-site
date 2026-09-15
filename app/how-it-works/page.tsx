@@ -1,10 +1,10 @@
 /**
- * callhouse.finance/how-it-works — the mechanics, for someone who has not connected anything.
+ * stonkhouse.fun/how-it-works — the mechanics, for someone who has not connected anything.
  *
  * This is the public sibling of the dapp's /docs page and a short path into the GitBook docs. The
  * reader has not deposited, nothing is connected, and the vault is not even deployed, so every
  * figure below is one of three things: a policy setting (launch value or compiled limit), an
- * address (or "published at launch" for what Callhouse has not deployed), or an example from the
+ * address (or "published at launch" for what Stonkhouse has not deployed), or an example from the
  * keeper's fork rehearsal that is labelled as one where it appears.
  *
  * DELIBERATELY ABSENT: every number that could move. No cycle number, no live strike, no realised
@@ -28,7 +28,7 @@
  * and in leekzor/callhouse for the keeper's defaults: keeper/README.md "The week" and "Pricing",
  * keeper/src/calendar.ts (NYSE Friday 16:00 ET, Thursday on a holiday, expiry +24 h).
  *
- * Every "go do something" link leaves for app.callhouse.finance via appUrl(). A relative href on
+ * Every "go do something" link leaves for app.stonkhouse.fun via appUrl(). A relative href on
  * this domain is a 404, not a route into the dapp.
  */
 import type { Metadata } from "next";
@@ -68,7 +68,7 @@ const DESCRIPTION =
   "The weekly covered-call cycle in detail: the timeline, the phases, how strikes, sizes and prices are chosen, why a call is written only when it is bought, where the premium goes, how a week can end, withdrawals and deposits during a week, and who can do what.";
 
 /**
- * `title` is the bare route name: the layout carries the "%s — Callhouse" template, so repeating
+ * `title` is the bare route name: the layout carries the "%s — Stonkhouse" template, so repeating
  * the suffix here would render it twice. `alternates.canonical` is not optional — the layout's
  * default canonical is "/", and inheriting it would point every crawler at the landing page. The
  * Open Graph title is stated in full because the template does not apply inside openGraph.
@@ -78,10 +78,10 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: "/how-it-works" },
   openGraph: {
-    title: "How it works — Callhouse",
+    title: "How it works — Stonkhouse",
     description: DESCRIPTION,
     url: "/how-it-works",
-    siteName: "Callhouse",
+    siteName: "Stonkhouse",
     type: "article",
   },
 };
@@ -381,7 +381,7 @@ const KEEPER_DEFAULTS: Array<{ title: string; body: string }> = [
 
 const FEES: Array<{ who: string; size: string; when: string; body: string }> = [
   {
-    who: "Callhouse",
+    who: "Stonkhouse",
     size: "5% of premium",
     when: "When premium is accounted, only above zero",
     body: "Taken when the vault accounts for premium, at the close or when a deposit arrives. Strike proceeds from an assignment are credited to depositors in full: that exclusion is in the contract code, not a setting. The admin can change the rate, never above 20% of premium.",
@@ -423,7 +423,7 @@ const ENDINGS: Array<{
     chip: { tone: "accent", label: "Premium kept" },
     body: [
       "Buyers paid for some or all of the calls, each fill wrote exactly what it bought, and no exercise was assigned to the vault, usually because NVDA stayed below the strike. The options expire worthless to their holders.",
-      "Premium, less Callhouse's 5%, is credited to depositors in USDG, and the NVDA behind the calls sold comes back at the close.",
+      "Premium, less Stonkhouse's 5%, is credited to depositors in USDG, and the NVDA behind the calls sold comes back at the close.",
     ],
     premium: "Kept, net of the fee",
     nvda: "Back at the close",
@@ -861,7 +861,7 @@ export default function HowItWorksPage() {
           id="withdrawals-h"
           eyebrow="Withdrawals"
           title="Two ways out, and the phase picks one."
-          intro="From the moment a week is listed until it closes, a withdrawal waits for the close: NVDA behind a call sold is locked in Valorem until expiry, and a fill can write against the rest at any moment. The queue is the mechanism, not a discretionary gate: no Callhouse key can jump it or stop it."
+          intro="From the moment a week is listed until it closes, a withdrawal waits for the close: NVDA behind a call sold is locked in Valorem until expiry, and a fill can write against the rest at any moment. The queue is the mechanism, not a discretionary gate: no Stonkhouse key can jump it or stop it."
         />
 
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
@@ -1049,7 +1049,7 @@ export default function HowItWorksPage() {
           <strong className="font-semibold text-ink">There is no proxy on v1.</strong> The vault cannot be upgraded in
           place. Fixing anything means deploying Vault v2 and migrating to it, in public, with depositors moving their
           own funds. That is deliberate: an upgradeable vault is a key that can rewrite the rules under a position that
-          is already open. The Callhouse contracts are unaudited: there has been no external audit, only internal
+          is already open. The Stonkhouse contracts are unaudited: there has been no external audit, only internal
           reviews.
         </Notice>
 
@@ -1064,7 +1064,7 @@ export default function HowItWorksPage() {
           title="What the week touches on chain."
           intro={
             <p>
-              Everything the weekly cycle uses on chain {CHAIN_ID}. The Callhouse vault and its own Valorem Clear
+              Everything the weekly cycle uses on chain {CHAIN_ID}. The Stonkhouse vault and its own Valorem Clear
               instance are not deployed yet, so their addresses are published at launch, not shown here in advance. The
               rest are third-party contracts already live. There is no registry and no third-party venue in the path.
             </p>

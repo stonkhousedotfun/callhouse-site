@@ -70,7 +70,7 @@ export function FeeSlip() {
           }
           value="4.280945"
         />
-        <Row label="Callhouse 5%" note="of premium only" value="0.214047" minus />
+        <Row label="Stonkhouse 5%" note="of premium only" value="0.214047" minus />
       </dl>
 
       <dl>

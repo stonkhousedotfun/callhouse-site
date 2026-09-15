@@ -1,5 +1,5 @@
 /**
- * Top bar for callhouse.finance (the mockup's .topbar). Server component; the only client code is
+ * Top bar for stonkhouse.fun (the mockup's .topbar). Server component; the only client code is
  * the link list in components/NavLinks.tsx, which needs usePathname for the active link.
  *
  * DOM order is the reader's journey: brand, how the week runs, what can go wrong, the legal
@@ -8,7 +8,7 @@
  * so the button stays reachable without a menu and every link stays one tap away at 390px.
  *
  * "Open the app" is the one control in the chrome that leaves this domain. It is a plain new-tab
- * <a> (Button detects the absolute URL), not next/link: app.callhouse.finance is a different
+ * <a> (Button detects the absolute URL), not next/link: app.stonkhouse.fun is a different
  * origin and a different Next application, so there is nothing to prefetch.
  *
  * DELIBERATELY ABSENT: any wallet or connect control. This package has no wallet code.

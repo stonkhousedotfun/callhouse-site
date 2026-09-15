@@ -1,5 +1,5 @@
 /**
- * /risks — the unabridged failure list for callhouse.finance, in the Daylight design.
+ * /risks — the unabridged failure list for stonkhouse.fun, in the Daylight design.
  *
  * This page is a product feature, not a legal appendix. The pitch is that the bad weeks are
  * published, so the bad weeks are described here in the register an engineer would use in a
@@ -36,7 +36,7 @@
  *     assignment" would be a model we do not have.
  *   - Any reassurance the bytecode does not enforce. Every "What the system does" line maps to a
  *     check in the contracts, to documented keeper or app behaviour, or to an explicit "nothing".
- *   - Wallet code of any kind. Links that do something point into app.callhouse.finance via
+ *   - Wallet code of any kind. Links that do something point into app.stonkhouse.fun via
  *     appUrl(), and open in a new tab.
  */
 import type { Metadata } from "next";
@@ -52,16 +52,16 @@ const DESCRIPTION =
   "Every way a week here pays nothing, or costs you the collateral: no buyer, a fill refused after a rally, assignment, a claim stranded at the close, issuer freeze, unaudited contracts, a keeper that can stop.";
 
 export const metadata: Metadata = {
-  // Bare route name: the layout's "%s — Callhouse" template applies the suffix. The Open Graph
+  // Bare route name: the layout's "%s — Stonkhouse" template applies the suffix. The Open Graph
   // title is stated in full because the template does not apply inside openGraph.
   title: "Risks",
   description: DESCRIPTION,
   alternates: { canonical: "/risks" },
   openGraph: {
-    title: "Risks — Callhouse",
+    title: "Risks — Stonkhouse",
     description: DESCRIPTION,
     url: "/risks",
-    siteName: "Callhouse",
+    siteName: "Stonkhouse",
     type: "article",
   },
 };
@@ -294,7 +294,7 @@ const GROUPS: readonly RiskGroup[] = [
           <p>
             The queue is the mechanism, not a discretionary gate. Queued shares are escrowed and
             tagged with an epoch, the epoch settles when the week closes, and you draw a pro rata
-            share of the {MARKET} plus the USDG your own queued shares earned. No Callhouse key can
+            share of the {MARKET} plus the USDG your own queued shares earned. No Stonkhouse key can
             jump the queue or stop it, the close is open to anyone an hour after expiry, and while the
             vault is Idle anyone can settle the queue. A settled withdrawal is paid its {MARKET} whatever
             USDG is doing; only its USDG can wait. A Stock Token issuer freeze of the vault can still
@@ -407,7 +407,7 @@ const GROUPS: readonly RiskGroup[] = [
             you carry whatever risk USDG carries. One Paxos key, with no delay, can pause USDG, freeze
             any address, wipe the balance of a frozen address, and in two transactions burn USDG from
             any address that is not frozen. The same key proposes and executes upgrades to the token
-            behind a <Num>24-hour</Num> timelock that Callhouse does not control. It has frozen
+            behind a <Num>24-hour</Num> timelock that Stonkhouse does not control. It has frozen
             addresses on this chain and, so far, has never unfrozen one.
           </p>
         ),
@@ -561,7 +561,7 @@ const GROUPS: readonly RiskGroup[] = [
           <>
             <p>
               <strong className="font-semibold text-ink">
-                The Callhouse contracts are not deployed and are unaudited.
+                The Stonkhouse contracts are not deployed and are unaudited.
               </strong>{" "}
               There has been no external audit. What stands behind them is a test suite and internal
               reviews by the team that built them. An internal adversarial review on{" "}
@@ -791,7 +791,7 @@ function Dependencies() {
     {
       name: ADDRESSES.seaport.label,
       address: ADDRESSES.seaport.address,
-      text: "Settles every fill and asks the vault before it moves anything. Third-party code outside Callhouse's control.",
+      text: "Settles every fill and asks the vault before it moves anything. Third-party code outside Stonkhouse's control.",
     },
     {
       name: "The keeper and the app's fill page",
@@ -890,7 +890,7 @@ export default function RisksPage() {
                 You can lose the collateral you deposit.
               </h2>
               <p className="mt-1.5 text-[14.5px] text-ink-2">
-                The Callhouse contracts are not deployed and are unaudited, the token&apos;s issuer can
+                The Stonkhouse contracts are not deployed and are unaudited, the token&apos;s issuer can
                 freeze or burn it, and a clearinghouse can take the collateral at the strike. Deposit
                 accordingly.
               </p>
@@ -916,7 +916,7 @@ export default function RisksPage() {
               </li>
               <li className="flex items-start gap-3 border-t border-line pt-3 text-[15.5px] font-semibold leading-snug">
                 <WarnIcon className="mt-0.5 shrink-0 text-warn" />
-                <span>Callhouse is not available to US persons.</span>
+                <span>Stonkhouse is not available to US persons.</span>
               </li>
             </ul>
           </div>
@@ -962,7 +962,7 @@ export default function RisksPage() {
           <li className="border-t border-line py-[22px]">
             <h3 className="text-[17.5px] font-bold tracking-[-0.01em]">Not an offer to US persons</h3>
             <p className="mt-1.5 text-[15px] text-ink-2">
-              Callhouse is not available to US persons. Access is restricted by the Terms of Use, not
+              Stonkhouse is not available to US persons. Access is restricted by the Terms of Use, not
               by a technical control, and you are responsible for your own eligibility. The legal form
               of the collateral is set out on{" "}
               <Link href="/legal" className="link">

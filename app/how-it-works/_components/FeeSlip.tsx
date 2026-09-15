@@ -16,7 +16,7 @@ import { Panel } from "@/components/ui";
  */
 const ROWS: Array<{ k: string; sub?: string; v: string; minus?: boolean }> = [
   { k: "Buyers paid", sub: "(2 + 3) × 0.856189 USDG", v: "4.280945" },
-  { k: "Callhouse 5%", sub: "of premium only", v: "− 0.214047", minus: true },
+  { k: "Stonkhouse 5%", sub: "of premium only", v: "− 0.214047", minus: true },
 ];
 
 const PERF = "radial-gradient(circle at 7px 7px, var(--ground) 5px, transparent 5.5px)";

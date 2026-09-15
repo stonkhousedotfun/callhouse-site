@@ -1,10 +1,10 @@
 /**
  * The one place this package knows a URL, a ticker or an address.
  *
- * Two domains, one product: callhouse.finance is this package (static marketing, zero wallet code) and
- * app.callhouse.finance is @callhouse/web in leekzor/callhouse (the dapp). Nothing here is same-origin
+ * Two domains, one product: stonkhouse.fun is this package (static marketing, zero wallet code) and
+ * app.stonkhouse.fun is @callhouse/web in leekzor/callhouse (the dapp). Nothing here is same-origin
  * with the app, so every "go do something" link must be an absolute external URL built with
- * appUrl() — a bare href="/vault/nvda" on this site is a 404 on callhouse.finance, not a route into the
+ * appUrl() — a bare href="/vault/nvda" on this site is a 404 on stonkhouse.fun, not a route into the
  * dapp.
  *
  * The constants below are DUPLICATED FROM leekzor/callhouse: `web/lib/contracts.ts`,
@@ -15,7 +15,7 @@
  * If an address changes, leekzor/callhouse: `README.md` and `ops/addresses.json` are the source of
  * truth and this file is updated by hand to match.
  *
- * Deliberately absent: chain clients, ABIs, and anything that reads live state. Nothing Callhouse
+ * Deliberately absent: chain clients, ABIs, and anything that reads live state. Nothing Stonkhouse
  * deploys is live yet: the vault and the vault's own Valorem Clear instance are listed below with a
  * null address and render as "published at launch", never as a made-up or placeholder address.
  * Every number on this site is a fixed policy parameter or a labelled rehearsal example, not a
@@ -34,17 +34,17 @@ function normalizeBase(url: string): string {
 }
 
 /** This site. Used for canonical URLs and metadataBase. */
-export const SITE_URL = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL ?? "https://callhouse.finance");
+export const SITE_URL = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL ?? "https://stonkhouse.fun");
 
 /** Depositor documentation and the protocol reference (GitBook, synced from leekzor/callhouse-docs). */
-export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.callhouse.finance");
+export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.stonkhouse.fun");
 
 /** The dapp. Every CTA on this site points into it. */
-export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.callhouse.finance");
+export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.stonkhouse.fun");
 
 /**
  * Join a dapp route onto APP_URL. `appUrl("/vault/nvda")` and `appUrl("vault/nvda")` both give
- * `https://app.callhouse.finance/vault/nvda`, and `appUrl()` gives the bare origin with no trailing
+ * `https://app.stonkhouse.fun/vault/nvda`, and `appUrl()` gives the bare origin with no trailing
  * slash. An absolute URL is passed through untouched so callers can hand this any href.
  */
 export function appUrl(path = ""): string {
@@ -81,7 +81,7 @@ export type AddressRow = {
   label: string;
   /**
    * Checksummed, as confirmed on chain 4663 by leekzor/callhouse: `ops/recon/`. `null` for a
-   * contract Callhouse deploys at launch: the page says "published at launch" instead.
+   * contract Stonkhouse deploys at launch: the page says "published at launch" instead.
    */
   address: string | null;
   /** One line on what it does, for the table's second column. */
@@ -90,14 +90,14 @@ export type AddressRow = {
 
 /**
  * The contracts a week touches. Insertion order is display order. The first two are deployed by
- * Callhouse at launch and have no address yet (leekzor/callhouse-contracts `script/Deploy.s.sol`,
+ * Stonkhouse at launch and have no address yet (leekzor/callhouse-contracts `script/Deploy.s.sol`,
  * `script/DeployClear.s.sol`; the own-Clear decision is recorded in the 2026-09-14 audit findings,
  * I-01). The rest are third-party contracts already live on 4663. The fee Safe is an ops detail, not
  * a public integration point, and is not listed.
  */
 export const ADDRESSES = {
   vault: {
-    label: `Callhouse ${MARKET} vault (${SHARE_TICKER})`,
+    label: `Stonkhouse ${MARKET} vault (${SHARE_TICKER})`,
     address: null,
     what: "Holds the NVDA, issues cNVDA, and is both the offerer and the zone of its own listing. Not deployed yet.",
   },

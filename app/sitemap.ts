@@ -3,7 +3,7 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 
 /**
- * /sitemap.xml for callhouse.finance. Six routes, listed by hand.
+ * /sitemap.xml for stonkhouse.fun. Six routes, listed by hand.
  *
  * The list is literal rather than derived from the filesystem on purpose. This site has exactly
  * six public pages — four product pages and the two legal documents added 2026-09-12 — and
@@ -23,7 +23,7 @@ import { SITE_URL } from "@/lib/site";
  * and `priority` are hints and nothing more; they are set to what is true (this content is
  * near-static, and the landing page is the entry point) rather than to gamed values.
  *
- * Deliberately absent: app.callhouse.finance. The dapp is a different domain with its own robots.txt
+ * Deliberately absent: app.stonkhouse.fun. The dapp is a different domain with its own robots.txt
  * that disallows everything — see app/robots.ts here and leekzor/callhouse: `web/app/robots.ts`
  * there. Listing its routes in this sitemap would contradict that, and a sitemap may not carry URLs
  * on another host in the first place. Also absent: alternates/i18n (one language), images (no
@@ -34,7 +34,7 @@ import { SITE_URL } from "@/lib/site";
  * Last real change to the copy on these pages, ISO 8601. Hand-maintained. Passed as a string so
  * no Date is constructed during the build and the output is byte-identical every time.
  */
-const CONTENT_REVISED = "2026-09-14T00:00:00.000Z";
+const CONTENT_REVISED = "2026-09-15T00:00:00.000Z";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -70,7 +70,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
     {
-      // Terms of Use. Adopted v1-2026-09-13, corrected v2-2026-09-13 and v3-2026-09-14; listed so the document /legal points at is
+      // Terms of Use. Adopted v1-2026-09-13, corrected v2-2026-09-13 and v3-2026-09-14, renamed v4-2026-09-15; listed so the document /legal points at is
       // reachable by the same crawler that reads /legal.
       url: `${SITE_URL}/terms`,
       lastModified: CONTENT_REVISED,

@@ -1,5 +1,5 @@
 /**
- * Footer for callhouse.finance (the mockup's .footer). Server component: nothing here hydrates.
+ * Footer for stonkhouse.fun (the mockup's .footer). Server component: nothing here hydrates.
  *
  * Four rows, in this order:
  *   1. what this is: product, share ticker, collateral, chain.
@@ -31,7 +31,7 @@ const PAGES = [
 
 const LINK = "rounded-sm text-ink-2 no-underline transition-colors duration-150 hover:text-ink";
 
-/** "app.callhouse.finance" in production; whatever host a preview build points at otherwise. */
+/** "app.stonkhouse.fun" in production; whatever host a preview build points at otherwise. */
 const APP_HOST = APP_URL.replace(/^https?:\/\//i, "");
 
 export function Footer() {
@@ -40,7 +40,7 @@ export function Footer() {
       <Container>
         <div className="grid gap-3.5 border-t border-line pb-12 pt-8 text-[13.5px] text-ink-3">
           <p>
-            <span className="font-display font-bold text-ink-2">Callhouse</span> · <span className="num">{SHARE_TICKER}</span>{" "}
+            <span className="font-display font-bold text-ink-2">Stonkhouse</span> · <span className="num">{SHARE_TICKER}</span>{" "}
             · {MARKET} on {CHAIN_NAME} <span className="num">{CHAIN_ID}</span>
           </p>
           <nav aria-label="Footer">
@@ -73,7 +73,7 @@ export function Footer() {
             Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited or Valorem.
             Nothing here is financial advice or an offer of securities.
           </p>
-          <p className="max-w-[70em]">The Callhouse contracts have not been audited.</p>
+          <p className="max-w-[70em]">The Stonkhouse contracts have not been audited.</p>
         </div>
       </Container>
     </footer>

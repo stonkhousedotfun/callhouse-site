@@ -1,8 +1,8 @@
 /**
- * callhouse.finance/ — the landing page, and the first thing a stranger reads about this product.
+ * stonkhouse.fun/ — the landing page, and the first thing a stranger reads about this product.
  *
  * Built to the approved "Daylight" mockup, section by section: hero with the example week card,
- * the five-step week, why Callhouse with the fee slip, the endings (three, plus a close held up by
+ * the five-step week, why Stonkhouse with the fee slip, the endings (three, plus a close held up by
  * a token issuer), what can go wrong, and the CTA band. The footer comes from the layout.
  *
  * THE PRODUCT DESCRIBED HERE is the 2026-09-13 redesign (leekzor/callhouse-contracts README.md:5-15):
@@ -38,7 +38,7 @@
  *   "Stock Tokens are debt securities"
  * Reword that line only with `node scripts/copy-lint.mjs` open.
  *
- * Every "go do something" link leaves for app.callhouse.finance through appUrl(). A relative href
+ * Every "go do something" link leaves for app.stonkhouse.fun through appUrl(). A relative href
  * on this domain is a 404, not a route into the dapp.
  */
 import type { Metadata } from "next";
@@ -60,13 +60,13 @@ import {
 } from "@/components/ui";
 import { CHAIN_NAME, MARKET, SHARE_TICKER, appUrl } from "@/lib/site";
 
-const TITLE = `Callhouse — pooled covered calls on ${MARKET} Stock Tokens`;
+const TITLE = `Stonkhouse — pooled covered calls on ${MARKET} Stock Tokens`;
 
 const DESCRIPTION = `Deposit ${MARKET} Stock Tokens, receive ${SHARE_TICKER} vault shares. Each week the vault lists covered calls for USDG, one per whole token, and writes each call only when a buyer fills. Premium is paid only if a buyer fills, and a week with no buyer pays zero premium.`;
 
 /**
- * `title.absolute` and not a bare string: the layout carries a "%s — Callhouse" template, so a
- * plain `title` here would render "Callhouse — … — Callhouse".
+ * `title.absolute` and not a bare string: the layout carries a "%s — Stonkhouse" template, so a
+ * plain `title` here would render "Stonkhouse — … — Stonkhouse".
  */
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -76,7 +76,7 @@ export const metadata: Metadata = {
     title: TITLE,
     description: DESCRIPTION,
     url: "/",
-    siteName: "Callhouse",
+    siteName: "Stonkhouse",
     type: "website",
   },
 };
@@ -137,7 +137,7 @@ const BENEFITS: readonly Point[] = [
   },
   {
     title: "Fees only on premium",
-    body: `Callhouse takes 5% of the premium buyers pay, capped at 20% in the contracts. Nothing on deposits, idle ${MARKET} or strike proceeds.`,
+    body: `Stonkhouse takes 5% of the premium buyers pay, capped at 20% in the contracts. Nothing on deposits, idle ${MARKET} or strike proceeds.`,
   },
   {
     title: "Every week published",
@@ -304,13 +304,13 @@ export default function HomePage() {
         </p>
       </Section>
 
-      {/* ------------------------------------------------------------------ why callhouse */}
+      {/* ------------------------------------------------------------------ why stonkhouse */}
       <Section id="benefits" labelledBy="benefits-h">
         <SectionHead
           id="benefits-h"
-          eyebrow="Why Callhouse"
+          eyebrow="Why Stonkhouse"
           title="A covered call desk you don't have to run."
-          intro="Selling calls yourself means picking strikes, posting orders and watching expiries. Callhouse does that on a published policy with its limits compiled into the contracts, and publishes every result, including the weeks that pay nothing."
+          intro="Selling calls yourself means picking strikes, posting orders and watching expiries. Stonkhouse does that on a published policy with its limits compiled into the contracts, and publishes every result, including the weeks that pay nothing."
         />
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">

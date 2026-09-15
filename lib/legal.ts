@@ -13,7 +13,7 @@
  * that as a visible gap in plain words ("not yet designated"). There is no placeholder name here
  * on purpose. A made-up entity, an "example.com" address or a guessed jurisdiction on a legal
  * page is a false statement of fact on the one page a regulator reads first, and it would also
- * hide the gap from us: a page that says "Callhouse Ltd" looks finished and is not. This product
+ * hide the gap from us: a page that says "Stonkhouse Ltd" looks finished and is not. This product
  * publishes its unfilled weeks as "unfilled, 0"; the operator line gets the same treatment.
  *
  * These are NEXT_PUBLIC_*, so like everything in lib/site.ts they are INLINED AT BUILD TIME.
@@ -75,8 +75,11 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * which forwards nothing from the request; the third-party listings recipient is removed. No change
  * to what either domain collects. Like v2, published as a correction to the adopted text, not as a
  * draft; re-adopting it, or re-publishing it as "draft-", is the owner's call.
+ * v4 (2026-09-15): the product was renamed from Callhouse to Stonkhouse and its domains moved from
+ * callhouse.finance to stonkhouse.fun. Both documents now name Stonkhouse, stonkhouse.fun and
+ * app.stonkhouse.fun. Nothing else in either document changed.
  */
-export const LEGAL_DOCS_VERSION = "v3-2026-09-14";
+export const LEGAL_DOCS_VERSION = "v4-2026-09-15";
 
 /** True while LEGAL_DOCS_VERSION still carries the draft prefix. The pages mark themselves from this. */
 export const LEGAL_DOCS_ARE_DRAFT = LEGAL_DOCS_VERSION.startsWith("draft-");

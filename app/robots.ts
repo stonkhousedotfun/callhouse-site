@@ -3,11 +3,11 @@ import type { MetadataRoute } from "next";
 import { SITE_URL } from "@/lib/site";
 
 /**
- * /robots.txt for callhouse.finance. Allow everything.
+ * /robots.txt for stonkhouse.fun. Allow everything.
  *
  * THE PAIRING, AND WHY IT IS SPLIT — this file and leekzor/callhouse: `web/app/robots.ts` are one
  * decision written twice, in opposite directions, in two repos. This domain is indexed;
- * app.callhouse.finance disallows every user agent and sets `robots: { index: false }` in its layout.
+ * app.stonkhouse.fun disallows every user agent and sets `robots: { index: false }` in its layout.
  * Read the comment at the top of leekzor/callhouse: `web/app/layout.tsx` before changing either
  * side, and change both in paired commits. The reasoning, in short:
  *
