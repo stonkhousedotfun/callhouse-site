@@ -91,8 +91,10 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * web/app/api/keeper/orders/route.ts, lib/api.ts (fetchAccount still uncalled) and lib/wagmi.ts and
  * needed no change. No change to what either domain collects, and no clause's legal effect was
  * changed beyond those factual corrections. The version string stays v4-2026-09-15.
+ * v5 (2026-09-15): the Terms and /legal now say an external audit is pending (owner decision the
+ * same day) and link the app home. No other change.
  */
-export const LEGAL_DOCS_VERSION = "v4-2026-09-15";
+export const LEGAL_DOCS_VERSION = "v5-2026-09-15";
 
 /** True while LEGAL_DOCS_VERSION still carries the draft prefix. The pages mark themselves from this. */
 export const LEGAL_DOCS_ARE_DRAFT = LEGAL_DOCS_VERSION.startsWith("draft-");
