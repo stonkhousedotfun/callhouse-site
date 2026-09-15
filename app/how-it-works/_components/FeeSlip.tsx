@@ -4,7 +4,7 @@ import { Panel } from "@/components/ui";
  * The mockup's fee slip: a lifted receipt that walks one example week from what buyers paid to
  * what depositors are credited. The figures are the fork rehearsal's 23-contract week and must
  * stay labelled as an example. They reconcile with Policy.splitPremium (Overcall's 5% rounded down
- * per contract, then multiplied) and Policy.splitHarvest (Callhouse's 5% rounded down on the
+ * per contract, then multiplied) and Policy.splitHarvest (Stonkhouse's 5% rounded down on the
  * premium the vault received):
  *
  *   per contract   0.873192 → Overcall 0.043659, vault 0.829533
@@ -15,7 +15,7 @@ const ROWS: Array<{ k: string; sub?: string; v: string; minus?: boolean }> = [
   { k: "Buyers paid", sub: "23 × 0.873192 USDG", v: "20.083416" },
   { k: "Overcall's 5%", sub: "taken inside each fill", v: "− 1.004157", minus: true },
   { k: "Vault receives", v: "19.079259" },
-  { k: "Callhouse 5%", sub: "of premium only", v: "− 0.953962", minus: true },
+  { k: "Stonkhouse 5%", sub: "of premium only", v: "− 0.953962", minus: true },
 ];
 
 const PERF = "radial-gradient(circle at 7px 7px, var(--ground) 5px, transparent 5.5px)";

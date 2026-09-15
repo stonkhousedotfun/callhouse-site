@@ -3,7 +3,7 @@
  * LEGAL_DOCS_VERSION in lib/legal.ts).
  *
  * WHY THIS PAGE EXISTS: the product is non-US by construction, so it is served to visitors in
- * the EU and the UK, and a request to app.callhouse.finance terminates on a server we run. Until
+ * the EU and the UK, and a request to app.stonkhouse.fun terminates on a server we run. Until
  * 2026-09-12 nothing on either domain said what that server sees, where a wallet address goes,
  * or who the controller is. This page does, and where the answer is "nobody has decided" it
  * says that, from lib/legal.ts, rather than naming an entity that does not exist.
@@ -103,7 +103,7 @@ import { EXPLORER_URL, VENUE_NAME, VENUE_URL, appUrl } from "@/lib/site";
 export const metadata: Metadata = {
   title: "Privacy",
   description:
-    "What callhouse.finance and app.callhouse.finance process, where it goes, and what they do not do. No cookies, no analytics, no accounts." +
+    "What stonkhouse.fun and app.stonkhouse.fun process, where it goes, and what they do not do. No cookies, no analytics, no accounts." +
     (LEGAL_DOCS_ARE_DRAFT ? " Draft, pending review by counsel." : ""),
   alternates: { canonical: "/privacy" },
 };
@@ -157,7 +157,7 @@ export default function PrivacyPage() {
         )}
 
         <p>
-          This notice covers callhouse.finance (this site) and app.callhouse.finance (the dapp). It is written
+          This notice covers stonkhouse.fun (this site) and app.stonkhouse.fun (the dapp). It is written
           from the code, not from a template: each statement below names the file it was checked
           against, and the source is listed in the header comment of this page. It does not cover
           your wallet, the chain, or any third-party site linked from here.
@@ -165,7 +165,7 @@ export default function PrivacyPage() {
       </DocIntro>
 
       <DocSection {...SECTIONS.process}>
-        <DocH3>On callhouse.finance</DocH3>
+        <DocH3>On stonkhouse.fun</DocH3>
         <DocList>
           <li>
             Nothing beyond the HTTP request itself. This site sets no cookie, writes nothing to your
@@ -178,7 +178,7 @@ export default function PrivacyPage() {
             <em>Retention</em> below.
           </li>
         </DocList>
-        <DocH3>On app.callhouse.finance</DocH3>
+        <DocH3>On app.stonkhouse.fun</DocH3>
         <DocList>
           <li>
             <strong>Your wallet address</strong>, once you connect. It is public chain data. The dapp
@@ -212,7 +212,7 @@ export default function PrivacyPage() {
             requests and cannot see them.
           </li>
           <li>
-            <strong>The Callhouse indexer.</strong> A history service we run. It stores wallet
+            <strong>The Stonkhouse indexer.</strong> A history service we run. It stores wallet
             addresses, share balances and USDG amounts derived from public on-chain events, and
             nothing that is not already on the chain. The dapp asks it for vault history and
             listings; it does not ask it for your position today, although the indexer has an
@@ -385,7 +385,7 @@ export default function PrivacyPage() {
           The terms are at <DocLink href="/terms">/terms</DocLink>, the perimeter at{" "}
           <DocLink href="/legal">/legal</DocLink>, and the dapp this notice describes is at{" "}
           <DocExternalLink href={appUrl()}>
-            app.callhouse.finance
+            app.stonkhouse.fun
           </DocExternalLink>
           .
         </p>

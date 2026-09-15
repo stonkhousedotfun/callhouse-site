@@ -60,7 +60,7 @@ export function FeeSlip() {
         />
         <Row label="Overcall's 5%" note="taken inside each fill" value="1.004157" minus />
         <Row label="Vault receives" value="19.079259" />
-        <Row label="Callhouse 5%" note="of premium only" value="0.953962" minus />
+        <Row label="Stonkhouse 5%" note="of premium only" value="0.953962" minus />
       </dl>
 
       <dl>

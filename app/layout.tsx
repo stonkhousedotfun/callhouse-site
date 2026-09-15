@@ -36,7 +36,7 @@ const mono = Geist_Mono({
 });
 
 /**
- * Root layout for callhouse.finance.
+ * Root layout for stonkhouse.fun.
  *
  * DELIBERATELY ABSENT: a <Providers> wrapper. leekzor/callhouse: `web/app/layout.tsx` has one
  * because the dapp needs wagmi, viem and @tanstack/react-query mounted above every route. This
@@ -45,9 +45,9 @@ const mono = Geist_Mono({
  * flow it will never offer, and the vault is not deployed yet, so every live figure it could render
  * would be a zero. Nothing under this layout fetches, reads a chain, or holds client state beyond
  * the nav's active link. If a page here ever needs a provider, the page belongs on
- * app.callhouse.finance.
+ * app.stonkhouse.fun.
  *
- * `metadataBase` is callhouse.finance because that is where this package is served; relative
+ * `metadataBase` is stonkhouse.fun because that is where this package is served; relative
  * canonicals and Open Graph URLs resolve against it, and without it Next falls back to localhost
  * in a production build.
  *
@@ -62,13 +62,13 @@ const mono = Geist_Mono({
  *     should be the page whose wording is checked on every build.
  *
  * The title template exists so a route only has to name itself: `title: "Risks"` renders
- * "Risks — Callhouse". The default is the full positioning line, used on "/" alone.
+ * "Risks — Stonkhouse". The default is the full positioning line, used on "/" alone.
  */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Callhouse — pooled covered calls on Robinhood Chain",
-    template: "%s — Callhouse",
+    default: "Stonkhouse — pooled covered calls on Robinhood Chain",
+    template: "%s — Stonkhouse",
   },
   description:
     "Deposit one tokenised stock, receive vault shares. Each week a keeper writes an Overcall call against it and pays depositors whatever premium actually fills. A week with no buyer pays zero premium.",
@@ -77,11 +77,11 @@ export const metadata: Metadata = {
   openGraph: {
     // Stated in full rather than inherited: the template above would otherwise leak "%s" into a
     // share card on any route that sets its own title.
-    title: "Callhouse — pooled covered calls on Robinhood Chain",
+    title: "Stonkhouse — pooled covered calls on Robinhood Chain",
     description:
       "Deposit one tokenised stock, receive vault shares. Each week a keeper writes an Overcall call against it and pays depositors whatever premium actually fills. A week with no buyer pays zero premium.",
     url: SITE_URL,
-    siteName: "Callhouse",
+    siteName: "Stonkhouse",
     type: "website",
     // en_GB, not en_US: the copy is British-ish ("tokenised", "labelled") and the product is not
     // available to US persons. <html lang> stays the generic "en" because the pages are not

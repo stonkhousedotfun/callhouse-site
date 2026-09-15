@@ -5,7 +5,7 @@
  * WHY THIS PAGE EXISTS: /legal says access is restricted by the Terms of Use rather than by a
  * technical control, and until 2026-09-12 there was no such document. A restriction that points
  * at nothing is not a restriction. This page is the thing that sentence points at, on the
- * indexed domain, canonical here and linked from app.callhouse.finance rather than duplicated there.
+ * indexed domain, canonical here and linked from app.stonkhouse.fun rather than duplicated there.
  *
  * WHAT STILL GAPS: no operating entity has been designated and no governing law has been chosen.
  * The page renders those gaps in plain words from lib/legal.ts instead of hiding them behind a
@@ -62,7 +62,7 @@ import { MARKET, SHARE_TICKER, VENUE_NAME, VENUE_URL, appUrl } from "@/lib/site"
 export const metadata: Metadata = {
   title: "Terms of Use",
   description:
-    "Terms of Use for callhouse.finance and app.callhouse.finance: who may use the interface, what it is, and what it does not promise." +
+    "Terms of Use for stonkhouse.fun and app.stonkhouse.fun: who may use the interface, what it is, and what it does not promise." +
     (LEGAL_DOCS_ARE_DRAFT ? " Draft, pending review by counsel." : ""),
   alternates: { canonical: "/terms" },
 };
@@ -117,7 +117,7 @@ export default function TermsPage() {
         )}
 
         <p>
-          These terms cover callhouse.finance and app.callhouse.finance (together, &ldquo;the
+          These terms cover stonkhouse.fun and app.stonkhouse.fun (together, &ldquo;the
           interface&rdquo;). Using either domain is use under these terms. If you do not agree with
           them, do not use the interface. The smart contracts the interface points at are on a public
           chain and are not governed by these terms; nothing here can change what they do.
@@ -135,7 +135,7 @@ export default function TermsPage() {
         </Callout>
         <DocList>
           <li>
-            Callhouse is <strong>not available to US persons</strong>, and nothing on this site is an
+            Stonkhouse is <strong>not available to US persons</strong>, and nothing on this site is an
             offer or solicitation to any person in any jurisdiction where such an offer would be
             unlawful.
           </li>
@@ -225,7 +225,7 @@ export default function TermsPage() {
       <DocSection {...SECTIONS.thirdParty}>
         <DocList>
           <li>
-            The Callhouse contracts have not been audited. They are published under the MIT licence,
+            The Stonkhouse contracts have not been audited. They are published under the MIT licence,
             as-is, and there is no upgrade path: a bug means a new vault and a migration, not a patch.
           </li>
           <li>
@@ -251,7 +251,7 @@ export default function TermsPage() {
         <p>
           The interface and the contracts it points at are provided as-is and as-available, with no
           warranty of any kind, express or implied, including of merchantability, fitness for a
-          purpose, accuracy, or uninterrupted operation. Figures shown on app.callhouse.finance are read
+          purpose, accuracy, or uninterrupted operation. Figures shown on app.stonkhouse.fun are read
           from the chain or from an indexer and may lag or be wrong; the chain is the record, not the
           page.
         </p>
@@ -280,7 +280,7 @@ export default function TermsPage() {
         <p>
           The contracts the interface points at are published under the MIT licence. The text and
           design of this site are not open-licensed: you may read them and link to them, and no
-          other right is granted. Nothing here gives you any right to the Callhouse name or mark, or
+          other right is granted. Nothing here gives you any right to the Stonkhouse name or mark, or
           to the names and marks of the third parties this site names, which belong to their owners.
         </p>
       </DocSection>
@@ -362,7 +362,7 @@ export default function TermsPage() {
           form of the collateral are at <DocLink href="/legal">/legal</DocLink>, and {SHARE_TICKER} itself
           lives at{" "}
           <DocExternalLink href={appUrl("/vault/nvda")}>
-            app.callhouse.finance
+            app.stonkhouse.fun
           </DocExternalLink>
           .
         </p>

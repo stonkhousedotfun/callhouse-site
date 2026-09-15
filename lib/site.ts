@@ -1,10 +1,10 @@
 /**
  * The one place this package knows a URL, a ticker or an address.
  *
- * Two domains, one product: callhouse.finance is this package (static marketing, zero wallet code) and
- * app.callhouse.finance is @callhouse/web in leekzor/callhouse (the dapp). Nothing here is same-origin
+ * Two domains, one product: stonkhouse.fun is this package (static marketing, zero wallet code) and
+ * app.stonkhouse.fun is @callhouse/web in leekzor/callhouse (the dapp). Nothing here is same-origin
  * with the app, so every "go do something" link must be an absolute external URL built with
- * appUrl() — a bare href="/vault/nvda" on this site is a 404 on callhouse.finance, not a route into the
+ * appUrl() — a bare href="/vault/nvda" on this site is a 404 on stonkhouse.fun, not a route into the
  * dapp.
  *
  * The constants below are DUPLICATED FROM leekzor/callhouse: `web/lib/contracts.ts`,
@@ -26,17 +26,17 @@ function normalizeBase(url: string): string {
 }
 
 /** This site. Used for canonical URLs and metadataBase. */
-export const SITE_URL = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL ?? "https://callhouse.finance");
+export const SITE_URL = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL ?? "https://stonkhouse.fun");
 
 /** Depositor documentation and the protocol reference (GitBook, synced from leekzor/callhouse-docs). */
-export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.callhouse.finance");
+export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.stonkhouse.fun");
 
 /** The dapp. Every CTA on this site points into it. */
-export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.callhouse.finance");
+export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.stonkhouse.fun");
 
 /**
  * Join a dapp route onto APP_URL. `appUrl("/vault/nvda")` and `appUrl("vault/nvda")` both give
- * `https://app.callhouse.finance/vault/nvda`, and `appUrl()` gives the bare origin with no trailing
+ * `https://app.stonkhouse.fun/vault/nvda`, and `appUrl()` gives the bare origin with no trailing
  * slash. An absolute URL is passed through untouched so callers can hand this any href.
  */
 export function appUrl(path = ""): string {
@@ -76,7 +76,7 @@ export type AddressRow = {
 };
 
 /**
- * The contracts a reader can verify before depositing anything. All third-party: the Callhouse
+ * The contracts a reader can verify before depositing anything. All third-party: the Stonkhouse
  * vault is NOT listed because it is not deployed yet, and the fee Safe is an ops detail, not a
  * public integration point. Insertion order is display order.
  */

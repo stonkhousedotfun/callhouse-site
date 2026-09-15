@@ -1,5 +1,5 @@
 /**
- * 404 for callhouse.finance. Not a content page (not in the sitemap, no metadata of its own beyond
+ * 404 for stonkhouse.fun. Not a content page (not in the sitemap, no metadata of its own beyond
  * the title and noindex), just a friendly way back. A lost visitor gets the three ways out the
  * design calls for (home, how it works, the app) as buttons, and beside them every page this site
  * has, so an old or mistyped link still lands somewhere useful. Same chrome as every other page.

@@ -2,7 +2,7 @@
  * Compliance surface, not marketing. Nothing on this page sells anything, and the register is
  * legal text rather than the plain-but-warm voice of the landing.
  *
- * This is the CANONICAL copy of the disclosures. app.callhouse.finance is noindex; callhouse.finance is
+ * This is the CANONICAL copy of the disclosures. app.stonkhouse.fun is noindex; stonkhouse.fun is
  * the indexed domain, so this is the version a stranger, a search engine or a regulator reads
  * first. The two disclosures it is required to carry — the US-person perimeter and the legal
  * form of the Stock Token — are enforced verbatim by scripts/copy-lint.mjs, which fails CI if
@@ -84,7 +84,7 @@ export default function LegalPage() {
       <DocSection {...SECTIONS.geographic}>
         <DocList>
           <li>
-            Callhouse is <strong>not available to US persons</strong>, and nothing on this site is an
+            Stonkhouse is <strong>not available to US persons</strong>, and nothing on this site is an
             offer or solicitation to any person in any jurisdiction where such an offer would be
             unlawful.
           </li>
@@ -124,7 +124,7 @@ export default function LegalPage() {
             The issuer can <strong>freeze or restrict transfers</strong>, which can stop this vault
             writing, settling, or paying out tokens until it is lifted. The token can also pause its
             own price oracle, which stops this vault writing and listing new calls; settlement does
-            not read the oracle. No Callhouse contract can override either.
+            not read the oracle. No Stonkhouse contract can override either.
           </li>
           <li>
             Corporate actions — splits, dividend adjustments — are expressed through an ERC-8056
@@ -139,7 +139,7 @@ export default function LegalPage() {
           <li>
             {SHARE_TICKER} is a vault share. It represents a pro-rata claim on the {MARKET} Stock
             Tokens the vault holds, plus separately accrued USDG. It is not itself a Stock Token, not a
-            deposit, and not a claim on Callhouse, Overcall, Valorem or any Robinhood entity.
+            deposit, and not a claim on Stonkhouse, Overcall, Valorem or any Robinhood entity.
           </li>
           <li>
             There is no protocol token, no points programme and no airdrop attached to this vault.
@@ -160,7 +160,7 @@ export default function LegalPage() {
             offer of securities.
           </li>
           <li>
-            The Callhouse smart contracts have not been audited. They are provided as-is,
+            The Stonkhouse smart contracts have not been audited. They are provided as-is,
             under the MIT licence, with no warranty of any kind. You can lose the collateral you
             deposit.
           </li>
@@ -176,7 +176,7 @@ export default function LegalPage() {
 
       <DocSection {...SECTIONS.noAffiliation}>
         <p>
-          Callhouse is an independent project. It is not affiliated with, endorsed by, or operated by
+          Stonkhouse is an independent project. It is not affiliated with, endorsed by, or operated by
           Robinhood Markets, Inc., Robinhood Assets (Jersey) Limited, Overcall, Valorem, or the issuers
           of USDG or Seaport. Those names appear here only to identify the third-party contracts and
           services this vault interacts with.

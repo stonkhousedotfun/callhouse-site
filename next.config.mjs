@@ -19,7 +19,7 @@
  *
  * Deliberately absent: any webpack() block (Next 16 builds with Turbopack, and a `webpack` key
  * with no matching `turbopack` key is a hard build error), any redirects or rewrites to the dapp
- * (every CTA here is an absolute external link to app.callhouse.finance — see lib/site.ts), and any
+ * (every CTA here is an absolute external link to app.stonkhouse.fun — see lib/site.ts), and any
  * image loader config, because this site ships no remote images.
  */
 

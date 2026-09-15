@@ -4,11 +4,11 @@
  * TECHSPEC 7.3 (both in leekzor/callhouse). These are compliance rules, not style
  * rules. They fail CI.
  *
- * This repo is callhouse.finance, the public marketing landing. It is the surface the
+ * This repo is stonkhouse.fun, the public marketing landing. It is the surface the
  * rules were actually written about: the page a stranger reads before they have
  * connected anything, so every forbidden claim and every required disclosure
  * matters most here. The package root is the repo root; node_modules, .next and
- * other build output are skipped. The dapp (app.callhouse.finance) lives in
+ * other build output are skipped. The dapp (app.stonkhouse.fun) lives in
  * leekzor/callhouse, carries its own copy of this script, and is linted there with
  * the same FORBIDDEN table.
  *
@@ -306,7 +306,7 @@ if (errors.length) {
   console.error(`\ncopy-lint FAILED — ${errors.length} violation(s) across ${tally}:\n`);
   for (const e of errors) console.error("  " + e);
   console.error("\nThese are compliance rules from README 'Frontend copy' and TECHSPEC 7.3 (leekzor/callhouse).");
-  console.error("This repo is callhouse.finance, the public landing these rules exist for. It is not exempt.");
+  console.error("This repo is stonkhouse.fun, the public landing these rules exist for. It is not exempt.");
   console.error("If a hit is inside an explicit negation, add a `copy-lint-allow` comment on that line.\n");
   process.exit(1);
 }

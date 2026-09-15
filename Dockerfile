@@ -1,5 +1,5 @@
 # ---------------------------------------------------------------------------------------------
-# @callhouse/site  →  callhouse.finance  (the marketing landing: /, /how-it-works, /risks, /legal)
+# @callhouse/site  →  stonkhouse.fun  (the marketing landing: /, /how-it-works, /risks, /legal)
 #
 # WHY THIS FILE EXISTS: Railway builds this repo with the repo root as the build context and the
 # Dockerfile at `Dockerfile` (railway.json). This repo is one pnpm package with its own
@@ -71,7 +71,7 @@ RUN pnpm install --frozen-lockfile
 #   2. Changing one of these on Railway requires a REBUILD, not a restart.
 #
 # The failure mode is still a broken product: every "go do something" CTA on this site is an
-# absolute external link to app.callhouse.finance. Get NEXT_PUBLIC_APP_URL wrong and the landing
+# absolute external link to app.stonkhouse.fun. Get NEXT_PUBLIC_APP_URL wrong and the landing
 # page's only job — handing the reader to the dapp — stops working.
 #
 # The domain pair carries the production defaults, so an unset variable ships a correct site
@@ -87,11 +87,11 @@ RUN pnpm install --frozen-lockfile
 # layer.
 # =============================================================================================
 
-ARG NEXT_PUBLIC_SITE_URL="https://callhouse.finance"
+ARG NEXT_PUBLIC_SITE_URL="https://stonkhouse.fun"
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
-ARG NEXT_PUBLIC_APP_URL="https://app.callhouse.finance"
+ARG NEXT_PUBLIC_APP_URL="https://app.stonkhouse.fun"
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
-ARG NEXT_PUBLIC_DOCS_URL="https://docs.callhouse.finance"
+ARG NEXT_PUBLIC_DOCS_URL="https://docs.stonkhouse.fun"
 ENV NEXT_PUBLIC_DOCS_URL=$NEXT_PUBLIC_DOCS_URL
 
 # ---- operator facts for /terms, /privacy, /legal#reporting and /.well-known/security.txt.

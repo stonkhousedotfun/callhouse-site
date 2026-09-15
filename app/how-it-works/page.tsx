@@ -1,5 +1,5 @@
 /**
- * callhouse.finance/how-it-works — the mechanics, for someone who has not connected anything.
+ * stonkhouse.fun/how-it-works — the mechanics, for someone who has not connected anything.
  *
  * This is the public sibling of the dapp's /docs page and a short path into the GitBook docs. The
  * reader has not deposited, nothing is connected, and the vault is not even deployed, so every
@@ -15,7 +15,7 @@
  * docs repo (product/weekly-cycle, policy, fees, assignment; getting-started/depositing,
  * withdrawing, claiming-usdg; protocol/roles) and contracts/src/Policy.sol + Vault.sol at 634bf55.
  *
- * Every "go do something" link leaves for app.callhouse.finance via appUrl(). A relative href on
+ * Every "go do something" link leaves for app.stonkhouse.fun via appUrl(). A relative href on
  * this domain is a 404, not a route into the dapp.
  */
 import type { Metadata } from "next";
@@ -56,7 +56,7 @@ const DESCRIPTION =
   "The weekly covered-call cycle in detail: the timeline, the four phases, how strikes and sizes are chosen, where the premium goes, the three ways a week can end, withdrawals and deposits during a week, and who can do what.";
 
 /**
- * `title` is the bare route name: the layout carries the "%s — Callhouse" template, so repeating
+ * `title` is the bare route name: the layout carries the "%s — Stonkhouse" template, so repeating
  * the suffix here would render it twice. `alternates.canonical` is not optional — the layout's
  * default canonical is "/", and inheriting it would point every crawler at the landing page. The
  * Open Graph title is stated in full because the template does not apply inside openGraph.
@@ -66,10 +66,10 @@ export const metadata: Metadata = {
   description: DESCRIPTION,
   alternates: { canonical: "/how-it-works" },
   openGraph: {
-    title: "How it works — Callhouse",
+    title: "How it works — Stonkhouse",
     description: DESCRIPTION,
     url: "/how-it-works",
-    siteName: "Callhouse",
+    siteName: "Stonkhouse",
     type: "article",
   },
 };
@@ -339,7 +339,7 @@ const FEES: Array<{ who: string; size: string; when: string; body: string }> = [
     body: "A second payment inside the Seaport order itself: the buyer's USDG splits in the same transaction, 95% to the vault and 5% to Overcall. It is rounded per contract, not on the total, because rounding on the total produces an order that signs and then cannot be partly filled.",
   },
   {
-    who: "Callhouse",
+    who: "Stonkhouse",
     size: "5% of the premium the vault receives",
     when: "At harvest, only on premium above zero",
     body: "Taken when the vault accounts for premium, at the close or when a deposit arrives. Strike proceeds from an assignment are credited to depositors in full: that exclusion is in the contract code, not a setting. The admin can change the rate, never above 20% of premium.",
@@ -381,7 +381,7 @@ const ENDINGS: Array<{
     chip: { tone: "accent", label: "Premium kept" },
     body: [
       "A buyer paid for the calls and no exercise was assigned to the vault, usually because NVDA stayed below the strike. The options expire worthless to their holders.",
-      "Premium, less Overcall's 5% and Callhouse's 5%, is credited to depositors in USDG, and the NVDA comes back at the close.",
+      "Premium, less Overcall's 5% and Stonkhouse's 5%, is credited to depositors in USDG, and the NVDA comes back at the close.",
     ],
     premium: "Kept, net of fees",
     nvda: "Back at the close",
@@ -583,7 +583,7 @@ export default function HowItWorksPage() {
           id="week-h"
           eyebrow="The week"
           title="Eight steps, from write window to claim."
-          intro={`The keeper follows ${VENUE_NAME}'s registry, not a wall clock. The days and times below are the venue's current window, not a promise Callhouse makes: if the registry moves the window, the vault moves with it.`}
+          intro={`The keeper follows ${VENUE_NAME}'s registry, not a wall clock. The days and times below are the venue's current window, not a promise Stonkhouse makes: if the registry moves the window, the vault moves with it.`}
         />
         <Timeline steps={STEPS} />
         <DocsLink href={DOCS.weeklyCycle}>The weekly cycle</DocsLink>
@@ -723,7 +723,7 @@ export default function HowItWorksPage() {
             <div className="mt-2 rounded-md bg-surface-2 p-5">
               <p className="text-[15.5px] text-ink">
                 <strong className="font-semibold">Stacked, the two live fees come to 9.75% of what the buyer paid:</strong>{" "}
-                {VENUE_NAME}&apos;s 5% of the gross, then Callhouse&apos;s 5% of the 95% that reaches the vault. At the
+                {VENUE_NAME}&apos;s 5% of the gross, then Stonkhouse&apos;s 5% of the 95% that reaches the vault. At the
                 20% ceiling the stack would be 24%.
               </p>
               <p className="mt-2 text-[14px] text-ink-3">
@@ -795,7 +795,7 @@ export default function HowItWorksPage() {
           id="withdrawals-h"
           eyebrow="Withdrawals"
           title="Two ways out, and the phase picks one."
-          intro="While a call is open, the NVDA behind it is locked in Valorem until expiry, so the vault cannot hand it back early. The queue is the mechanism, not a discretionary gate: no Callhouse key can jump it or stop it."
+          intro="While a call is open, the NVDA behind it is locked in Valorem until expiry, so the vault cannot hand it back early. The queue is the mechanism, not a discretionary gate: no Stonkhouse key can jump it or stop it."
         />
 
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
@@ -979,7 +979,7 @@ export default function HowItWorksPage() {
           <strong className="font-semibold text-ink">There is no proxy on v1.</strong> The vault cannot be upgraded in
           place. Fixing anything means deploying Vault v2 and migrating to it, in public, with depositors moving their
           own funds. That is deliberate: an upgradeable vault is a key that can rewrite the rules under a position that
-          is already open. The Callhouse contracts have not been audited.
+          is already open. The Stonkhouse contracts have not been audited.
         </Notice>
 
         <DocsLink href={DOCS.roles}>Roles and admin powers</DocsLink>
@@ -993,7 +993,7 @@ export default function HowItWorksPage() {
           title="What the week touches on chain."
           intro={
             <p>
-              Everything the weekly cycle uses on chain {CHAIN_ID}. All third party: the Callhouse vault is not listed
+              Everything the weekly cycle uses on chain {CHAIN_ID}. All third party: the Stonkhouse vault is not listed
               because it is not deployed yet. There is one{" "}
               <ExternalLink href={VENUE_URL} className="link">
                 {VENUE_NAME}

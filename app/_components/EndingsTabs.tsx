@@ -45,7 +45,7 @@ const ENDINGS: readonly Ending[] = [
     key: "otm",
     title: "Bought, expired worthless",
     hint: "Usually: NVDA stayed under the strike",
-    body: "Buyers paid for some or all of the calls and no exercise was assigned to the vault, usually because NVDA stayed under the strike. Premium, less Overcall's 5% and Callhouse's 5%, is credited to depositors in USDG, and the NVDA comes back at the close.",
+    body: "Buyers paid for some or all of the calls and no exercise was assigned to the vault, usually because NVDA stayed under the strike. Premium, less Overcall's 5% and Stonkhouse's 5%, is credited to depositors in USDG, and the NVDA comes back at the close.",
     premium: "Kept, net of fees",
     nvda: "Back at close",
     upside: "Kept",

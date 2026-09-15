@@ -1,10 +1,12 @@
 # callhouse-site
 
-`callhouse.finance` — the public landing. Static marketing pages for a product whose dapp lives on a
+Renamed from Callhouse (callhouse.finance) to Stonkhouse (stonkhouse.fun) on 2026-09-15. Repo, package, service, env and on-chain names still say callhouse.
+
+`stonkhouse.fun` — the public landing. Static marketing pages for a product whose dapp lives on a
 different domain, in a different repo. Next.js 16 App Router, React 19, Tailwind CSS v4, zero
 wallet code.
 
-This repo was split out of the Callhouse monorepo (it was `site/` there) on 2026-09-13. It builds,
+This repo was split out of the leekzor/callhouse monorepo (it was `site/` there) on 2026-09-13. It builds,
 lints, typechecks and deploys on its own: its own `package.json`, its own `pnpm-lock.yaml`, its own
 Dockerfile and Railway service, its own copy-lint gate.
 
@@ -21,8 +23,8 @@ pnpm copy-lint               # compliance gate: self-test, then the real tree. A
 
 | Repo | Domain | What it is |
 |---|---|---|
-| **leekzor/callhouse-site** (this one) | `callhouse.finance` | explains the product. No wallet. |
-| leekzor/callhouse | `app.callhouse.finance` | the app: `web/` (deposit, cycle tape, claim USDG), plus `keeper/`, `indexer/`, `ops/`, and `contracts/` mounted as a submodule. |
+| **leekzor/callhouse-site** (this one) | `stonkhouse.fun` | explains the product. No wallet. |
+| leekzor/callhouse | `app.stonkhouse.fun` | the app: `web/` (deposit, cycle tape, claim USDG), plus `keeper/`, `indexer/`, `ops/`, and `contracts/` mounted as a submodule. |
 | leekzor/callhouse-contracts | — | the vault contracts (Foundry). |
 
 References in this repo's code comments of the form ``leekzor/callhouse: `web/app/layout.tsx` ``
@@ -111,7 +113,7 @@ rewrite), and `scripts/copy-lint.mjs` (the forbidden-copy table).
   than as an absence. Every number here is a fixed policy parameter, an address, or a worked
   example from the fork rehearsal that is labelled as one.
 - **Not a second copy of the dapp.** Every call to action is an absolute external link to
-  `https://app.callhouse.finance/...`, built with `appUrl()` from `lib/site.ts`. A relative
+  `https://app.stonkhouse.fun/...`, built with `appUrl()` from `lib/site.ts`. A relative
   `href="/vault/nvda"` on this domain is a 404, not a route into the app.
 
 If a page here ever needs a number that changes, it belongs on the dapp instead.
@@ -155,7 +157,8 @@ Never turn a weekly figure into a yearly one, by multiplication, compounding, il
 and copy-lint requires the marker code to stay in both pages. The documents were adopted as
 `v1-2026-09-13` (owner review against the code, no counsel — leekzor/callhouse
 `ops/launch-legal.md` §2 item 9) and corrected the same day as `v2-2026-09-13` (the Terms'
-third-party clause: an oracle pause stops writing and listing, not settlement). Until adoption, copy-lint also pinned the literal
+third-party clause: an oracle pause stops writing and listing, not settlement), then revised as
+`v3-2026-09-15` for the rename to Stonkhouse and stonkhouse.fun (names and domains only). Until adoption, copy-lint also pinned the literal
 `export const LEGAL_DOCS_VERSION = "draft-` line, so dropping the prefix failed CI unless the gate
 was removed in the same commit; that entry was removed in the adoption commit. A future revision
 can be published as a draft first by re-adding the prefix.
@@ -221,10 +224,10 @@ The Dockerfile declares all eight: the two domain URLs carry production defaults
 `NEXT_PUBLIC_OPERATOR_*` / `*_CONTACT_EMAIL` variables are declared with **no default** — an
 unset value compiles to the "not yet designated" gap on the legal pages and a 404 on
 security.txt. As of 2026-09-13 the three `*_CONTACT_EMAIL` variables are set on Railway
-(`legal@` / `privacy@` / `security@callhouse.finance`, Cloudflare Email Routing) and
-`security.txt` returns 200; the operator name, jurisdiction and governing law remain
-deliberately unset and the gap notice stays up until they exist (leekzor/callhouse
-`ops/launch-legal.md`). Setting a variable on Railway then rebuilding is what closes a gap; a
+(`legal@` / `privacy@` / `security@callhouse.finance`, Cloudflare Email Routing; they move to
+`@stonkhouse.fun` with the domain) and `security.txt` returns 200; the operator name,
+jurisdiction and governing law remain deliberately unset and the gap notice stays up until they
+exist (leekzor/callhouse `ops/launch-legal.md`). Setting a variable on Railway then rebuilding is what closes a gap; a
 restart does nothing.
 
 ## Deploy
@@ -232,6 +235,10 @@ restart does nothing.
 Railway, one service, Dockerfile build, **this repo root as the build context**.
 
 ### Current state (2026-09-13)
+
+This records the `callhouse.finance` deployment as it stood on 2026-09-13. The site moves to
+`stonkhouse.fun` on 2026-09-15; rewrite this block after the cutover with the new domains, the
+CNAME targets and `_railway-verify` tokens Railway issues for them, and the Email Routing status.
 
 **Live at `https://callhouse.finance` and `https://www.callhouse.finance`** (Let's Encrypt, issued
 2026-09-13 about 19 minutes after the DNS below), and at `https://site-production-bea7.up.railway.app`.
@@ -283,8 +290,8 @@ Railway, one service, Dockerfile build, **this repo root as the build context**.
 
 | Variable | Value | If unset |
 |---|---|---|
-| `NEXT_PUBLIC_SITE_URL` | `https://callhouse.finance` | Dockerfile ARG default, same value. Safe |
-| `NEXT_PUBLIC_APP_URL` | `https://app.callhouse.finance` | Dockerfile ARG default, same value. Safe |
+| `NEXT_PUBLIC_SITE_URL` | `https://stonkhouse.fun` | Dockerfile ARG default, same value. Safe |
+| `NEXT_PUBLIC_APP_URL` | `https://app.stonkhouse.fun` | Dockerfile ARG default, same value. Safe |
 | `NEXT_PUBLIC_OPERATOR_*`, `NEXT_PUBLIC_*_CONTACT_EMAIL` (six) | As counsel decides — `ops/launch-legal.md` in leekzor/callhouse | "not yet designated" on the legal pages, `security.txt` 404. Intended pre-launch |
 
 Set the domain pair anyway; an explicit variable is what a preview environment overrides.
@@ -307,7 +314,7 @@ Runtime variables: none. `PORT` is injected by Railway and read by `server.js`; 
 5. **Attach the custom domain only after a deploy is healthy**, so a DNS failure is distinguishable
    from an application failure.
 
-### Custom domain: `callhouse.finance` is an apex
+### Custom domain: `stonkhouse.fun` is an apex
 
 Attach in Railway → service → Settings → Networking → Custom Domain. Railway gives a target of the
 form `<something>.up.railway.app`.
@@ -329,18 +336,18 @@ If the registrar offers neither, move DNS to one that does (Cloudflare is free).
 record to an IP you got from `dig` against the Railway target: it is not yours and it will move. On
 Cloudflare, use **DNS only** (grey cloud) unless you have decided to run proxied on purpose.
 
-`www.callhouse.finance` redirects to the apex with a 301, implemented at the DNS/CDN layer (a Cloudflare
+`www.stonkhouse.fun` redirects to the apex with a 301, implemented at the DNS/CDN layer (a Cloudflare
 Redirect Rule or registrar forwarding), not in the app. TLS is issued by Railway once the record
 resolves.
 
 ### Verify a deploy
 
 ```bash
-curl -sI https://callhouse.finance/ | head -1                                     # HTTP/2 200
-curl -s https://callhouse.finance/ | grep -ci 'connect wallet'                    # 0
-curl -s https://callhouse.finance/ | grep -o 'https://app\.callhouse\.xyz[^"]*' | sort -u
+curl -sI https://stonkhouse.fun/ | head -1                                        # HTTP/2 200
+curl -s https://stonkhouse.fun/ | grep -ci 'connect wallet'                       # 0
+curl -s https://stonkhouse.fun/ | grep -o 'https://app\.stonkhouse\.fun[^"]*' | sort -u
 for p in "" how-it-works risks legal terms privacy; do
-  printf '%-14s %s\n' "/$p" "$(curl -s -o /dev/null -w '%{http_code}' https://callhouse.finance/$p)"
+  printf '%-14s %s\n' "/$p" "$(curl -s -o /dev/null -w '%{http_code}' https://stonkhouse.fun/$p)"
 done
 ```
 

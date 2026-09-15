@@ -3,7 +3,7 @@ import { ImageResponse } from "next/og";
 import { CHAIN_NAME, SITE_URL } from "@/lib/site";
 
 /**
- * The Open Graph card for callhouse.finance: the image a link to this site unfurls into in Slack,
+ * The Open Graph card for stonkhouse.fun: the image a link to this site unfurls into in Slack,
  * Telegram, X and iMessage. Next's app/opengraph-image file convention: exporting `alt`, `size`
  * and `contentType` alongside the default render is what makes Next emit the og:image tags, so
  * nothing imports this file and the layout needs no og.images entry.
@@ -14,7 +14,7 @@ import { CHAIN_NAME, SITE_URL } from "@/lib/site";
  * OG card is cached by every platform that scrapes it, sometimes for weeks, so any figure baked in
  * here would go stale somewhere we cannot reach, and a premium figure on a share card is exactly
  * the kind of claim scripts/copy-lint.mjs exists to keep off this domain. Live numbers live on
- * app.callhouse.finance.
+ * app.stonkhouse.fun.
  *
  * FONTS ARE BEST EFFORT, AND THE CARD NEVER FAILS THE BUILD OVER THEM. `loadFont` asks Google Fonts
  * for Schibsted Grotesk 800 and Figtree 500, subset to exactly the characters drawn below. The build
@@ -60,12 +60,12 @@ const DISPLAY = "Schibsted Grotesk";
 const BODY = "Figtree";
 
 /**
- * The bare host, so the card reads "callhouse.finance" rather than "https://callhouse.finance". Derived
+ * The bare host, so the card reads "stonkhouse.fun" rather than "https://stonkhouse.fun". Derived
  * from SITE_URL rather than hardcoded so a preview build labels itself honestly.
  */
 const DOMAIN = SITE_URL.replace(/^https?:\/\//, "");
 
-const WORDMARK = "callhouse";
+const WORDMARK = "stonkhouse";
 const HEADLINE_LEAD = "Put your stocks to work,";
 const HEADLINE_ACCENT = "one week at a time.";
 /** Composed here, not interpolated in JSX: see the Satori notes above. */
@@ -82,7 +82,7 @@ const GLYPHS_BODY = unique(TAGLINE + DOMAIN);
 const TRACK: readonly boolean[] = [false, true, true, false, false];
 
 export const alt =
-  "Callhouse: Put your stocks to work, one week at a time. Covered calls on tokenised stocks on Robinhood Chain.";
+  "Stonkhouse: Put your stocks to work, one week at a time. Covered calls on tokenised stocks on Robinhood Chain.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
