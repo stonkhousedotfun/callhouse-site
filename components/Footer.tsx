@@ -6,8 +6,9 @@
  *   2. where to go: the in-site pages, then the three links that leave this domain (docs, the
  *      app, the explorer), each marked ↗ and opening a new tab.
  *   3. the standing disclaimers. "Not affiliated with Robinhood Markets, Robinhood Assets (Jersey)
- *      Limited, Overcall or Valorem" is carried word for word from the dapp's footer; if it is
- *      reworded, reword both in paired commits across the two repos.
+ *      Limited or Valorem" is carried word for word from the dapp's footer (leekzor/callhouse
+ *      `web/app/layout.tsx`, as ported 2026-09-14); if it is reworded, reword both in paired commits
+ *      across the two repos.
  *   4. the audit status, stated outright.
  *
  * DELIBERATELY ABSENT: a vault contract link (the vault is not deployed and lib/site.ts carries
@@ -69,7 +70,7 @@ export function Footer() {
             </ul>
           </nav>
           <p className="max-w-[70em]">
-            Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited, Overcall or Valorem.
+            Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited or Valorem.
             Nothing here is financial advice or an offer of securities.
           </p>
           <p className="max-w-[70em]">The Callhouse contracts have not been audited.</p>

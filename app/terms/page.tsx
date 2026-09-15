@@ -1,6 +1,8 @@
 /**
- * /terms — Terms of Use for both domains. Adopted 2026-09-13 as v1 (see LEGAL_DOCS_VERSION in
- * lib/legal.ts).
+ * /terms — Terms of Use for both domains. Adopted 2026-09-13 as v1, corrected as v2 the same day, and
+ * revised as v3 on 2026-09-14 for the contracts redesign: no third-party venue or registry, the
+ * vault's own Valorem Clear instance with its fee switch on the admin key, and the admin's value
+ * levers stated (see LEGAL_DOCS_VERSION in lib/legal.ts).
  *
  * WHY THIS PAGE EXISTS: /legal says access is restricted by the Terms of Use rather than by a
  * technical control, and until 2026-09-12 there was no such document. A restriction that points
@@ -55,7 +57,7 @@ import {
   OPERATOR_LEGAL_NAME,
   operatorIsDesignated,
 } from "@/lib/legal";
-import { MARKET, SHARE_TICKER, VENUE_NAME, VENUE_URL, appUrl } from "@/lib/site";
+import { MARKET, SHARE_TICKER, appUrl } from "@/lib/site";
 
 // The draft sentence is appended from the same flag the in-page marker reads, so the search
 // snippet and the page stop saying "draft" in the same build rather than one lagging the other.
@@ -170,10 +172,12 @@ export default function TermsPage() {
           </li>
           <li>
             There is no custody. {MARKET} Stock Tokens you deposit are held by the vault contract and,
-            during a written week, by the Valorem clearinghouse. The vault has no upgrade path and no
-            function that moves a depositor&apos;s tokens anywhere but back to the depositor or into
-            the written call; the Admin Safe can change policy inside compiled-in caps and cannot
-            move a token.
+            behind calls that have been sold, by the Valorem clearinghouse until the week closes. The
+            vault has no upgrade path and no function that moves a depositor&apos;s tokens anywhere but
+            back to the depositor or into a call a buyer has paid for. The admin can change policy
+            inside compiled-in caps and has no function that transfers a depositor&apos;s tokens,
+            although its settings, including the Valorem fee switch on the vault&apos;s own
+            clearinghouse, can still cost depositors value.
           </li>
           <li>
             There is no account. Nothing is registered, no password exists, and no know-your-customer
@@ -196,8 +200,8 @@ export default function TermsPage() {
             <DocLink href="/legal#reporting">report it</DocLink> instead of using it.
           </li>
           <li>
-            Do not misrepresent this interface as affiliated with Robinhood, {VENUE_NAME}, Valorem
-            or any other third party it names. It is not; <DocLink href="/legal">the legal page</DocLink>{" "}
+            Do not misrepresent this interface as affiliated with Robinhood, Valorem or any other
+            third party it names. It is not; <DocLink href="/legal">the legal page</DocLink>{" "}
             says so in full.
           </li>
         </DocList>
@@ -214,9 +218,10 @@ export default function TermsPage() {
 
       <DocSection {...SECTIONS.risks}>
         <p>
-          Premium is paid only if a buyer fills the weekly listing; a week with no buyer pays nothing.
-          Assignment can take the collateral at the strike. The collateral is a debt security whose
-          issuer can freeze transfers, and the vault cannot override that. You can lose the collateral
+          Premium is paid only if a buyer fills the weekly listing; a week with no buyer pays nothing,
+          and the vault can refuse a fill when the price has moved. Assignment can take the collateral
+          at the strike. The collateral is a debt security whose issuer can freeze transfers, and the
+          vault cannot override that. You can lose the collateral
           you deposit. <DocLink href="/risks">The risks page</DocLink> is the full list and is part of these
           terms by reference; read it before depositing.
         </p>
@@ -229,20 +234,26 @@ export default function TermsPage() {
             as-is, and there is no upgrade path: a bug means a new vault and a migration, not a patch.
           </li>
           <li>
-            <DocExternalLink href={VENUE_URL}>
-              {VENUE_NAME}
-            </DocExternalLink>
-            , Valorem Clear, Seaport, the {MARKET} Stock Token, USDG and the RPC providers are third
-            parties. None of them is operated by, or answerable to, the people who publish this
-            interface. Their contracts can be paused or upgraded by their own admin keys. The Stock
-            Token issuer can freeze transfers, which can stop this vault writing, settling and paying
-            out tokens; it can also pause its oracle, which stops the vault writing and listing new
-            calls but not settling, because settlement does not read the oracle. When a dependency
-            the vault needs stops, that part of the vault stops with it.
+            Seaport, the {MARKET} Stock Token, USDG and the RPC providers are third parties. None of
+            them is operated by, or answerable to, the people who publish this interface. The Stock
+            Token and USDG can be paused, frozen or upgraded by their issuers&apos; keys. The Stock
+            Token issuer can freeze transfers, which can stop this vault selling calls and paying out
+            tokens; it can also pause its oracle, which stops the vault arming, listing and selling
+            calls but not settling, because settlement does not read the oracle. A pause or freeze by
+            either issuer at the end of a week can leave the vault&apos;s Valorem claim unredeemed
+            until it lifts. When a dependency the vault needs stops, that part of the vault stops
+            with it.
           </li>
           <li>
-            The weekly cycle is set by a third-party registry key. A hostile or mistaken cycle is
-            bounded by the vault&apos;s compiled-in checks to a skipped week, and no better than that.
+            Valorem Clear is third-party code. The instance this vault settles on is deployed from
+            that code alongside the vault, and its fee switch is held by the vault&apos;s admin key.
+            The upstream code has had no commit since 2023, and there is no patch path behind it.
+          </li>
+          <li>
+            There is no third-party venue or registry. The keeper creates each week&apos;s call and
+            proposes its listing, and the vault checks both against compiled-in limits and its
+            policy. Those checks bound a hostile or mistaken keeper; they do not stop it selling on
+            the least favourable terms the policy allows.
           </li>
         </DocList>
       </DocSection>

@@ -4,16 +4,29 @@
  * This is the public sibling of the dapp's /docs page and a short path into the GitBook docs. The
  * reader has not deposited, nothing is connected, and the vault is not even deployed, so every
  * figure below is one of three things: a policy setting (launch value or compiled limit), an
- * address, or an example from the fork rehearsal that is labelled as one where it appears.
+ * address (or "published at launch" for what Callhouse has not deployed), or an example from the
+ * keeper's fork rehearsal that is labelled as one where it appears.
  *
  * DELIBERATELY ABSENT: every number that could move. No cycle number, no live strike, no realised
  * week, no TVL, no "current" anything. This package makes zero chain reads and has no wallet code,
  * and a live figure rendered before launch would be a zero next to a word like "realised". Also
  * absent: any figure scaled past one week, any chart, and any statement of what a week will pay.
  *
- * Sources: the origin/main version of this page (fact-checked against the contracts), the GitBook
- * docs repo (product/weekly-cycle, policy, fees, assignment; getting-started/depositing,
- * withdrawing, claiming-usdg; protocol/roles) and contracts/src/Policy.sol + Vault.sol at 634bf55.
+ * WHAT THIS PAGE DESCRIBES is the vault as redesigned on 2026-09-13 (write on fill, no registry, the
+ * stranded-claim state machine), with the file:line sources in leekzor/callhouse-contracts at
+ * 79cee08 plus the in-fill deposit refusal (AUDIT-FINDINGS-2026-09-14 L-01):
+ *   - arm gate, nothing written:          src/Vault.sol rollOpen; src/lib/ValoremLib.sol:132-161
+ *   - the listing shape:                  src/lib/SeaportOrderLib.sol:143-227; three per cycle Policy.sol:78
+ *   - write on fill, floors at fill spot: src/Vault.sol authorizeOrder/validateOrder; ValoremLib.sol:201-256
+ *   - the deposit gate:                   src/Vault.sol _depositRefused (seven reasons incl. in-fill)
+ *   - instant redemption while flat:      src/Vault.sol canRedeemInstantly; settleQueue
+ *   - split payout legs, reserve haircut: src/Vault.sol _payoutOwed, _haircut
+ *   - stranded claim:                     src/Vault.sol rollClose, retryStrandedClaim, isStranded
+ *   - policy and hard caps:               src/Policy.sol:49-78, :129-138; README.md "Hard caps"
+ *   - fees:                               Policy.sol:217-225; ValoremLib.sol:223-231; I-01 in
+ *                                         AUDIT-FINDINGS-2026-09-14 (own Clear, feeTo = admin)
+ * and in leekzor/callhouse for the keeper's defaults: keeper/README.md "The week" and "Pricing",
+ * keeper/src/calendar.ts (NYSE Friday 16:00 ET, Thursday on a holiday, expiry +24 h).
  *
  * Every "go do something" link leaves for app.callhouse.finance via appUrl(). A relative href on
  * this domain is a 404, not a route into the dapp.
@@ -38,10 +51,9 @@ import {
   CHAIN_ID,
   CHAIN_NAME,
   DOCS_URL,
+  FILL_PAGE_PATH,
   MARKET,
   SHARE_TICKER,
-  VENUE_NAME,
-  VENUE_URL,
   addressUrl,
   appUrl,
 } from "@/lib/site";
@@ -53,7 +65,7 @@ import { RuleTable, type RuleRow } from "./_components/RuleTable";
 import { Timeline, type TimelineStep } from "./_components/Timeline";
 
 const DESCRIPTION =
-  "The weekly covered-call cycle in detail: the timeline, the four phases, how strikes and sizes are chosen, where the premium goes, the three ways a week can end, withdrawals and deposits during a week, and who can do what.";
+  "The weekly covered-call cycle in detail: the timeline, the phases, how strikes, sizes and prices are chosen, why a call is written only when it is bought, where the premium goes, how a week can end, withdrawals and deposits during a week, and who can do what.";
 
 /**
  * `title` is the bare route name: the layout carries the "%s — Callhouse" template, so repeating
@@ -74,12 +86,14 @@ export const metadata: Metadata = {
   },
 };
 
+const FILL_PAGE = appUrl(FILL_PAGE_PATH);
+
 const ON_THIS_PAGE: Array<[string, string]> = [
   ["#week", "The week"],
   ["#phases", "Phases"],
-  ["#policy", "Strike and size"],
+  ["#policy", "Strike, size and price"],
   ["#fees", "Fees"],
-  ["#endings", "Three endings"],
+  ["#endings", "How a week ends"],
   ["#withdrawals", "Withdrawals"],
   ["#deposits", "Deposits"],
   ["#roles", "Who can do what"],
@@ -90,48 +104,68 @@ const ON_THIS_PAGE: Array<[string, string]> = [
 
 const STEPS: TimelineStep[] = [
   {
-    title: "The cycle opens",
-    when: "Start of the cycle",
-    body: `${VENUE_NAME}'s registry publishes the week: up to five strike rungs, the exercise timestamp that ends writing and listing, and the expiry. The vault has no calendar of its own, so nothing can be written before this.`,
+    title: "The keeper creates the week's call",
+    when: "After the last week closes",
+    body: `It creates this week's option type on Valorem Clear: one ${MARKET} per contract, paid for in USDG, a strike about 5% above spot rounded to a whole USDG, exercise at the NYSE close on Friday at 16:00 New York time (Thursday if Friday is an NYSE holiday), and expiry 24 hours later. Anyone can create an option type, and creating one writes nothing.`,
   },
   {
-    title: "The keeper picks a strike and a size",
-    when: "While writing is open",
-    body: "It takes the nearest rung inside the strike band, at launch 3% to 12% above spot, and a size the policy allows. The vault re-checks every limit itself before any NVDA moves. If a check fails, nothing is written, the vault stays Idle, and the keeper can try again while the window is open. If no rung qualifies or no write lands in time, the week is skipped. A skipped week is a normal outcome.",
-  },
-  {
-    title: "The vault writes the calls",
+    title: "The vault arms it",
     when: "Idle → Listed",
-    accent: true,
-    body: `Idle ${MARKET} is locked in Valorem Clear and written as whole contracts, one contract per 1.0000 Stock Token, within the launch limits of 95% of the idle balance and 50 contracts. ${MARKET} deposited after the write stays idle until next week's write, but its shares are pooled with everyone else's from the moment they are minted.`,
+    body: `The vault reads the call back from Valorem and checks it itself: its own ${MARKET} and USDG, one token per contract, exercise at least an hour away, an exercise window of at least a day, no more than 21 days in all, Valorem's fee off or accepted, a live price, and a strike inside the band, at launch 3% to 12% above spot. Nothing is written. If a check fails, the vault stays Idle, and a skipped week is a normal outcome.`,
   },
   {
-    title: `It lists them on ${VENUE_NAME} for USDG`,
-    when: "Until the exercise timestamp",
+    title: "It lists the calls for USDG",
+    when: "Until the exercise time",
     accent: true,
-    body: `The keeper proposes a Seaport order, and the vault authorises it by hash on chain only if every field matches the vault's own state and the asking price clears the premium floor. One listing is live at a time, at most three are signed per cycle, and each ends by the exercise timestamp. Buyers fill in part or in full, and each fill pays USDG in the same transaction: 95% to the vault, 5% to ${VENUE_NAME}. The keeper never holds the option tokens and can never move funds.`,
-    note: `If ${VENUE_NAME}'s book does not show the vault's listing, the app's cycle page can offer the keeper's signed order instead, after checking it against the chain, and labels it as the keeper's listing. Buyers who only use ${VENUE_NAME} will not see it.`,
+    body: `The keeper proposes one Seaport 1.6 order, and the vault authorises it on chain only if every field matches its own state: offered by the vault, with the vault as the order's zone, sized to what the vault could still write (at launch up to 95% of its ${MARKET} and 50 contracts), paid in USDG to the vault and nobody else, priced at or above the premium floor, and ending by the exercise time. The vault validates the order on Seaport itself, so the order needs no signature. At most three listings are authorised a week, and each new one is a reprice.`,
+    note: (
+      <>
+        Buy on{" "}
+        <ExternalLink href={FILL_PAGE} className="link">
+          the app&apos;s fill page
+        </ExternalLink>
+        , which checks the order against the chain and simulates your fill first, or with any Seaport 1.6 client using
+        the order the app serves. No third-party venue, order book or registry is involved.
+      </>
+    ),
+  },
+  {
+    title: "A buyer fills, and only then is a call written",
+    when: "Any time before the close",
+    accent: true,
+    body: `When a buyer takes some of the calls, Seaport asks the vault before it moves anything. The vault re-checks the clock, Valorem's fee switch, the price feed, the band floor and the premium floor at the spot of that moment, and the size against its capacity, then writes exactly the calls bought into Valorem. Seaport hands them to the buyer and the buyer's USDG to the vault in the same transaction. If a single call stayed behind in the vault, the whole fill reverts, so the vault never holds a call nobody bought and can never be assigned on more than it sold.`,
+    note: (
+      <>
+        A fill can be refused after a rally, because the floors follow spot. On the rehearsal&apos;s listing (strike{" "}
+        <Num>223</Num>, <Num>0.856189</Num> USDG a call at spot <Num>211.93</Num>), a spot above about{" "}
+        <Num>214.05</Num> lifts the floor past the ask and fills are refused until the keeper reprices; above about{" "}
+        <Num>216.50</Num> the strike falls below the band&apos;s <Num>3%</Num> floor, and no price can sell the rest of
+        that week. In the rehearsal the first fill of a week used <Num>462,677</Num> gas and a later one{" "}
+        <Num>289,157</Num>.
+      </>
+    ),
   },
   {
     title: "The book closes",
-    when: "Fri 20:00 UTC",
-    body: "This is the registry's exercise timestamp in the venue's current window, and it is the real deadline. From that moment deposits close, nothing more is written or listed, and anyone can lock the book, which cancels a listing still live. Nothing depends on anyone calling it, so a stopped keeper cannot hold the week open.",
+    when: "Fri 16:00 ET",
+    body: "This is the call's exercise time, fixed when the option type was created, and it is the real deadline: 20:00 UTC while US daylight saving time is in effect, 21:00 UTC after it ends. From that moment deposits close, nothing more can be sold or written, and anyone can lock the book, which cancels a listing still live. Nothing depends on anyone calling it, so a stopped keeper cannot hold the week open.",
   },
   {
     title: "The exercise window runs to expiry",
-    when: "Fri 20:00 → Sat 20:00 UTC",
+    when: "Fri 16:00 → Sat 16:00 ET",
     body: "Holders of this week's calls can exercise them in Valorem. The vault does nothing in this phase: whether a call is exercised is decided by whoever holds it. NVDA taken by an exercise leaves the vault's claim at once; the strike USDG for it arrives at the close.",
   },
   {
     title: "The week closes",
-    when: "From Sat 20:00 UTC",
+    when: "From Sat 16:00 ET",
     accent: true,
-    body: "The keeper can close from expiry, and anyone can one hour later. One transaction cancels any listing still live, redeems the Valorem claim (NVDA back, or strike USDG where it was assigned), takes the protocol fee from the premium alone, credits the rest per share with any strike USDG in full, settles the withdrawal queue and returns the vault to Idle.",
+    body: "The keeper can close from expiry, and anyone can one hour later. One transaction cancels any listing still live, redeems the Valorem claim if anything was sold (NVDA back, or strike USDG where it was assigned), takes the protocol fee from the premium alone, credits the rest per share with any strike USDG in full, settles the withdrawal queue and returns the vault to Idle.",
+    note: "If a token issuer makes the redeem fail, the close still completes and keeps the claim, stranded, until a retry succeeds. The phases section below says what that shuts.",
   },
   {
     title: "You claim USDG",
     when: "Any time",
-    body: "Premium and strike proceeds wait in your claimable balance, in any phase, with no deadline. USDG is never reinvested for you. Then the registry opens the next cycle and the week runs again.",
+    body: "Premium and strike proceeds wait in your claimable balance, in any phase, with no deadline. USDG is never reinvested for you. Then the keeper creates the next week's call and the week runs again.",
   },
 ];
 
@@ -145,17 +179,17 @@ const PHASE_ROWS: RuleRow[] = [
     cells: {
       phase: "Idle",
       deposits: "Open, up to the cap",
-      withdrawals: "Instant, while nothing is written",
-      next: "The keeper writes this cycle's calls, only while the registry's write window is open",
+      withdrawals: "Instant, while nothing is written. A queue joined now can be settled by anyone",
+      next: "The keeper arms this week's call, which writes nothing",
     },
   },
   {
     id: "listed",
     cells: {
       phase: "Listed",
-      deposits: "Open until the exercise timestamp, and closed as soon as any contract is assigned",
+      deposits: "Open until the exercise time. A deposit buys into the open short",
       withdrawals: "Queued",
-      next: "Anyone can lock the book from the exercise timestamp. Optional: the close also accepts a Listed vault",
+      next: "Anyone can lock the book from the exercise time. Optional: the close also accepts a Listed vault",
     },
   },
   {
@@ -176,20 +210,29 @@ const PHASE_ROWS: RuleRow[] = [
       next: "Inside that same closing transaction, the vault returns to Idle",
     },
   },
+  {
+    id: "stranded",
+    cells: {
+      phase: "Idle, claim stranded",
+      deposits: "Closed",
+      withdrawals: "Queued. The queue settles on the idle NVDA now, and on the claim once it is redeemed",
+      next: "Anyone retries the claim; the next week cannot be armed until it is redeemed",
+    },
+  },
 ];
 
 const STOPS: Caveat[] = [
   {
     title: "A halt on writes",
-    body: "The guardian or the admin can halt writes. It stops new calls and new listings, nothing else: never a deposit, a withdrawal, the queue, a USDG claim, locking the book or closing the week.",
+    body: "The guardian or the admin can halt writes. It stops arming, new listings and every fill, nothing else: never a deposit, a withdrawal, the queue, a USDG claim, a stranded-claim retry, locking the book or closing the week.",
   },
   {
     title: "A stale price or a paused oracle",
-    body: "The vault refuses to write or list against a stale price feed or a paused Stock Token oracle. Settlement never reads a price, so the close, the queue and claims keep working.",
+    body: "The vault refuses to arm, list or sell against a stale price feed or a paused Stock Token oracle. Settlement never reads a price, so the close, the queue and claims keep working.",
   },
   {
-    title: "An issuer freeze",
-    body: "If the Stock Token issuer freezes transfers, the close cannot redeem the Valorem claim, so the week's close, the queue and NVDA payouts can be held up until it lifts. USDG claims keep working. USDG freezing the vault's address can do the same on an assigned week.",
+    title: "A token issuer at the close: the claim is stranded",
+    body: "If USDG is paused, the vault or Valorem is frozen on USDG, Valorem's USDG has been burnt, or the vault is blocklisted on the Stock Token in a week not fully assigned, Valorem cannot hand the claim back. The close completes anyway and keeps the claim. Deposits, instant withdrawals and the next week stay shut, queued withdrawals settle on the idle NVDA and take their share of the claim later, and anyone can retry until it goes through. A Stock Token freeze of the vault also stops every NVDA transfer, a queued withdrawal's payout included.",
   },
 ];
 
@@ -219,7 +262,7 @@ const POLICY_ROWS: RuleRow[] = [
   {
     id: "min-premium",
     cells: {
-      param: "Minimum asking premium, gross",
+      param: "Minimum premium, checked at approval and at every fill",
       launch: (
         <>
           <Num>0.40%</Num> of spot notional
@@ -231,18 +274,22 @@ const POLICY_ROWS: RuleRow[] = [
   {
     id: "utilization",
     cells: {
-      param: `Share of idle ${MARKET} written`,
+      param: `Share of the vault's ${MARKET} that can be sold`,
       launch: <Num>95%</Num>,
-      cap: <>Ceiling <Num>100%</Num></>,
+      cap: <>Ceiling <Num>99.85%</Num></>,
     },
   },
   {
     id: "contracts",
-    cells: { param: "Contracts per cycle", launch: <Num>50</Num>, cap: <>At least <Num>1</Num></> },
+    cells: { param: "Contracts per week", launch: <Num>50</Num>, cap: <>At least <Num>1</Num></> },
   },
   {
     id: "listings",
-    cells: { param: "Listings signed per cycle", launch: <Num>3</Num>, cap: "Constant, not adjustable" },
+    cells: {
+      param: "Listings authorised per week",
+      launch: <Num>3</Num>,
+      cap: "Constant. Each new listing spends one, cancelled or not",
+    },
   },
   {
     id: "fee",
@@ -283,7 +330,7 @@ const POLICY_ROWS: RuleRow[] = [
   {
     id: "price-age",
     cells: {
-      param: "Oldest price the vault will write against",
+      param: "Oldest price the vault will arm or sell against",
       launch: <Num>4 days</Num>,
       cap: (
         <>
@@ -295,15 +342,16 @@ const POLICY_ROWS: RuleRow[] = [
   {
     id: "tenor",
     cells: {
-      param: "Cycle length",
+      param: "The week's window",
       launch: (
         <>
-          {VENUE_NAME}&apos;s, currently <Num>7 days</Num>
+          Set by the keeper: exercise at the Friday close, expiry <Num>24 hours</Num> later
         </>
       ),
       cap: (
         <>
-          At most <Num>21 days</Num> from the write
+          Exercise at least <Num>1 hour</Num> after arming, a window of at least <Num>1 day</Num>, at most{" "}
+          <Num>21 days</Num> in all
         </>
       ),
     },
@@ -313,19 +361,19 @@ const POLICY_ROWS: RuleRow[] = [
 const KEEPER_DEFAULTS: Array<{ title: string; body: string }> = [
   {
     title: "Strike",
-    body: "The nearest rung inside the band, meaning the lowest strike that qualifies. That is where a weekly call has premium, and it is also the rung most likely to be assigned.",
+    body: "About 5% above spot when the week is armed, rounded to a whole USDG, so inside the 3% to 12% launch band. If it would fall outside the band, the keeper skips the week. The strike cannot change once armed.",
   },
   {
     title: "Size",
-    body: `The largest the policy allows, all in one listing. With 20 ${MARKET} idle, that is at most 19 contracts.`,
+    body: `Everything the policy allows, in one listing. With 20 ${MARKET} in the vault that is at most 19 contracts, and only the ones bought are ever written.`,
   },
   {
     title: "Price",
-    body: `The premium floor for the current spot, raised to the last fill seen on ${VENUE_NAME} for that rung, but never more than three times the floor and never above the strike. A rung with no fill history lists at the floor.`,
+    body: "The vault's premium floor at the current spot, plus a 1% margin, rounded up, and never above the strike. In the rehearsal the floor was 0.847711 USDG a call at spot 211.93, and the listing asked 0.856189.",
   },
   {
-    title: "Relisting",
-    body: "After a cancelled or invalidated order the keeper relists once, never below its previous ask. The vault's limit of three signed listings a cycle applies regardless.",
+    title: "Repricing",
+    body: "When spot rises far enough that a fill would be refused, the keeper cancels and relists at the new floor, on the same strike. The vault's limit of three listings a week applies regardless, and once the strike is below the band floor no reprice can help.",
   },
 ];
 
@@ -333,22 +381,16 @@ const KEEPER_DEFAULTS: Array<{ title: string; body: string }> = [
 
 const FEES: Array<{ who: string; size: string; when: string; body: string }> = [
   {
-    who: VENUE_NAME,
-    size: "5% of gross premium",
-    when: "On each fill",
-    body: "A second payment inside the Seaport order itself: the buyer's USDG splits in the same transaction, 95% to the vault and 5% to Overcall. It is rounded per contract, not on the total, because rounding on the total produces an order that signs and then cannot be partly filled.",
-  },
-  {
     who: "Callhouse",
-    size: "5% of the premium the vault receives",
-    when: "At harvest, only on premium above zero",
+    size: "5% of premium",
+    when: "When premium is accounted, only above zero",
     body: "Taken when the vault accounts for premium, at the close or when a deposit arrives. Strike proceeds from an assignment are credited to depositors in full: that exclusion is in the contract code, not a setting. The admin can change the rate, never above 20% of premium.",
   },
   {
     who: "Valorem engine",
-    size: "15 bps of written notional, in NVDA",
+    size: `15 bps of written notional, in ${MARKET}`,
     when: "Currently off",
-    body: "Not taken from premium. If Valorem switches it on and the admin accepts it, it is paid from the vault's NVDA at every write, filled or not, and on a weekly out-of-the-money call it can be a large part of the premium. While it is on and not accepted, the vault does not write.",
+    body: `The vault's own instance of Valorem Clear starts with this fee switched off, and the switch is held by the vault admin's key. Even if it is switched on, the vault refuses to arm or sell until the admin separately accepts the fee. Once accepted, every fill pays 15 bps of the ${MARKET} it writes from the vault on top of the collateral, and the vault raises that fill's premium floor by the fee's value at spot, so the buyer pays for it in USDG. An exercise would also cost the exerciser 15 bps of the strike, paid to the same key.`,
   },
 ];
 
@@ -368,22 +410,22 @@ const ENDINGS: Array<{
     title: "Nobody bought",
     chip: { tone: "neutral", label: "Most likely on a thin book" },
     body: [
-      "The listing sat on the book and nobody filled it. The week pays no premium, no fee is charged, and the unsold options are worthless after expiry.",
-      "The collateral can still be assigned. The vault writes the same option series as other writers, and Valorem assigns exercises across all of them, so if their buyers exercise, NVDA can leave at the strike for strike USDG in a week that paid nothing. Whatever is not assigned comes back at the close. The week is published like any other, not hidden as an error.",
+      "The listing stayed open until the exercise time and nobody filled it. The week pays no premium and no fee is charged.",
+      "Calls are written only when they are bought, so nothing was written and nothing can be assigned: the NVDA never left the vault, and the close simply returns it to Idle. The week is published like any other, not hidden as an error. In the fork rehearsal's first week, 23 calls were offered and the week closed with 0 USDG.",
     ],
     premium: "None",
-    nvda: "Back at the close, unless assigned",
-    upside: "Kept, unless assigned",
+    nvda: "Never left the vault",
+    upside: "Kept",
   },
   {
     id: "otm",
     title: "Bought, expired worthless",
     chip: { tone: "accent", label: "Premium kept" },
     body: [
-      "A buyer paid for the calls and no exercise was assigned to the vault, usually because NVDA stayed below the strike. The options expire worthless to their holders.",
-      "Premium, less Overcall's 5% and Callhouse's 5%, is credited to depositors in USDG, and the NVDA comes back at the close.",
+      "Buyers paid for some or all of the calls, each fill wrote exactly what it bought, and no exercise was assigned to the vault, usually because NVDA stayed below the strike. The options expire worthless to their holders.",
+      "Premium, less Callhouse's 5%, is credited to depositors in USDG, and the NVDA behind the calls sold comes back at the close.",
     ],
-    premium: "Kept, net of fees",
+    premium: "Kept, net of the fee",
     nvda: "Back at the close",
     upside: "Kept",
   },
@@ -392,12 +434,24 @@ const ENDINGS: Array<{
     title: "Bought and exercised",
     chip: { tone: "warn", label: "Assigned" },
     body: [
-      "Assignment can take the collateral at the strike. NVDA finished above the strike and holders exercised: the assigned NVDA leaves and comes back as strike USDG, credited to depositors in full with no protocol fee. The premium is still kept, net of fees, and anything above the strike is given up for that week.",
-      "v1 does not buy the NVDA back. Afterwards each cNVDA share holds less NVDA and more claimable USDG, the vault stays underweight until new deposits add to it, and the next week writes against the smaller balance.",
+      "Assignment can take the collateral at the strike. NVDA finished above the strike and holders exercised: the assigned NVDA leaves and comes back as strike USDG, credited to depositors in full with no protocol fee. The premium is still kept, net of the fee, and anything above the strike is given up for that week. In the rehearsal's second week, 2 of the 5 calls sold were exercised at 223, and 446 USDG came back fee-free.",
+      "v1 does not buy the NVDA back. Afterwards each cNVDA share holds less NVDA and more claimable USDG, the vault stays underweight until new deposits add to it, and the next week offers calls against the smaller balance.",
     ],
-    premium: "Kept, net of fees",
-    nvda: "Part or all leaves at the strike, paid in USDG",
+    premium: "Kept, net of the fee",
+    nvda: "Part or all of what was sold leaves at the strike, paid in USDG",
     upside: "Given up that week",
+  },
+  {
+    id: "stranded",
+    title: "Closed, claim stranded",
+    chip: { tone: "warn", label: "Close held up" },
+    body: [
+      "Closing the week asks Valorem to hand back the vault's claim, and a token issuer can make that fail: USDG paused, the vault or Valorem frozen on USDG, or the vault blocklisted on the Stock Token in a week not fully assigned. The week closes anyway and the vault returns to Idle with the claim kept.",
+      "While it is stranded, deposits, instant withdrawals and the next week are shut. Queued withdrawals settle their share of the idle NVDA at once and take their share of the claim when it is redeemed. Anyone can retry, as often as they like; it goes through only when the issuer lets it. In the rehearsal a USDG freeze of the vault stranded week 3, and after the unfreeze the retry brought back 1 NVDA and 239 USDG and the next week armed normally.",
+    ],
+    premium: "Credited; USDG claims wait on USDG",
+    nvda: "Held in the claim until a retry succeeds",
+    upside: "As the week ended",
   },
 ];
 
@@ -413,19 +467,27 @@ const WITHDRAWAL_CAVEATS: Caveat[] = [
     body: "There is no function to take escrowed shares back. Once settled, your amounts are fixed, later deposits do not dilute them, and there is no deadline to collect.",
   },
   {
-    title: "Do not queue while the vault is Idle",
-    body: "The transaction succeeds, but it settles only at the next close, which needs a call to be written first. That may not happen for a week or more, and your escrowed shares are written against with everyone else's in the meantime. While the vault is Idle, redeem instantly instead.",
+    title: "Queueing while the vault is Idle",
+    body: "It works, and anyone can settle that queue at once, at the same price as an instant withdrawal; the keeper does so before it arms the next week. While the vault is Idle with nothing written, redeeming instantly gets the same result in one step.",
   },
   {
-    title: "A frozen token can hold the queue up",
-    body: "An issuer freeze on the Stock Token can stop the close and the NVDA payout until it lifts. A halt on writes, a stale price feed or a paused oracle does not. cNVDA is not listed anywhere, so there is no secondary market to sell into instead.",
+    title: "USDG cannot hold up your NVDA",
+    body: "A settled withdrawal pays its NVDA whatever USDG is doing. If USDG is paused or an address is frozen, only the USDG part waits, still owed, and can be collected later or to another address.",
+  },
+  {
+    title: "A frozen Stock Token can",
+    body: "A Stock Token freeze of the vault stops every NVDA payout, a queued one included, until it lifts. cNVDA is not listed anywhere, so there is no secondary market to sell into instead.",
+  },
+  {
+    title: "An issuer burn is shared",
+    body: "If the Stock Token issuer burns NVDA from the vault below what settled withdrawals are owed, every uncollected withdrawal is paid the same fraction, whoever collects first, and deposits stay closed until the shortfall is gone.",
   },
 ];
 
 const DEPOSIT_POINTS: Array<{ title: string; body: string }> = [
   {
-    title: "Your NVDA is not written that week",
-    body: "It lands in the vault's idle balance and waits for the next cycle's write.",
+    title: "Your NVDA can be sold that week",
+    body: "A deposit adds to what the vault can sell: later fills that week are sized against the larger balance, so calls can be written against your NVDA in the week you arrive.",
   },
   {
     title: "Your shares carry that week's result",
@@ -433,11 +495,11 @@ const DEPOSIT_POINTS: Array<{ title: string; body: string }> = [
   },
   {
     title: "Premium from before you arrived is not yours",
-    body: "Before minting your shares, the deposit credits any premium that already reached the vault to the existing shares. Your shares start from that point.",
+    body: "Before minting your shares, the deposit credits any premium that already reached the vault to the existing shares. A deposit made after a fill in the same transaction is refused, so it cannot take part of the premium that fill is paying.",
   },
   {
-    title: "Deposits close at the exercise timestamp",
-    body: "And as soon as any contract has been assigned, whatever the clock says. Exercise happens inside Valorem with no call to the vault: NVDA leaves at once while its strike USDG only arrives at the close, and new shares priced in that gap would take strike proceeds from the depositors who were assigned. The app's maximum goes to zero at the same instant.",
+    title: "Deposits close at the exercise time",
+    body: "And whenever a share cannot be priced honestly: while a claim is stranded, while assignment proceeds wait unredeemed, while an issuer burn leaves settled withdrawals unbacked, or while the share price is below a compiled floor. Exercise happens inside Valorem with no call to the vault: NVDA leaves at once while its strike USDG only arrives at the close, and new shares priced in that gap would take strike proceeds from the depositors who were assigned. The app's maximum goes to zero at the same instant.",
   },
 ];
 
@@ -450,40 +512,40 @@ const ROLES: Array<{ id: string; title: string; holder: string; can: string[]; c
     holder: "Bootstrap key, then Safe 2 of 3",
     can: [
       "Set the policy inside the compiled limits, the deposit cap, the fee recipient and the price age",
-      "Accept Valorem's engine fee if it is ever switched on",
+      "Accept Valorem's engine fee. On the vault's own clearinghouse the same key holds the switch that turns it on",
       "Halt writes, and lift a halt",
       "Grant and revoke every role",
     ],
     cannot: [
-      "Move any NVDA, USDG or cNVDA",
+      "Transfer depositors' NVDA, USDG or cNVDA",
       "Upgrade the vault or change an external address",
-      "Block the queue, claims, locking the book or the close",
+      "Block the queue, claims, a stranded-claim retry, locking the book or the close",
       "Charge a fee on strike proceeds, or go past a compiled limit",
     ],
-    note: "At launch one deployer key holds every admin power, then hands them to the 2-of-3 Safe. There is no timelock. A compromised admin could raise the fee to 20% of premium and redirect it, or loosen the policy to its limits and sell calls to a buyer it controls: no tokens leave the vault directly, but that is a real loss to depositors.",
+    note: "At launch one deployer key holds every admin power, then hands them to the 2-of-3 Safe. There is no timelock. A compromised admin could raise the fee to 20% of premium and redirect it, switch on and accept Valorem's 15 bps fee, or loosen the policy to its limits and sell calls to a buyer it controls, about 2.2% of the notional sold per week by the contracts' own estimate. No tokens leave the vault directly, but that is a real loss to depositors.",
   },
   {
     id: "keeper",
     title: "Keeper",
     holder: "Hot key",
     can: [
-      "Open the week by writing the calls",
-      "Authorise, cancel and invalidate listings",
+      "Create and arm the week's call",
+      "Authorise, cancel and invalidate listings, up to three a week",
       "Close the week from expiry, an hour before anyone else",
     ],
     cannot: [
       "Transfer, approve or receive a token for the vault",
       "Route premium to itself",
       "Change settings, halt, or grant roles",
-      "Write outside the band, list more than three times a cycle, or list past the exercise timestamp",
+      "Arm a strike outside the band, list past the exercise time, or offer more than the vault can write",
     ],
-    note: "Inside those limits it can choose the least favourable terms the policy allows, or skip a week by not writing or not listing.",
+    note: "Inside those limits it can choose the least favourable terms the policy allows and sell to a buyer it controls, about 1.1% of the notional sold per week at launch policy by the contracts' own estimate, or skip a week by not arming or not listing.",
   },
   {
     id: "guardian",
     title: "Guardian",
     holder: "Single hardware key",
-    can: ["Halt writes", "Cancel the live listing", "Invalidate every outstanding listing"],
+    can: ["Halt arming, listings and every fill", "Cancel the live listing", "Invalidate every outstanding listing"],
     cannot: [
       "Lift a halt",
       "Change any setting or grant roles",
@@ -498,12 +560,15 @@ const ROLES: Array<{ id: string; title: string; holder: string; can: string[]; c
     can: [
       "Deposit, within the phase and the cap",
       "Redeem or queue your own shares, complete a settled redemption, claim USDG",
-      "Lock the book from the exercise timestamp",
+      "Buy calls from the vault's listing, on the app's fill page or with any Seaport 1.6 client",
+      "Lock the book from the exercise time",
       "Close the week from one hour after expiry",
+      "Settle the queue while the vault is Idle",
+      "Retry a stranded claim",
       "Push a stuck protocol fee to its recipient (never to the caller)",
     ],
     cannot: [],
-    note: "Because locking the book and closing the week are open to anyone, settlement and the queue do not depend on the keeper or the guardian staying alive.",
+    note: "Because locking the book, closing the week, settling the queue and retrying a stranded claim are open to anyone, settlement and the queue do not depend on the keeper or the guardian staying alive.",
   },
 ];
 
@@ -516,16 +581,16 @@ export default function HowItWorksPage() {
       <Container className="grid grid-cols-1 items-center gap-9 pb-14 pt-4 sm:pb-[72px] lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-14 lg:pt-10">
         <div>
           <Chip tone="accent" dot wrap>
-            {CHAIN_NAME} {CHAIN_ID} · {VENUE_NAME} · Valorem Clear · Seaport 1.6
+            {CHAIN_NAME} {CHAIN_ID} · Valorem Clear · Seaport 1.6
           </Chip>
           <h1 className="mt-5 text-[length:clamp(38px,5vw,60px)] font-extrabold leading-[1.03] tracking-[-0.035em]">
             One week, <span className="text-accent">start to finish.</span>
           </h1>
           <p className="mt-[22px] max-w-[34em] text-[18px] text-ink-2 sm:text-[19px]">
-            Deposit {MARKET} Stock Tokens and receive {SHARE_TICKER} shares. Each week the vault writes covered calls
-            against the idle tokens, lists them on {VENUE_NAME} for USDG, and credits whatever buyers actually pay. This
-            page is that week in detail: the timeline, the rules the contracts enforce, where the money goes and the
-            three ways it can end.
+            Deposit {MARKET} Stock Tokens and receive {SHARE_TICKER} shares. Each week the vault lists covered calls
+            against its tokens for USDG, writes each call only when a buyer fills, and credits whatever buyers actually
+            pay. This page is that week in detail: the timeline, the rules the contracts enforce, where the money goes
+            and the ways it can end.
           </p>
           <div className="mt-[30px] flex flex-wrap gap-3">
             <Button href={appUrl("/vault/nvda")}>Open the app</Button>
@@ -535,8 +600,8 @@ export default function HowItWorksPage() {
           </div>
           <Notice variant="plain" className="mt-[26px]">
             Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. The vault is not
-            deployed and the contracts are not audited. Every figure here is a policy setting or a labelled example,
-            not a quote.
+            deployed and the contracts are unaudited. Every figure here is a policy setting or a labelled example, not
+            a quote.
           </Notice>
         </div>
 
@@ -549,15 +614,16 @@ export default function HowItWorksPage() {
           </div>
           <dl className="grid grid-cols-2 gap-3">
             <Figure boxed size="md" label="Deposit cap" value="20" unit={MARKET} />
-            <Figure boxed size="md" label="Written each week" value="≤ 95%" unit="of idle" />
+            <Figure boxed size="md" label="Sold at most" value="≤ 95%" unit={`of the ${MARKET}`} />
             <Figure boxed size="md" label="Strike above spot" value="3–12%" />
             <Figure boxed size="md" label="Protocol fee" value="5%" unit="of premium" />
-            <Figure boxed size="md" label="Book closes" value="Fri 20:00" unit="UTC" />
-            <Figure boxed size="md" label="Expiry" value="Sat 20:00" unit="UTC" />
+            <Figure boxed size="md" label="Book closes" value="Fri 16:00" unit="ET" />
+            <Figure boxed size="md" label="Expiry" value="Sat 16:00" unit="ET" />
           </dl>
           <p className="border-t border-line pt-4 text-[13.5px] text-ink-3">
-            Days and times are {VENUE_NAME}&apos;s current window, read from its registry. The admin can change the
-            settings, never past the limits compiled into the contracts.
+            New York time: <Num>20:00 UTC</Num> while US daylight saving time is in effect, <Num>21:00 UTC</Num> after
+            it ends, and Thursday when Friday is an NYSE holiday. The admin can change the settings, never past the
+            limits compiled into the contracts.
           </p>
         </Panel>
 
@@ -582,8 +648,8 @@ export default function HowItWorksPage() {
         <SectionHead
           id="week-h"
           eyebrow="The week"
-          title="Eight steps, from write window to claim."
-          intro={`The keeper follows ${VENUE_NAME}'s registry, not a wall clock. The days and times below are the venue's current window, not a promise Callhouse makes: if the registry moves the window, the vault moves with it.`}
+          title="Eight steps, from a new call to your claim."
+          intro="The clock is the US market close. The keeper sets each week's exercise time at the NYSE close on Friday, 16:00 New York time, and expiry a day later; the vault reads both from the call itself and holds everyone to them. The times below are the keeper's rule, not a promise the contracts make: the contracts accept any window that opens at least an hour out, lasts at least a day and ends within 21 days."
         />
         <Timeline steps={STEPS} />
         <DocsLink href={DOCS.weeklyCycle}>The weekly cycle</DocsLink>
@@ -595,7 +661,7 @@ export default function HowItWorksPage() {
           id="phases-h"
           eyebrow="Phases"
           title="Four phases, and what each one allows."
-          intro="The contracts, not the keeper, decide what you can do at each point in the week. Deposits and withdrawals follow the phase."
+          intro="The contracts, not the keeper, decide what you can do at each point in the week. Deposits and withdrawals follow the phase, and a stranded claim is an Idle vault that is not yet flat."
         />
 
         <ol aria-label="Phase order" className="mb-8 flex flex-wrap items-center gap-2">
@@ -633,8 +699,8 @@ export default function HowItWorksPage() {
 
         <h3 className="mb-1 mt-14 text-[22px] font-bold tracking-[-0.015em]">What pauses, and what never does</h3>
         <p className="mb-5 max-w-[40em] text-[15.5px] text-ink-2">
-          Three things can stop part of the week. A halt and a stale or paused price never touch settlement; a freeze
-          on the Stock Token (or USDG freezing the vault) can hold up the close. The issuer&apos;s wider powers are on{" "}
+          Three things can stop part of the week. A halt and a stale or paused price never touch settlement; a token
+          issuer acting at the close strands the week&apos;s claim until it lifts. The issuers&apos; wider powers are on{" "}
           <Link href="/risks#issuer" className="link">
             the risks page
           </Link>
@@ -647,8 +713,8 @@ export default function HowItWorksPage() {
       <Section id="policy" labelledBy="policy-h" className="scroll-mt-4">
         <SectionHead
           id="policy-h"
-          eyebrow="Strike and size"
-          title="How the strike and the size are chosen."
+          eyebrow="Strike, size and price"
+          title="How the strike, the size and the price are chosen."
           intro="Two layers. Launch values are what the vault starts with, and the admin can change them with no timelock. Compiled limits are in the bytecode, checked on every change, and no key can move them. Neither is a forecast of what a week will pay."
         />
 
@@ -669,8 +735,7 @@ export default function HowItWorksPage() {
             <p className="mt-3 text-[15.5px] text-ink-2">
               The contracts set the bounds and the keeper software chooses inside them. These are its default
               settings: operating choices, not commitments, and whoever runs the keeper can change them without a
-              contract change. If no rung on the registry&apos;s ladder fits the band, the vault writes nothing that
-              week.
+              contract change. If the strike would not fit the band, the vault arms nothing that week.
             </p>
             <p className="mt-3 text-[15.5px] text-ink-2">
               The limits rule out the worst settings, such as selling at the money. They do not rule out poor
@@ -699,8 +764,8 @@ export default function HowItWorksPage() {
         <SectionHead
           id="fees-h"
           eyebrow="Where the money goes"
-          title="The live fees come out of premium, and only premium."
-          intro="Both live fees are taken from premium, and premium exists only when a buyer fills. A week with no buyer is charged nothing by either, and neither is charged on deposits, idle NVDA or strike proceeds. Valorem's engine fee, off today, would be different: see below."
+          title="The live fee comes out of premium, and only premium."
+          intro="One fee is charged today, and it is taken from premium, which exists only when a buyer fills. A week with no buyer is charged nothing, and nothing is charged on deposits, idle NVDA or strike proceeds. Valorem's engine fee, off today, would be different: see below."
         />
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -722,9 +787,9 @@ export default function HowItWorksPage() {
 
             <div className="mt-2 rounded-md bg-surface-2 p-5">
               <p className="text-[15.5px] text-ink">
-                <strong className="font-semibold">Stacked, the two live fees come to 9.75% of what the buyer paid:</strong>{" "}
-                {VENUE_NAME}&apos;s 5% of the gross, then Callhouse&apos;s 5% of the 95% that reaches the vault. At the
-                20% ceiling the stack would be 24%.
+                <strong className="font-semibold">One fee, on premium only: 5% of what buyers pay.</strong> Every listing
+                has a single payment leg, USDG to the vault, so nothing is taken out of a fill before it arrives. At the
+                compiled ceiling the fee would be 20%.
               </p>
               <p className="mt-2 text-[14px] text-ink-3">
                 The protocol fee accrues in the vault and is paid out at the close on a best-effort basis. If that
@@ -744,9 +809,9 @@ export default function HowItWorksPage() {
       <Section id="endings" labelledBy="endings-h" className="scroll-mt-4">
         <SectionHead
           id="endings-h"
-          eyebrow="Three endings"
-          title="Every week ends one of three ways."
-          intro="Premium is paid only if a buyer fills. Which ending you get is decided by the order book and by what holders of this week's calls do, not by anything the vault does."
+          eyebrow="How a week ends"
+          title="Three endings, and a close that can be held up."
+          intro="Premium is paid only if a buyer fills. Which ending you get is decided by buyers, by what holders of this week's calls do and by the token issuers, not by anything the vault does."
         />
 
         <div className="grid gap-4">
@@ -779,11 +844,12 @@ export default function HowItWorksPage() {
         </div>
 
         <Notice as="div" className="mt-6 text-[14.5px]!">
-          <strong className="font-semibold text-ink">Partial assignment is normal.</strong> Valorem assigns by bucket
-          across every writer of the same option series, not perfectly pro rata and not according to who sold the
-          exercised call. A week can end with some of the vault&apos;s contracts assigned and the rest not, and that can
-          happen in a week the vault&apos;s own listing never filled. The vault then holds a mix of NVDA and USDG, every
-          depositor gets the same blend per share, and a queued withdrawal settled that week pays out in the same mix.
+          <strong className="font-semibold text-ink">Partial assignment is normal.</strong> Anyone can write the same
+          call on Valorem, and Valorem spreads each exercise across the writers of that call, bucket by bucket, not
+          according to who sold the exercised call. A week can end with some of the vault&apos;s contracts assigned and
+          the rest not. Because the vault writes only what it sells, it is never assigned on more contracts than it
+          sold. The vault then holds a mix of NVDA and USDG, every depositor gets the same blend per share, and a queued
+          withdrawal settled that week pays out in the same mix.
         </Notice>
 
         <DocsLink href={DOCS.assignment}>Assignment, with worked examples</DocsLink>
@@ -795,7 +861,7 @@ export default function HowItWorksPage() {
           id="withdrawals-h"
           eyebrow="Withdrawals"
           title="Two ways out, and the phase picks one."
-          intro="While a call is open, the NVDA behind it is locked in Valorem until expiry, so the vault cannot hand it back early. The queue is the mechanism, not a discretionary gate: no Callhouse key can jump it or stop it."
+          intro="From the moment a week is listed until it closes, a withdrawal waits for the close: NVDA behind a call sold is locked in Valorem until expiry, and a fill can write against the rest at any moment. The queue is the mechanism, not a discretionary gate: no Callhouse key can jump it or stop it."
         />
 
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
@@ -809,13 +875,13 @@ export default function HowItWorksPage() {
             <ul className="mt-4 grid gap-3 text-[15.5px] text-ink-2">
               <li>Your shares burn and NVDA comes back in the same transaction, at the current NVDA per share.</li>
               <li>It pays NVDA only. USDG already credited to you stays claimable.</li>
-              <li>A halt on writes never blocks it.</li>
+              <li>A halt on writes never blocks it. It is off while a claim is stranded.</li>
             </ul>
           </Panel>
 
           <Panel as="article" pad="lg" aria-labelledby="queue-h" className="max-sm:p-[22px]!">
             <Chip tone="warn" dot>
-              While a call is open
+              While a week is listed
             </Chip>
             <h3 id="queue-h" className="mt-3.5 text-[24px] font-extrabold tracking-[-0.02em]">
               The queue
@@ -832,7 +898,8 @@ export default function HowItWorksPage() {
                 <span className="num font-semibold text-ink">2</span>
                 <span>
                   <strong className="font-semibold text-ink">The week closes.</strong> The close harvests the
-                  week&apos;s USDG first, then burns the escrowed shares and sets aside their NVDA and USDG.
+                  week&apos;s USDG first, then burns the escrowed shares and sets aside their NVDA and USDG. While the
+                  vault is Idle, anyone can settle the queue the same way.
                 </span>
               </li>
               <li className="grid grid-cols-[28px_minmax(0,1fr)] gap-2">
@@ -845,7 +912,10 @@ export default function HowItWorksPage() {
             <dl className="mt-5 grid gap-3 border-t border-line pt-5 text-[15px]">
               <div>
                 <dt className="font-semibold text-ink">NVDA</dt>
-                <dd className="text-ink-2">Your pro-rata share of the vault&apos;s idle NVDA at settlement.</dd>
+                <dd className="text-ink-2">
+                  Your pro-rata share of the vault&apos;s idle NVDA at settlement, priced like an instant withdrawal.
+                  If the week&apos;s claim was stranded, your share of it follows when it is redeemed.
+                </dd>
               </div>
               <div>
                 <dt className="font-semibold text-usdg">USDG, per entry</dt>
@@ -873,7 +943,7 @@ export default function HowItWorksPage() {
           id="deposits-h"
           eyebrow="Deposits"
           title="Depositing into an open week."
-          intro="Deposits stay open while a call is live, until the cycle's exercise timestamp. A deposit in that window joins the week, for better or for worse."
+          intro="Deposits stay open while a week is listed, until the call's exercise time. A deposit in that window buys into the open short and joins the week, for better or for worse."
         />
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -891,8 +961,8 @@ export default function HowItWorksPage() {
               Priced at face value
             </h3>
             <Notice as="div">
-              Shares are priced at the NVDA behind them, including NVDA locked behind this week&apos;s call at full
-              value, with nothing subtracted for what the open call could cost. If NVDA is already above the strike
+              Shares are priced at the NVDA behind them, including NVDA locked behind calls already sold at full
+              value, with nothing subtracted for what those calls could cost. If NVDA is already above the strike
               when you deposit, you pay full price for collateral that may leave at the strike, and part of that loss
               is yours. Depositing while the vault is Idle avoids this.
             </Notice>
@@ -911,8 +981,8 @@ export default function HowItWorksPage() {
               </div>
             </dl>
             <p className="text-[13.5px] text-ink-3">
-              The cap counts idle NVDA plus NVDA locked in this week&apos;s call, so writing a call does not free up
-              room under it.
+              The cap counts idle NVDA plus NVDA locked behind calls sold this week, so a fill does not free up room
+              under it.
             </p>
           </Panel>
         </div>
@@ -926,7 +996,7 @@ export default function HowItWorksPage() {
           id="roles-h"
           eyebrow="Roles"
           title="Who can do what."
-          intro="Three keys run the week and set policy inside the compiled limits. None of them can transfer depositors' tokens, though a bad admin could still cost depositors money, and the two steps that finish a week are open to anyone."
+          intro="Three keys run the week and set policy inside the compiled limits. None of them can transfer depositors' tokens, though a bad keeper or admin could still cost depositors money, and every step that finishes a week is open to anyone."
         />
 
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
@@ -979,7 +1049,8 @@ export default function HowItWorksPage() {
           <strong className="font-semibold text-ink">There is no proxy on v1.</strong> The vault cannot be upgraded in
           place. Fixing anything means deploying Vault v2 and migrating to it, in public, with depositors moving their
           own funds. That is deliberate: an upgradeable vault is a key that can rewrite the rules under a position that
-          is already open. The Callhouse contracts have not been audited.
+          is already open. The Callhouse contracts are unaudited: there has been no external audit, only internal
+          reviews.
         </Notice>
 
         <DocsLink href={DOCS.roles}>Roles and admin powers</DocsLink>
@@ -993,27 +1064,28 @@ export default function HowItWorksPage() {
           title="What the week touches on chain."
           intro={
             <p>
-              Everything the weekly cycle uses on chain {CHAIN_ID}. All third party: the Callhouse vault is not listed
-              because it is not deployed yet. There is one{" "}
-              <ExternalLink href={VENUE_URL} className="link">
-                {VENUE_NAME}
-              </ExternalLink>{" "}
-              registry per market, and the one below is the {MARKET} market&apos;s.
+              Everything the weekly cycle uses on chain {CHAIN_ID}. The Callhouse vault and its own Valorem Clear
+              instance are not deployed yet, so their addresses are published at launch, not shown here in advance. The
+              rest are third-party contracts already live. There is no registry and no third-party venue in the path.
             </p>
           }
         />
 
         <ul className="grid grid-cols-1 gap-x-12 lg:grid-cols-2">
           {ADDRESS_ROWS.map((row) => (
-            <li key={row.address} className="grid gap-1 border-t border-line py-5">
+            <li key={row.label} className="grid gap-1 border-t border-line py-5">
               <h3 className="text-[17px] font-bold tracking-[-0.01em]">{row.label}</h3>
               <p className="text-[15px] text-ink-2">{row.what}</p>
-              <ExternalLink
-                href={addressUrl(row.address)}
-                className="link mt-1 w-fit max-w-full break-all font-mono text-[13px] text-ink-2 hover:text-ink"
-              >
-                {row.address}
-              </ExternalLink>
+              {row.address ? (
+                <ExternalLink
+                  href={addressUrl(row.address)}
+                  className="link mt-1 w-fit max-w-full break-all font-mono text-[13px] text-ink-2 hover:text-ink"
+                >
+                  {row.address}
+                </ExternalLink>
+              ) : (
+                <p className="mt-1 font-mono text-[13px] text-ink-3">Address published at launch</p>
+              )}
             </li>
           ))}
         </ul>
@@ -1022,9 +1094,11 @@ export default function HowItWorksPage() {
           <p className="max-w-[60em] text-[15.5px] text-ink-2">
             <strong className="font-semibold text-ink">Settlement never reads a price feed.</strong> Whether a call is
             exercised is decided by whoever holds it, and what the vault gets back is decided by Valorem. The Chainlink
-            feed is used for two things only: showing a spot price, and gating writes and listings so the vault refuses
-            to sell against a stale price. A pause of the Stock Token&apos;s own oracle blocks writes and listings the
-            same way. Neither is read when the week settles.
+            feed is used for two things only: showing a spot price, and the floors the vault checks when it arms a week,
+            approves a listing and sells a call, so it refuses to sell against a stale price. A pause of the Stock
+            Token&apos;s own oracle blocks arming, listings and fills the same way. Neither is read when the week
+            settles.
+
           </p>
         </Panel>
 

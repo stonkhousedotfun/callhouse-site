@@ -66,8 +66,17 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * that once pinned the draft prefix here was removed in the same commit as the adoption.
  * v2 (same day): one factual correction in the Terms' third-party clause — an oracle pause stops
  * writing and listing, not settlement; an issuer freeze can stop settlement.
+ * v3 (2026-09-14): factual corrections for the contracts redesign of 2026-09-13 (leekzor/callhouse-
+ * contracts README.md:5-15). Terms: the third-party venue and its registry key are gone from the
+ * third-party clause and the affiliation line; the vault's own Valorem Clear instance, its fee switch
+ * on the admin key (AUDIT-FINDINGS-2026-09-14 I-01) and the admin's value levers are stated; custody
+ * wording follows write on fill; a refused fill and an unredeemed claim at the close are named.
+ * Privacy: the dapp's only server route is now its own order feed (web/app/api/keeper/orders),
+ * which forwards nothing from the request; the third-party listings recipient is removed. No change
+ * to what either domain collects. Like v2, published as a correction to the adopted text, not as a
+ * draft; re-adopting it, or re-publishing it as "draft-", is the owner's call.
  */
-export const LEGAL_DOCS_VERSION = "v2-2026-09-13";
+export const LEGAL_DOCS_VERSION = "v3-2026-09-14";
 
 /** True while LEGAL_DOCS_VERSION still carries the draft prefix. The pages mark themselves from this. */
 export const LEGAL_DOCS_ARE_DRAFT = LEGAL_DOCS_VERSION.startsWith("draft-");

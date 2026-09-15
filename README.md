@@ -120,11 +120,19 @@ If a page here ever needs a number that changes, it belongs on the dapp instead.
 
 | Route | Content |
 |---|---|
-| `/` | what the vault does, the weekly cycle in one screen, the three things that can happen to your week, and the link to the app |
-| `/how-it-works` | the cycle in detail: the phase machine, the policy table, the addresses, who may call what |
-| `/risks` | the unabridged risk list. No buyer, assignment, partial assignment, issuer freeze, fee switch, admin, unaudited contracts |
+| `/` | what the vault does, the weekly cycle in one screen, how a week can end (three endings and a stranded close), and the link to the app |
+| `/how-it-works` | the cycle in detail: the phase machine, the policy table, write on fill, the addresses (published at launch for what Callhouse deploys), who may call what |
+| `/risks` | the unabridged risk list. No buyer, a fill refused after a rally, assignment, partial assignment, issuer freeze and burn, USDG, a stranded claim, fee switch, admin, unaudited contracts |
 | `/legal` | geographic restrictions and the legal form of the Stock Token |
-| `/terms`, `/privacy` | drafts, marked as such until counsel adopts them (see "Copy rules") |
+| `/terms`, `/privacy` | adopted by the owner (no counsel), versioned by `LEGAL_DOCS_VERSION`; a revision can be published as a draft first (see "Copy rules") |
+
+**What the pages describe** is the vault as redesigned on 2026-09-13 (leekzor/callhouse-contracts
+`README.md`): the keeper creates and arms a weekly Valorem call and nothing is written at arm; the vault
+lists one Seaport 1.6 order whose zone is the vault, and each fill writes exactly the calls it buys,
+after re-checking the price floors at the spot of the fill; the venue is the app's own fill page
+(`FILL_PAGE_PATH` in `lib/site.ts`) or any Seaport 1.6 client. There is no third-party venue, registry
+or venue fee. Times are New York time (Friday 16:00 ET close, Thursday on an NYSE holiday). Earlier
+designs listed through a third-party venue; only history notes may say so.
 
 Four product routes. Adding a fifth means asking whether it is marketing or product; product goes
 to the app (leekzor/callhouse `web/`).
@@ -154,8 +162,11 @@ Never turn a weekly figure into a yearly one, by multiplication, compounding, il
 `draft-` makes `/terms` and `/privacy` render "Draft — pending review by counsel" top and bottom,
 and copy-lint requires the marker code to stay in both pages. The documents were adopted as
 `v1-2026-09-13` (owner review against the code, no counsel — leekzor/callhouse
-`ops/launch-legal.md` §2 item 9) and corrected the same day as `v2-2026-09-13` (the Terms'
-third-party clause: an oracle pause stops writing and listing, not settlement). Until adoption, copy-lint also pinned the literal
+`ops/launch-legal.md` §2 item 9), corrected the same day as `v2-2026-09-13` (the Terms'
+third-party clause: an oracle pause stops writing and listing, not settlement), and revised as
+`v3-2026-09-14` for the contracts redesign (no third-party venue or registry, the vault's own Valorem
+Clear instance and its fee switch, the dapp's own order-feed route in the privacy notice). v3 is a
+correction published like v2, not a draft; it still wants the owner's re-adoption. Until adoption, copy-lint also pinned the literal
 `export const LEGAL_DOCS_VERSION = "draft-` line, so dropping the prefix failed CI unless the gate
 was removed in the same commit; that entry was removed in the adoption commit. A future revision
 can be published as a draft first by re-adding the prefix.

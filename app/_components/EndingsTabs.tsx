@@ -1,16 +1,25 @@
 "use client";
 
 /**
- * The landing's "Three endings" tabs: the only interactive island on the home page.
+ * The landing's "How a week ends" tabs: the only interactive island on the home page.
  *
  * The first ending ("Nobody bought") is the initial state, so it is what the server renders and
  * what a reader without JavaScript sees. It goes first on purpose: on a thin book it is the most
- * likely week, and it is the one a skimmer is most likely to get wrong (an unfilled week can
- * still be assigned, because Valorem spreads exercise across every writer of the series).
+ * likely week. Under write on fill (leekzor/callhouse-contracts src/Vault.sol authorizeOrder,
+ * validateOrder) it is also the simplest: nothing is written unless a buyer fills, so an unfilled
+ * week has nothing to assign (rollClose skips the redeem when claimKey == 0).
+ *
+ * The fourth tab is not an ending of its own but the close being held up: a stranded claim
+ * (src/Vault.sol rollClose, retryStrandedClaim, isStranded; docs/ACCOUNTING.md §5).
+ *
+ * Example figures are from the keeper's fork rehearsal (keeper/run-final/report.md): week 1 offered
+ * 23 calls and harvested 0; week 2 had 2 of 5 sold calls exercised at 223 (usdgFromAssignment
+ * 446000000); week 3 stranded under a USDG freeze of the vault and the retry returned 1e18 NVDA and
+ * 239000000 USDG. Each is labelled as a rehearsal where it appears.
  *
  * The copy lives in this file, inside the repo, so scripts/copy-lint.mjs scans it. Every sentence
- * is checked against leekzor/callhouse-docs: getting-started/how-it-works.md ("How a week can
- * end"), product/assignment.md and product/fees.md. Keep it that way when editing.
+ * is checked against the contracts first and leekzor/callhouse-docs second. Keep it that way when
+ * editing.
  *
  * ARIA tabs pattern with automatic activation: one tab stop for the list (roving tabindex),
  * arrow keys in either axis, Home and End.
@@ -36,17 +45,17 @@ const ENDINGS: readonly Ending[] = [
     key: "none",
     title: "Nobody bought",
     hint: "The most likely week on a thin book",
-    body: "The listing sat on the book and no buyer filled it, so there is no premium and no fee. The NVDA comes back at the close, except anything Valorem assigned: the vault writes the same series as other writers, and if their buyers exercise, part of that exercise can land on the vault.",
+    body: "The listing stayed open until the Friday close and no buyer filled it. Calls are written only when bought, so nothing was written: no premium, no fee, nothing that can be assigned, and the NVDA never left the vault. In the fork rehearsal's first week, 23 calls were offered and the week closed with 0 USDG.",
     premium: "None",
-    nvda: "Back at close, unless assigned",
-    upside: "Kept, unless assigned",
+    nvda: "Never left the vault",
+    upside: "Kept",
   },
   {
     key: "otm",
     title: "Bought, expired worthless",
     hint: "Usually: NVDA stayed under the strike",
-    body: "Buyers paid for some or all of the calls and no exercise was assigned to the vault, usually because NVDA stayed under the strike. Premium, less Overcall's 5% and Callhouse's 5%, is credited to depositors in USDG, and the NVDA comes back at the close.",
-    premium: "Kept, net of fees",
+    body: "Buyers paid for some or all of the calls on offer, each fill wrote exactly the calls it bought, and none was exercised against the vault, usually because NVDA stayed under the strike. Premium, less Callhouse's 5%, is credited to depositors in USDG, and the NVDA behind the calls comes back at the close.",
+    premium: "Kept, net of the fee",
     nvda: "Back at close",
     upside: "Kept",
   },
@@ -54,10 +63,19 @@ const ENDINGS: readonly Ending[] = [
     key: "itm",
     title: "Bought and exercised",
     hint: "Usually: NVDA ran past the strike",
-    body: "Holders exercised, usually because NVDA ran past the strike, and Valorem assigned some or all of the vault's contracts. Exercise alone does not decide that: Valorem chooses how many of the vault's contracts to assign, anywhere from none to all. Premium is still credited. Assigned NVDA leaves the vault at the strike and comes back as strike USDG, credited to depositors in full with no fee. The gain above the strike on the assigned NVDA is given up for that week, and v1 does not buy the NVDA back.",
-    premium: "Kept, net of fees",
+    body: "Holders exercised, usually because NVDA ran past the strike, and Valorem assigned some or all of the vault's contracts. Valorem spreads exercise across everyone who wrote the same call, so the vault can be assigned on part of what it sold, but never on more than it sold. Premium is still credited. Assigned NVDA leaves the vault at the strike and comes back as strike USDG, credited to depositors in full with no fee. The gain above the strike on the assigned NVDA is given up for that week, and v1 does not buy the NVDA back. In the rehearsal's second week, 2 of the 5 calls sold were exercised at 223, and 446 USDG came back fee-free.",
+    premium: "Kept, net of the fee",
     nvda: "Assigned part leaves at the strike, paid in USDG",
     upside: "Given up that week",
+  },
+  {
+    key: "stranded",
+    title: "Closed, claim stranded",
+    hint: "Rare: a token issuer blocks the close",
+    body: "Closing the week asks Valorem to hand back the vault's claim. If USDG is paused, the vault or Valorem is frozen on USDG, or the vault is blocklisted on the Stock Token in a week not fully assigned, that fails. The week closes anyway and the claim is kept: deposits, instant withdrawals and the next week stay shut, queued withdrawals settle their share of the idle NVDA at once and take their share of the claim when it clears, and anyone can retry. It clears only when the issuer lets it. In the rehearsal a USDG freeze of the vault stranded week 3; after the unfreeze the retry brought back 1 NVDA and 239 USDG.",
+    premium: "Credited; USDG claims wait on USDG",
+    nvda: "Held in the claim until a retry succeeds",
+    upside: "As the week ended",
   },
 ];
 

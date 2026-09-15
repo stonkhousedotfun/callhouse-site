@@ -34,7 +34,7 @@ import { SITE_URL } from "@/lib/site";
  * Last real change to the copy on these pages, ISO 8601. Hand-maintained. Passed as a string so
  * no Date is constructed during the build and the output is byte-identical every time.
  */
-const CONTENT_REVISED = "2026-09-13T00:00:00.000Z";
+const CONTENT_REVISED = "2026-09-14T00:00:00.000Z";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   return [
@@ -70,7 +70,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
     {
-      // Terms of Use. Adopted v1-2026-09-13, corrected v2-2026-09-13; listed so the document /legal points at is
+      // Terms of Use. Adopted v1-2026-09-13, corrected v2-2026-09-13 and v3-2026-09-14; listed so the document /legal points at is
       // reachable by the same crawler that reads /legal.
       url: `${SITE_URL}/terms`,
       lastModified: CONTENT_REVISED,

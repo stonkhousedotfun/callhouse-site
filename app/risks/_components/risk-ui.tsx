@@ -11,7 +11,8 @@
  *   - `impact` the worst it can cost a depositor, one of five kinds. The chip carries words, so the
  *              colour is never the only signal. Every entry that uses a kind must make that kind's
  *              legend line true: "premium" says the NVDA is not at stake, so an entry whose worst
- *              case takes NVDA (the Valorem engine fee, paid in NVDA at every write) is "nvda-fee".
+ *              case takes NVDA (the Valorem engine fee, paid in NVDA at every write, and under write on
+ *              fill every write is a sale) is "nvda-fee".
  *
  * The danger chip is built here rather than in components/ui: the shared Chip has no danger tone,
  * and this is the only page that needs one.
@@ -42,7 +43,7 @@ export const IMPACT: Record<Impact, ImpactStyle> = {
   },
   "nvda-fee": {
     label: "Some NVDA",
-    meaning: "Can take a slice of the NVDA itself at every write, filled or not, as well as weeks of premium.",
+    meaning: "Can take a slice of the NVDA itself on every call sold, as well as weeks of premium.",
     chip: "bg-warn-soft text-warn",
     tone: "text-warn",
   },
