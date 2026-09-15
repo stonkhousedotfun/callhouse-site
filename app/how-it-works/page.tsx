@@ -136,7 +136,7 @@ const STEPS: TimelineStep[] = [
       <>
         Buy on{" "}
         <ExternalLink href={FILL_PAGE} className="link">
-          the app&apos;s cycle page
+          the app&apos;s book
         </ExternalLink>
         , the only place the order is served. It checks the order against the chain and simulates your fill first, and
         it also shows the raw order for any Seaport 1.6 client. No third-party venue, order book or registry is
@@ -643,10 +643,8 @@ export default function HowItWorksPage() {
             One week, <span className="text-accent">start to finish.</span>
           </h1>
           <p className="mt-[22px] max-w-[34em] text-[18px] text-ink-2 sm:text-[19px]">
-            Deposit {MARKET} Stock Tokens and receive {SHARE_TICKER} shares. Each week the vault lists covered calls
-            against its tokens for USDG, writes each call only when a buyer fills, and credits whatever buyers actually
-            pay. This page is that week in detail: the timeline, the rules the contracts enforce, where the money goes
-            and the ways it can end.
+            Deposit {MARKET} into your own account and choose how many 1-lot calls to write. A fill writes only your
+            lots and pays you in USDG. Unfilled lots come back. This page is that week in detail.
           </p>
           <div className="mt-[30px] flex flex-wrap gap-3">
             <Button href={OPEN_APP}>Open the app</Button>
@@ -655,9 +653,9 @@ export default function HowItWorksPage() {
             </Button>
           </div>
           <Notice variant="plain" className="mt-[26px]">
-            Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. The vault is live
-            on {CHAIN_NAME}. {STATUS.auditLine} Every figure here is a policy setting, a
-            dated figure from the first week or a labelled example, not a quote.
+            Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. 1-lot accounts are
+            live on {CHAIN_NAME}. {STATUS.auditLine} Every figure here is a policy setting or a labelled example, not a
+            quote.
           </Notice>
         </div>
 

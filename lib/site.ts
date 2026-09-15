@@ -66,8 +66,8 @@ export function appUrl(path = ""): string {
 /** App frontpage. "Open the app" on this site lands here. */
 export const OPEN_APP = APP_URL;
 
-/** Deposit, withdraw and claim for the first vault. */
-export const VAULT_APP = appUrl("/vault/nvda");
+/** Deposit NVDA and request lots. */
+export const VAULT_APP = appUrl("/account");
 
 /**
  * First (and so far only) market. Matches MARKET / SHARE_TICKER in leekzor/callhouse:
@@ -101,7 +101,7 @@ export const EXPLORER_URL = "https://robinhoodchain.blockscout.com";
  * The app route where the vault's weekly calls are bought and exercised: leekzor/callhouse
  * `web/app/vault/nvda/cycle`. The only venue that serves the vault's order.
  */
-export const FILL_PAGE_PATH = "/vault/nvda/cycle";
+export const FILL_PAGE_PATH = "/book";
 
 export type AddressRow = {
   /** Label as it appears in the addresses table. */
@@ -123,10 +123,15 @@ export type AddressRow = {
  * Clear that Sourcify verifies against valorem-core 6436c823.
  */
 export const ADDRESSES = {
+  factory: {
+    label: `Stonkhouse ${MARKET} account factory`,
+    address: "0x7850Ae4ac03b651263cE78EC5FcED11b0d0e05A7",
+    what: `Deploys each user's isolated 1-lot account. A fill writes that user's ${MARKET} and pays that user.`,
+  },
   vault: {
-    label: `Stonkhouse ${MARKET} vault (${SHARE_TICKER})`,
+    label: `Retired pooled vault (${SHARE_TICKER})`,
     address: "0x88a98931E3682137E7e4D3426f623247f4A4ecbb",
-    what: `Holds the ${MARKET}, issues ${SHARE_TICKER}, and is both the offerer and the zone of its own listing. Its on-chain token name, "Callhouse ${MARKET}", predates the rename.`,
+    what: `Wound down. Not used for new deposits. Its on-chain token name, "Callhouse ${MARKET}", predates the rename.`,
     verified: "Verified on Sourcify as a partial match: the code matches, the metadata hash does not.",
   },
   clear: {

@@ -24,12 +24,11 @@ import { FeeSlip } from "@/app/_components/FeeSlip";
 import { StatusCard } from "@/app/_components/StatusCard";
 import { Button, CheckCircleIcon, Chip, ClockNote, Container, Notice, Section, SectionHead } from "@/components/ui";
 import { WEEK } from "@/lib/clock";
-import { fmtPct } from "@/lib/format";
-import { CHAIN_NAME, MARKET, OPEN_APP, SHARE_TICKER, STATUS } from "@/lib/site";
+import { CHAIN_NAME, MARKET, OPEN_APP, STATUS } from "@/lib/site";
 
-const TITLE = `Stonkhouse — pooled covered calls on ${MARKET} Stock Tokens`;
+const TITLE = `Stonkhouse — 1-lot covered calls on ${MARKET} Stock Tokens`;
 
-const DESCRIPTION = `Stonkhouse is a pooled covered-call vault for tokenised stocks on ${CHAIN_NAME}. The first vault is ${MARKET}. Each week it lists covered calls and writes them only when a buyer fills. Premium is paid only if a buyer fills. Beta, pending audit.`;
+const DESCRIPTION = `Stonkhouse is 1-lot covered calls on tokenised stocks on ${CHAIN_NAME}. You deposit ${MARKET}, choose how many of yours to write, and a fill writes only those lots. Premium is paid only if a buyer fills. Beta, pending audit.`;
 
 export const metadata: Metadata = {
   title: { absolute: TITLE },
@@ -47,30 +46,30 @@ export const metadata: Metadata = {
 const STEPS: readonly { title: string; when: string; body: string; key?: boolean }[] = [
   {
     title: "You deposit",
-    when: "until the Friday close",
-    body: `${MARKET} in, ${SHARE_TICKER} out.`,
+    when: "into your account",
+    body: `${MARKET} sits idle until you choose to write.`,
   },
   {
-    title: "The vault lists the week",
-    when: "from the start of the week",
-    body: `A call ${fmtPct(5)} to 11.5% above spot, up to ${fmtPct(95)} of the stock. Nothing is written yet.`,
+    title: "You pick how many lots",
+    when: `each lot is 1 ${MARKET}`,
+    body: `Write up to X of yours. The rest cannot be assigned.`,
     key: true,
   },
   {
     title: "A buyer fills — then a call is written",
     when: "until Friday 4:00pm",
-    body: "Each fill writes exactly the calls bought and pays USDG in the same transaction. Or nobody buys.",
+    body: "That fill writes your lot and pays you USDG. Or nobody buys, and you keep the stock.",
     key: true,
   },
   {
     title: "The week closes",
     when: "from Saturday 4:00pm",
-    body: `Unassigned ${MARKET} comes back. Assigned ${MARKET} comes back as strike USDG.`,
+    body: `Unfilled lots come back as ${MARKET}. Exercised lots come back as strike USDG.`,
   },
   {
-    title: "You claim USDG",
-    when: "whenever you like",
-    body: "Premium net of the fee, and any strike proceeds. No deadline.",
+    title: "You keep the USDG",
+    when: "on the fill, and at settle",
+    body: "Premium net of the fee on fill. Strike proceeds if assigned.",
   },
 ];
 
@@ -79,7 +78,7 @@ const ROADMAP: readonly { when: string; title: string; body: string; current?: b
     when: "Now",
     title: "Beta, NVDA live",
     current: true,
-    body: `The ${MARKET} vault is on ${CHAIN_NAME}, capped at 20.`,
+    body: `${MARKET} 1-lot accounts on ${CHAIN_NAME}. Cap 20 per account.`,
   },
   {
     when: "Next",
@@ -93,8 +92,8 @@ const ROADMAP: readonly { when: string; title: string; body: string; current?: b
   },
   {
     when: "Later",
-    title: "More stock vaults",
-    body: "One underlying each, same week, same rules. We will not name the next ticker until that vault is being built.",
+    title: "More stock books",
+    body: "One underlying each, same week, same rules. We will not name the next ticker until that book is being built.",
   },
 ];
 
@@ -122,8 +121,8 @@ export default function HomePage() {
             Covered calls on tokenised stocks. <em className="not-italic text-accent">NVDA first.</em>
           </h1>
           <p className="mt-[22px] max-w-[34em] text-[19px] text-ink-2">
-            Deposit a tokenised stock. Each week the vault lists covered calls against it and writes a call only when a
-            buyer pays. You claim the premium in USDG.
+            Deposit {MARKET}. Choose how many of yours to write. A fill writes only those lots and pays you in USDG.
+            Unfilled lots come back. Assignment cannot take someone else&apos;s stock.
           </p>
 
           <div className="mt-[30px] flex flex-wrap gap-3">
@@ -225,8 +224,8 @@ export default function HomePage() {
                 Hands off
               </h3>
               <p className="mt-2 text-[15.5px] text-ink-2">
-                The keeper sets, lists and closes each week inside a published policy. You deposit once and check in
-                when you like. No protocol token, no points, no airdrop.
+                You pick the lots. The keeper lists and closes the week inside a published policy. No protocol token, no
+                points, no airdrop.
               </p>
             </li>
             <li>
