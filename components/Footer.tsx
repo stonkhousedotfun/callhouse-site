@@ -7,7 +7,7 @@
  *      domain (docs, the app, the explorer), each marked ↗ and opening a new tab. Risks and legal
  *      live here, not in the top bar.
  *   3. the standing disclaimers. "Not affiliated with Robinhood Markets, Robinhood Assets (Jersey)
- *      Limited or Valorem" is carried word for word from the dapp's footer (leekzor/callhouse
+ *      Limited or Valorem" is carried word for word from the dapp's footer (stonkhousedotfun/callhouse
  *      `web/app/layout.tsx`, as ported 2026-09-14); if it is reworded, reword both in paired commits
  *      across the two repos.
  *   4. the audit status, stated outright.

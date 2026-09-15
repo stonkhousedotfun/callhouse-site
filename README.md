@@ -6,7 +6,7 @@ Renamed from Callhouse (callhouse.finance) to Stonkhouse (stonkhouse.fun) on 202
 different domain, in a different repo. Next.js 16 App Router, React 19, Tailwind CSS v4, zero
 wallet code.
 
-This repo was split out of the leekzor/callhouse monorepo (it was `site/` there) on 2026-09-13. It builds,
+This repo was split out of the stonkhousedotfun/callhouse monorepo (it was `site/` there) on 2026-09-13. It builds,
 lints, typechecks and deploys on its own: its own `package.json`, its own `pnpm-lock.yaml`, its own
 Dockerfile and Railway service, its own copy-lint gate.
 
@@ -23,11 +23,11 @@ pnpm copy-lint               # compliance gate: self-test, then the real tree. A
 
 | Repo | Domain | What it is |
 |---|---|---|
-| **leekzor/callhouse-site** (this one) | `stonkhouse.fun` | explains the product. No wallet. |
-| leekzor/callhouse | `app.stonkhouse.fun` | the app: `web/` (deposit, cycle tape, claim USDG), plus `keeper/`, `indexer/`, `ops/`, and `contracts/` mounted as a submodule. |
-| leekzor/callhouse-contracts | — | the vault contracts (Foundry). |
+| **stonkhousedotfun/callhouse-site** (this one) | `stonkhouse.fun` | explains the product. No wallet. |
+| stonkhousedotfun/callhouse | `app.stonkhouse.fun` | the app: `web/` (deposit, cycle tape, claim USDG), plus `keeper/`, `indexer/`, `ops/`, and `contracts/` mounted as a submodule. |
+| stonkhousedotfun/callhouse-contracts | — | the vault contracts (Foundry). |
 
-References in this repo's code comments of the form ``leekzor/callhouse: `web/app/layout.tsx` ``
+References in this repo's code comments of the form ``stonkhousedotfun/callhouse: `web/app/layout.tsx` ``
 name a file in the app repo. Nothing here imports from, builds against or deploys with either
 sibling; the links are for humans keeping paired files in step.
 
@@ -81,10 +81,10 @@ Rules that keep the tokens honest:
 ### The app will adopt the same tokens (the old byte-identical rule is retired)
 
 Until this redesign, the rule here was that the `:root` token block in `app/globals.css` was
-byte-identical to leekzor/callhouse `web/app/globals.css`: the same dark palette, radius, gap and font
+byte-identical to stonkhousedotfun/callhouse `web/app/globals.css`: the same dark palette, radius, gap and font
 stacks, changed only in paired commits. **That rule no longer holds, and nobody should restore the
 old dark palette to satisfy it.** This site moved to Daylight first. The app
-(leekzor/callhouse `web/`) keeps its old dark palette until its own rewrite adopts Daylight, so for
+(stonkhousedotfun/callhouse `web/`) keeps its old dark palette until its own rewrite adopts Daylight, so for
 that window the two domains look different on purpose. That is a known gap, not drift to be fixed
 by editing this repo.
 
@@ -129,7 +129,7 @@ If a page here ever needs a number that changes, it belongs on the dapp instead.
 | `/legal` | geographic restrictions and the legal form of the Stock Token |
 | `/terms`, `/privacy` | adopted by the owner (no counsel), versioned by `LEGAL_DOCS_VERSION`; a revision can be published as a draft first (see "Copy rules") |
 
-**What the pages describe** is the vault as redesigned on 2026-09-13 (leekzor/callhouse-contracts
+**What the pages describe** is the vault as redesigned on 2026-09-13 (stonkhousedotfun/callhouse-contracts
 `README.md`): the keeper creates and arms a weekly Valorem call and nothing is written at arm; the vault
 lists one Seaport 1.6 order whose zone is the vault, and each fill writes exactly the calls it buys,
 after re-checking the price floors at the spot of the fill; the only place the order is served is
@@ -152,12 +152,12 @@ match; the Clear is not source-verified, and its bytecode equals Valorem upstrea
 the metadata hash.
 
 Four product routes. Adding a fifth means asking whether it is marketing or product; product goes
-to the app (leekzor/callhouse `web/`).
+to the app (stonkhousedotfun/callhouse `web/`).
 
 ## Copy rules are a CI gate, not a style preference
 
 `scripts/copy-lint.mjs` scans this whole repo (skipping `node_modules`, `.next` and other build
-output) and fails CI. The rules come from leekzor/callhouse README "Frontend copy" and TECHSPEC 7.3,
+output) and fails CI. The rules come from stonkhousedotfun/callhouse README "Frontend copy" and TECHSPEC 7.3,
 and they exist because the product is a tokenized security in a restricted perimeter. This domain is
 the *marketing* surface, which is the surface those rules were written for, so treat them as tighter
 here, not looser.
@@ -178,7 +178,7 @@ Never turn a weekly figure into a yearly one, by multiplication, compounding, il
 **The legal-docs version gate.** `lib/legal.ts` exports `LEGAL_DOCS_VERSION`; a value starting
 `draft-` makes `/terms` and `/privacy` render "Draft — pending review by counsel" top and bottom,
 and copy-lint requires the marker code to stay in both pages. The documents were adopted as
-`v1-2026-09-13` (owner review against the code, no counsel — leekzor/callhouse
+`v1-2026-09-13` (owner review against the code, no counsel — stonkhousedotfun/callhouse
 `ops/launch-legal.md` §2 item 9), corrected the same day as `v2-2026-09-13` (the Terms'
 third-party clause: an oracle pause stops writing and listing, not settlement), and revised as
 `v3-2026-09-15` for the rename to Stonkhouse and stonkhouse.fun (names and domains only), then
@@ -240,8 +240,8 @@ No exclamation marks, no marketing adjectives. The register is the app's `web/ap
 ## Addresses and constants are duplicated too
 
 `lib/site.ts` carries the market ticker, the chain, the explorer and the address table, copied by
-hand from leekzor/callhouse `web/lib/contracts.ts`, `web/lib/chain.ts` and `README.md` for the same
-reason. This site *displays* those addresses; it never calls them. leekzor/callhouse `README.md`
+hand from stonkhousedotfun/callhouse `web/lib/contracts.ts`, `web/lib/chain.ts` and `README.md` for the same
+reason. This site *displays* those addresses; it never calls them. stonkhousedotfun/callhouse `README.md`
 and `ops/addresses.json` remain the source of truth — update this file from them, never the reverse.
 
 ## Environment
@@ -259,7 +259,7 @@ security.txt. As of 2026-09-15 the three `*_CONTACT_EMAIL` variables are set on 
 `legal@`, `privacy@` and `security@stonkhouse.fun` (they were `@callhouse.finance` until the
 rename) and `https://stonkhouse.fun/.well-known/security.txt` returns 200; the operator name,
 jurisdiction and governing law remain deliberately unset and the gap notice stays up until they
-exist (leekzor/callhouse `ops/launch-legal.md`). Setting a variable on Railway then rebuilding is what closes a gap; a
+exist (stonkhousedotfun/callhouse `ops/launch-legal.md`). Setting a variable on Railway then rebuilding is what closes a gap; a
 restart does nothing.
 
 ## Deploy
@@ -280,7 +280,7 @@ of 2026-09-13, kept as history.
 2026-09-13 about 19 minutes after the DNS below).
 
 - Project `callhouse`, service `site`, created with the Railway CLI (`railway init` /
-  `railway add`). **Connected to `leekzor/callhouse-site`, branch `main`, on 2026-09-13** (in the
+  `railway add`). **Connected to `stonkhousedotfun/callhouse-site`, branch `main`, on 2026-09-13** (in the
   dashboard; the CLI's repo-linking mutation was rejected as `Unauthorized`). Every push to `main`
   now builds `Dockerfile` per `railway.json` and deploys; `railway up -d` is no longer needed.
 - `NEXT_PUBLIC_SITE_URL` / `NEXT_PUBLIC_APP_URL` were set before the first build, and the three
@@ -306,7 +306,7 @@ of 2026-09-13, kept as history.
 | Setting | Value |
 |---|---|
 | Service name | `site` |
-| Source → Repo / Branch | `leekzor/callhouse-site` / `main` |
+| Source → Repo / Branch | `stonkhousedotfun/callhouse-site` / `main` |
 | Source → Root Directory | empty (the repo root) |
 | Config-as-code path | `railway.json` (the default) |
 | Builder / Dockerfile path | `DOCKERFILE` / `Dockerfile` (from `railway.json`) |
@@ -328,7 +328,7 @@ of 2026-09-13, kept as history.
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | `https://stonkhouse.fun` | Dockerfile ARG default, same value. Safe |
 | `NEXT_PUBLIC_APP_URL` | `https://app.stonkhouse.fun` | Dockerfile ARG default, same value. Safe |
-| `NEXT_PUBLIC_OPERATOR_*`, `NEXT_PUBLIC_*_CONTACT_EMAIL` (six) | As counsel decides — `ops/launch-legal.md` in leekzor/callhouse | "not yet designated" on the legal pages, `security.txt` 404. Intended pre-launch |
+| `NEXT_PUBLIC_OPERATOR_*`, `NEXT_PUBLIC_*_CONTACT_EMAIL` (six) | As counsel decides — `ops/launch-legal.md` in stonkhousedotfun/callhouse | "not yet designated" on the legal pages, `security.txt` 404. Intended pre-launch |
 
 Set the domain pair anyway; an explicit variable is what a preview environment overrides.
 

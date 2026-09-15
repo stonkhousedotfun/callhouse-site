@@ -5,10 +5,10 @@ import { SITE_URL } from "@/lib/site";
 /**
  * /robots.txt for stonkhouse.fun. Allow everything.
  *
- * THE PAIRING, AND WHY IT IS SPLIT — this file and leekzor/callhouse: `web/app/robots.ts` are one
+ * THE PAIRING, AND WHY IT IS SPLIT — this file and stonkhousedotfun/callhouse: `web/app/robots.ts` are one
  * decision written twice, in opposite directions, in two repos. This domain is indexed;
  * app.stonkhouse.fun disallows every user agent and sets `robots: { index: false }` in its layout.
- * Read the comment at the top of leekzor/callhouse: `web/app/layout.tsx` before changing either
+ * Read the comment at the top of stonkhousedotfun/callhouse: `web/app/layout.tsx` before changing either
  * side, and change both in paired commits. The reasoning, in short:
  *
  *   1. The app is reached BY LINK from here, not by search. Nobody's first contact with a

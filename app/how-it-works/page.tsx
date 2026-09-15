@@ -21,7 +21,7 @@
  * spec of 2026-09-15; the Clear's own window is exerciseTimestamp <= t < expiryTimestamp.
  *
  * WHAT THIS PAGE DESCRIBES is the vault as redesigned on 2026-09-13 (write on fill, no registry, the
- * stranded-claim state machine), with the file:line sources in leekzor/callhouse-contracts at
+ * stranded-claim state machine), with the file:line sources in stonkhousedotfun/callhouse-contracts at
  * 79cee08 plus the in-fill deposit refusal (AUDIT-FINDINGS-2026-09-14 L-01):
  *   - arm gate, nothing written:          src/Vault.sol rollOpen; src/lib/ValoremLib.sol:132-161
  *   - the listing shape:                  src/lib/SeaportOrderLib.sol:143-227; three per cycle Policy.sol:78
@@ -33,7 +33,7 @@
  *   - policy and hard caps:               src/Policy.sol:49-78, :129-138; README.md "Hard caps"
  *   - fees:                               Policy.sol:217-225; ValoremLib.sol:223-231; I-01 in
  *                                         AUDIT-FINDINGS-2026-09-14 (own Clear; live feeTo is a Safe)
- * and in leekzor/callhouse for the keeper's settings: keeper/README.md "The week" and "Pricing",
+ * and in stonkhousedotfun/callhouse for the keeper's settings: keeper/README.md "The week" and "Pricing",
  * keeper/src/calendar.ts (NYSE Friday 16:00 ET, Thursday on a holiday, expiry +24 h).
  *
  * Every "go do something" link leaves for app.stonkhouse.fun via appUrl(). A relative href on

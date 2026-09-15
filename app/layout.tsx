@@ -38,7 +38,7 @@ const mono = Geist_Mono({
 /**
  * Root layout for stonkhouse.fun.
  *
- * DELIBERATELY ABSENT: a <Providers> wrapper. leekzor/callhouse: `web/app/layout.tsx` has one
+ * DELIBERATELY ABSENT: a <Providers> wrapper. stonkhousedotfun/callhouse: `web/app/layout.tsx` has one
  * because the dapp needs wagmi, viem and @tanstack/react-query mounted above every route. This
  * package has none of those as dependencies and must never acquire them — that is the entire point
  * of splitting the two domains. A marketing page that ships a wallet runtime pays for a connect
@@ -51,7 +51,7 @@ const mono = Geist_Mono({
  * canonicals and Open Graph URLs resolve against it, and without it Next falls back to localhost
  * in a production build.
  *
- * THE robots DECISION — index: true HERE, and index: false in leekzor/callhouse:
+ * THE robots DECISION — index: true HERE, and index: false in stonkhousedotfun/callhouse:
  * `web/app/layout.tsx`. The pairing is the point, and the two files have to be changed together,
  * in paired commits across the two repos:
  *
@@ -94,7 +94,7 @@ export const metadata: Metadata = {
 
 /**
  * Browser chrome follows the page ground in each colour scheme: the --ground token in
- * app/globals.css, light and dark. Change them together. The dapp (leekzor/callhouse:
+ * app/globals.css, light and dark. Change them together. The dapp (stonkhousedotfun/callhouse:
  * `web/app/layout.tsx`) should carry the same pair once it adopts Daylight, so the two domains do
  * not flash different chrome colours.
  */

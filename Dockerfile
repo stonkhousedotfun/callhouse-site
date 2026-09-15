@@ -15,7 +15,7 @@
 # and makes no chain reads at all — there is no RPC here, no vault address, no indexer URL,
 # nothing to misconfigure into a wrong-contract failure. If this list ever grows past display
 # strings — anything that smells of chain configuration — something has been added to this repo
-# that belongs in the app (leekzor/callhouse, web/).
+# that belongs in the app (stonkhousedotfun/callhouse, web/).
 #
 # DELIBERATELY ABSENT:
 #   - No `corepack prepare pnpm@<x>`. package.json carries `packageManager`, so corepack resolves
@@ -80,7 +80,7 @@ RUN pnpm install --frozen-lockfile
 #
 # The six operator variables carry NO default, on purpose: unset compiles to "not yet designated"
 # on /terms, /privacy and /legal, and /.well-known/security.txt stays a 404. That gap is the
-# intended state until counsel decides the values (leekzor/callhouse: ops/launch-legal.md), and
+# intended state until counsel decides the values (stonkhousedotfun/callhouse: ops/launch-legal.md), and
 # declaring the ARGs changes nothing until then — lib/legal.ts trims an empty string to unset.
 #
 # This block sits AFTER the install on purpose: a URL change must not invalidate the node_modules

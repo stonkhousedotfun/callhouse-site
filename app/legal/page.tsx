@@ -10,7 +10,7 @@
  * script; "not available to US persons" and "Robinhood Assets (Jersey) Limited" are literal
  * string matches, not sentiments.
  *
- * It mirrors leekzor/callhouse: `web/app/legal/page.tsx` and MUST STAY IN SYNC WITH IT. (2026-09-14:
+ * It mirrors stonkhousedotfun/callhouse: `web/app/legal/page.tsx` and MUST STAY IN SYNC WITH IT. (2026-09-14:
  * the affiliation and "not a claim on" lists dropped the former third-party venue, matching the
  * app's ported page word for word.) A change to
  * one is a change to both, in paired commits across the two repos — two domains carrying two
@@ -22,10 +22,10 @@
  * cookie banner. Access is restricted by the Terms of Use at /terms and not by a technical
  * control, which the page says outright and links; shipping a checkbox here would imply a
  * perimeter that does not exist. Whether use-based acceptance is defensible for this perimeter
- * is a counsel question, tracked in leekzor/callhouse: `ops/launch-legal.md`.
+ * is a counsel question, tracked in stonkhousedotfun/callhouse: `ops/launch-legal.md`.
  *
  * The "Reporting a vulnerability" section at the bottom is the `Policy:` target of
- * /.well-known/security.txt (app/.well-known/security.txt/route.ts) and leekzor/callhouse:
+ * /.well-known/security.txt (app/.well-known/security.txt/route.ts) and stonkhousedotfun/callhouse:
  * `SECURITY.md` §6 points here too. It renders the security contact from lib/legal.ts or says there
  * is none yet; it does not invent one. This section has no twin on the dapp's
  * web/app/legal/page.tsx — the disclosure address belongs on the indexed domain, once.

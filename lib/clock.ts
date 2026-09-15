@@ -2,7 +2,7 @@
  * The week's clock, in language a stranger can read.
  *
  * The keeper sets exercise at the NYSE Friday close — 4:00pm America/New_York, Thursday on a
- * Friday holiday — and expiry 24 hours later (leekzor/callhouse keeper/src/calendar.ts). That is
+ * Friday holiday — and expiry 24 hours later (stonkhousedotfun/callhouse keeper/src/calendar.ts). That is
  * 8:00pm UTC while US daylight time holds and 9:00pm UTC after it ends. Pages lead with New York
  * in 12-hour time and put UTC in a footnote, never in the same breath as the close.
  */

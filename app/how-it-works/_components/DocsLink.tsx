@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 import { DOCS_URL } from "@/lib/site";
 
 /**
- * Deep links into the GitBook docs (leekzor/callhouse-docs). The paths follow GitBook Git Sync's
+ * Deep links into the GitBook docs (stonkhousedotfun/callhouse-docs). The paths follow GitBook Git Sync's
  * file-path slugs (`product/weekly-cycle.md` is served at `/product/weekly-cycle`). They live in
  * this one map so that if the published slugs ever differ, one edit fixes every link on the page.
  */

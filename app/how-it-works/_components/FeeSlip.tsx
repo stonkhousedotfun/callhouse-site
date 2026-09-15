@@ -5,7 +5,7 @@ import { EXAMPLE } from "@/lib/exampleWeek";
  * The mockup's fee slip: a lifted receipt that walks one example week from what buyers paid to
  * what depositors are credited. Figures from lib/exampleWeek.ts, labelled as an example. There is
  * one fee line because a listing has one payment leg, USDG to the vault
- * (leekzor/callhouse-contracts src/lib/SeaportOrderLib.sol:179-213).
+ * (stonkhousedotfun/callhouse-contracts src/lib/SeaportOrderLib.sol:179-213).
  */
 const PERF = "radial-gradient(circle at 7px 7px, var(--ground) 5px, transparent 5.5px)";
 

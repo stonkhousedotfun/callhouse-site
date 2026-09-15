@@ -2,12 +2,12 @@
  * The one place this package knows a URL, a ticker or an address.
  *
  * Two domains, one product: stonkhouse.fun is this package (static marketing, zero wallet code) and
- * app.stonkhouse.fun is @callhouse/web in leekzor/callhouse (the dapp). Nothing here is same-origin
+ * app.stonkhouse.fun is @callhouse/web in stonkhousedotfun/callhouse (the dapp). Nothing here is same-origin
  * with the app, so every "go do something" link must be an absolute external URL built with
  * appUrl() — a bare href="/vault/nvda" on this site is a 404 on stonkhouse.fun, not a route into the
  * dapp.
  *
- * The constants below are DUPLICATED FROM leekzor/callhouse: `web/lib/contracts.ts`,
+ * The constants below are DUPLICATED FROM stonkhousedotfun/callhouse: `web/lib/contracts.ts`,
  * `web/lib/chain.ts` and `README.md` ON PURPOSE. This repo must build, typecheck and deploy with no
  * dependency on the dapp — it is a separate repo and Railway service with its own container, and a
  * shared package would drag viem (and therefore a wallet-shaped dependency tree) into a landing
@@ -23,7 +23,7 @@
  * both libraries. hasRole() confirms the three role holders in ROLE_KEYS, and the Clear's feeTo() is
  * ROLE_KEYS.clearFeeTo.
  *
- * NO VENUE CONSTANT (redesign of 2026-09-13, leekzor/callhouse-contracts `src/lib/SeaportOrderLib.sol`
+ * NO VENUE CONSTANT (redesign of 2026-09-13, stonkhousedotfun/callhouse-contracts `src/lib/SeaportOrderLib.sol`
  * :179-181 and `README.md`:12-13). The vault sells through its own Seaport 1.6 listing, served on the
  * app's cycle page (FILL_PAGE_PATH). Earlier designs listed through a third-party venue and read its
  * registry; that constant and the registry row were removed with them.
@@ -37,11 +37,11 @@ function normalizeBase(url: string): string {
 /** This site. Used for canonical URLs and metadataBase. */
 export const SITE_URL = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL ?? "https://stonkhouse.fun");
 
-/** Depositor documentation and the protocol reference (GitBook, synced from leekzor/callhouse-docs). */
+/** Depositor documentation and the protocol reference (GitBook, synced from stonkhousedotfun/callhouse-docs). */
 export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.stonkhouse.fun");
 
-/** X (Twitter). Override with NEXT_PUBLIC_X_URL if the handle is not @stonkhouse. */
-export const X_URL = normalizeBase(process.env.NEXT_PUBLIC_X_URL ?? "https://x.com/stonkhouse");
+/** X (Twitter). Override with NEXT_PUBLIC_X_URL if the handle is not @stonkhousefun. */
+export const X_URL = normalizeBase(process.env.NEXT_PUBLIC_X_URL ?? "https://x.com/stonkhousefun");
 
 /** App and keeper repo. */
 export const GITHUB_URL = normalizeBase(process.env.NEXT_PUBLIC_GITHUB_URL ?? "https://github.com/stonkhousedotfun/callhouse");
@@ -70,7 +70,7 @@ export const OPEN_APP = APP_URL;
 export const VAULT_APP = appUrl("/account");
 
 /**
- * First (and so far only) market. Matches MARKET / SHARE_TICKER in leekzor/callhouse:
+ * First (and so far only) market. Matches MARKET / SHARE_TICKER in stonkhousedotfun/callhouse:
  * `web/lib/contracts.ts`.
  */
 export const MARKET = "NVDA";
@@ -98,7 +98,7 @@ export const CHAIN_NAME = "Robinhood Chain";
 export const EXPLORER_URL = "https://robinhoodchain.blockscout.com";
 
 /**
- * The app route where the vault's weekly calls are bought and exercised: leekzor/callhouse
+ * The app route where the vault's weekly calls are bought and exercised: stonkhousedotfun/callhouse
  * `web/app/vault/nvda/cycle`. The only venue that serves the vault's order.
  */
 export const FILL_PAGE_PATH = "/book";

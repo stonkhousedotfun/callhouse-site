@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
  * copy-lint — enforces the frontend copy rules from README "Frontend copy" and
- * TECHSPEC 7.3 (both in leekzor/callhouse). These are compliance rules, not style
+ * TECHSPEC 7.3 (both in stonkhousedotfun/callhouse). These are compliance rules, not style
  * rules. They fail CI.
  *
  * This repo is stonkhouse.fun, the public marketing landing. It is the surface the
@@ -9,10 +9,10 @@
  * connected anything, so every forbidden claim and every required disclosure
  * matters most here. The package root is the repo root; node_modules, .next and
  * other build output are skipped. The dapp (app.stonkhouse.fun) lives in
- * leekzor/callhouse, carries its own copy of this script, and is linted there with
+ * stonkhousedotfun/callhouse, carries its own copy of this script, and is linted there with
  * the same FORBIDDEN table.
  *
- * ORIGIN: split out of leekzor/callhouse `scripts/copy-lint.mjs`, which linted both
+ * ORIGIN: split out of stonkhousedotfun/callhouse `scripts/copy-lint.mjs`, which linted both
  * web/ and site/. FORBIDDEN is byte-identical to that file's table and REQUIRED is
  * exactly its `pkg: "site"` rows. Change a rule here and change it there in a paired
  * commit, or the two domains are held to different compliance standards.
@@ -67,7 +67,7 @@ const FORBIDDEN = [
 /**
  * Disclosures required on specific routes. `pkg` names the package the page lives
  * in (always "site" in this repo; kept so these rows stay identical to the site rows
- * in leekzor/callhouse); `page` is matched against the POSIX relative path of the
+ * in stonkhousedotfun/callhouse); `page` is matched against the POSIX relative path of the
  * file inside it.
  *
  * The assignment wording differs by surface on purpose. On the dapp the reader is a
@@ -305,7 +305,7 @@ const tally = PACKAGES.map(({name}) => `${counts.get(name)} files in ${name}`).j
 if (errors.length) {
   console.error(`\ncopy-lint FAILED — ${errors.length} violation(s) across ${tally}:\n`);
   for (const e of errors) console.error("  " + e);
-  console.error("\nThese are compliance rules from README 'Frontend copy' and TECHSPEC 7.3 (leekzor/callhouse).");
+  console.error("\nThese are compliance rules from README 'Frontend copy' and TECHSPEC 7.3 (stonkhousedotfun/callhouse).");
   console.error("This repo is stonkhouse.fun, the public landing these rules exist for. It is not exempt.");
   console.error("If a hit is inside an explicit negation, add a `copy-lint-allow` comment on that line.\n");
   process.exit(1);

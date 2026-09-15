@@ -24,7 +24,7 @@ import { SITE_URL } from "@/lib/site";
  * near-static, and the landing page is the entry point) rather than to gamed values.
  *
  * Deliberately absent: app.stonkhouse.fun. The dapp is a different domain with its own robots.txt
- * that disallows everything — see app/robots.ts here and leekzor/callhouse: `web/app/robots.ts`
+ * that disallows everything — see app/robots.ts here and stonkhousedotfun/callhouse: `web/app/robots.ts`
  * there. Listing its routes in this sitemap would contradict that, and a sitemap may not carry URLs
  * on another host in the first place. Also absent: alternates/i18n (one language), images (no
  * remote images), and any route that is not one of the six below.

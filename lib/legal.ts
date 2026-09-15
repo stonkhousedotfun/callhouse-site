@@ -6,7 +6,7 @@
  * the operating entity, where it is organised, which law governs the terms, and the three
  * contact addresses. As of 2026-09-15 only the three contact addresses are set, on the Railway site
  * service (security@, legal@ and privacy@stonkhouse.fun); no entity has been formed or chosen and no
- * counsel has named a governing law. leekzor/callhouse: `ops/launch-legal.md` is the list of
+ * counsel has named a governing law. stonkhousedotfun/callhouse: `ops/launch-legal.md` is the list of
  * decisions that fills these in.
  *
  * EVERY VALUE IS OPTIONAL AND NONE HAS A DEFAULT. `undefined` when unset, and the pages render
@@ -19,7 +19,7 @@
  * These are NEXT_PUBLIC_*, so like everything in lib/site.ts they are INLINED AT BUILD TIME.
  * Setting them on the Railway service and restarting changes nothing; the site must be rebuilt,
  * and this repo's Dockerfile declares each one as a build ARG or the value would never reach
- * `next build` at all (README.md "Deploy"). leekzor/callhouse: `ops/launch-legal.md` walks
+ * `next build` at all (README.md "Deploy"). stonkhousedotfun/callhouse: `ops/launch-legal.md` walks
  * through the order.
  *
  * Deliberately absent: a postal address (counsel decides whether one must be published), a
@@ -62,7 +62,7 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * as the wording change. Format is `<state>-<YYYY-MM-DD>`; securityTxtExpires() below reads the
  * date part. A value starting "draft-" marks an unadopted draft and the pages mark themselves
  * from it (LEGAL_DOCS_ARE_DRAFT). v1 was adopted 2026-09-13 by the owner, reviewed against the
- * code, without counsel — leekzor/callhouse: `ops/launch-legal.md` §2 item 9. The copy-lint gate
+ * code, without counsel — stonkhousedotfun/callhouse: `ops/launch-legal.md` §2 item 9. The copy-lint gate
  * that once pinned the draft prefix here was removed in the same commit as the adoption.
  * v2 (same day): one factual correction in the Terms' third-party clause — an oracle pause stops
  * writing and listing, not settlement; an issuer freeze can stop settlement.
@@ -71,7 +71,7 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * app.stonkhouse.fun. Nothing else in either document changed. Like v2, published as a correction
  * to the adopted text, not as a draft.
  * v4 (2026-09-15): the v3 text plus factual corrections for the contracts redesign of 2026-09-13
- * (leekzor/callhouse-contracts README.md:5-15). The corrections were first drafted 2026-09-14 and
+ * (stonkhousedotfun/callhouse-contracts README.md:5-15). The corrections were first drafted 2026-09-14 and
  * were never published on their own; they reached the live site only in v4, together with the
  * rename. Terms: the third-party venue and its registry key are gone from the third-party clause and
  * the affiliation line; the vault's own Valorem Clear instance, its fee switch on the admin key

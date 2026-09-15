@@ -16,7 +16,7 @@
  * WHAT STILL GAPS: no operating entity has been designated and no governing law has been chosen.
  * The page renders those gaps in plain words from lib/legal.ts instead of hiding them behind a
  * placeholder, and shows a warn notice while operatorIsDesignated() is false.
- * leekzor/callhouse: `ops/launch-legal.md` is the list of decisions that closes it. The text was
+ * stonkhousedotfun/callhouse: `ops/launch-legal.md` is the list of decisions that closes it. The text was
  * adopted by the owner, reviewed against the code, without counsel; the DraftMarker machinery
  * remains so a future revision can be published as a draft before it takes force.
  *
@@ -28,7 +28,7 @@
  *
  * DELIBERATELY ABSENT: an "I accept" control (there is no account to attach acceptance to and a
  * checkbox would imply a gate that does not exist — whether use-based acceptance is defensible
- * for this perimeter is a counsel question, listed in leekzor/callhouse: `ops/launch-legal.md`),
+ * for this perimeter is a counsel question, listed in stonkhousedotfun/callhouse: `ops/launch-legal.md`),
  * clause numbering
  * (the sections are not cross-referenced, so numbers would be decoration), a geoblock, and any
  * sentence that promises an outcome. Nothing here is legal advice.

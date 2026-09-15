@@ -17,7 +17,7 @@
    site is a Daylight token; `text-gray-500` or `bg-white` silently compiling to an off-palette
    value is the drift this prevents. `transparent`, `current` and `inherit` still work.
 
-   This palette is no longer the dapp's (leekzor/callhouse: web/app/globals.css). The two domains
+   This palette is no longer the dapp's (stonkhousedotfun/callhouse: web/app/globals.css). The two domains
    sit one click apart; when the app adopts Daylight its token block should match this one.
 
    CONTRAST: four values differ from the approved mockup, each nudged just enough to reach WCAG AA

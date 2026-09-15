@@ -24,7 +24,7 @@
  *            visitor's browser never contacts Google. package.json has three runtime
  *            dependencies: next, react, react-dom. No form, no wallet, no fetch at request time,
  *            no third-party script.
- *   web/     (in leekzor/callhouse) lib/wagmi.ts: createConfig with `ssr: true` and the default
+ *   web/     (in stonkhousedotfun/callhouse) lib/wagmi.ts: createConfig with `ssr: true` and the default
  *            storage, which @wagmi/core 3.6.5 createStorage.js keys as `wagmi.<name>` in
  *            localStorage. The
  *            names written are `recentConnectorId` (actions/connect.js), `store` (the
@@ -49,7 +49,7 @@
  *            server's. The browser calls it from lib/api.ts fetchKeeperOrderBook() with no
  *            parameters. (Until 2026-09-14 a different route forwarded to a third-party listings
  *            API; it was deleted with the contracts redesign.)
- *   indexer/ (in leekzor/callhouse) ponder.schema.ts: every table is derived from on-chain
+ *   indexer/ (in stonkhousedotfun/callhouse) ponder.schema.ts: every table is derived from on-chain
  *            events. The `user` table is keyed by wallet address and holds share and USDG
  *            figures. src/api/index.ts serves GET /v1/account/:addr (an address in the path)
  *            and mounts hono/logger, which prints method, path, status and elapsed time — not
@@ -57,16 +57,16 @@
  *            endpoint would put the address in our log, and the host's own connection log, if
  *            it keeps one, would hold the caller's IP beside it. Today the dapp makes no such
  *            call (see web/ above).
- *   RPC      web/lib/chain.ts (leekzor/callhouse): rpc.mainnet.chain.robinhood.com then
+ *   RPC      web/lib/chain.ts (stonkhousedotfun/callhouse): rpc.mainnet.chain.robinhood.com then
  *            robinhood-rpc.publicnode.com, called from the browser by wagmi's transport and
  *            by publicClient.
- *   Railway  both domains are Railway services (README.md "Deploy" here; leekzor/callhouse:
+ *   Railway  both domains are Railway services (README.md "Deploy" here; stonkhousedotfun/callhouse:
  *            `ops/deploy.md` for the app). Railway keeps its own HTTP logs for each service;
  *            nothing in either repository configures, shortens or extends that retention, and
  *            no log is shipped anywhere else.
  *
  * If any of those files changes what it does, this page is wrong and must change in the same
- * commit (or, for a file in leekzor/callhouse, in a paired commit here). "Draft" on this page is
+ * commit (or, for a file in stonkhousedotfun/callhouse, in a paired commit here). "Draft" on this page is
  * a literal match required by scripts/copy-lint.mjs.
  *
  * DELIBERATELY ABSENT: a cookie banner (there are no cookies to consent to), a "we may share

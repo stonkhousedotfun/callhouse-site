@@ -12,11 +12,11 @@
  * the detailed entries, then the perimeter notes and the CTA band. The strip and the entries render
  * from the same GROUPS records (see ./_components/risk-ui.tsx).
  *
- * Sources, in order of authority: the contracts (leekzor/callhouse-contracts at the 2026-09-13
+ * Sources, in order of authority: the contracts (stonkhousedotfun/callhouse-contracts at the 2026-09-13
  * redesign: src/Vault.sol, src/lib/ValoremLib.sol, src/lib/SeaportOrderLib.sol, src/Policy.sol,
  * SECURITY.md §0-§4, docs/ACCOUNTING.md), the 2026-09-14 audit findings (L-01 in-fill deposits,
  * I-01 the admin's Valorem fee lever with our own Clear), the keeper as ported
- * (leekzor/callhouse keeper/README.md, keeper/src/policy.ts fillVerdict), the integration dossiers
+ * (stonkhousedotfun/callhouse keeper/README.md, keeper/src/policy.ts fillVerdict), the integration dossiers
  * (projects/callhouse/integrations/INDEX.md §2, usdg.md, robinhood-chain.md, valorem.md), then the
  * GitBook docs, then the previous version of this page. Where this page and those disagree, this
  * page is the one that is wrong. Worked figures come from the keeper's fork rehearsal
