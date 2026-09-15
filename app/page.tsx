@@ -36,7 +36,7 @@ const STEPS: readonly { title: string; when: string; body: string; key?: boolean
   {
     title: "Put your stock in",
     when: "your account",
-    body: `Say how much ${MARKET} is for sale.`,
+    body: `Deposit ${MARKET}.`,
   },
   {
     title: "Choose how much is for sale",
