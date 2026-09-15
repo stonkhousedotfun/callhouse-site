@@ -12,15 +12,26 @@
  * the detailed entries, then the perimeter notes and the CTA band. The strip and the entries render
  * from the same GROUPS records (see ./_components/risk-ui.tsx).
  *
- * Sources, in order of authority: the contracts (leekzor/callhouse-contracts), the audited GitBook
- * docs (leekzor/callhouse-docs: product/risks.md, product/policy.md, protocol/roles.md,
- * getting-started/withdrawing.md and depositing.md), then the previous version of this page. Where
- * this page and those disagree, this page is the one that is wrong.
+ * Sources, in order of authority: the contracts (leekzor/callhouse-contracts at the 2026-09-13
+ * redesign: src/Vault.sol, src/lib/ValoremLib.sol, src/lib/SeaportOrderLib.sol, src/Policy.sol,
+ * SECURITY.md §0-§4, docs/ACCOUNTING.md), the 2026-09-14 audit findings (L-01 in-fill deposits,
+ * I-01 the admin's Valorem fee lever with our own Clear), the keeper as ported
+ * (leekzor/callhouse keeper/README.md, keeper/src/policy.ts fillVerdict), the integration dossiers
+ * (projects/callhouse/integrations/INDEX.md §2, usdg.md, robinhood-chain.md, valorem.md), then the
+ * GitBook docs, then the previous version of this page. Where this page and those disagree, this
+ * page is the one that is wrong. Worked figures come from the keeper's fork rehearsal
+ * (keeper/run-final/report.md) and are labelled as such where they appear.
+ *
+ * The rally thresholds quoted in "A fill refused after a rally" are derived, not observed: with the
+ * rehearsal's listing (unitPrice6 856189, strikeUsdg6 223000000, launch minPremiumBps 40 and
+ * minOtmBps 300), Policy.minPremium(spot, 1) > 856189 once spot6 > 214047250 (Policy.sol:177), and
+ * Policy.strikeBand(spot).lo > 223000000 once spot6 > 216504854 (Policy.sol:152); both are
+ * re-checked at every fill (ValoremLib.sol:216-231).
  *
  * DELIBERATELY ABSENT:
- *   - Any number that is not a fixed policy setting or a compiled limit. No live state, no fetch,
- *     no chain read; the vault is not deployed and a zero next to a risk would read as a
- *     measurement.
+ *   - Any number that is not a fixed policy setting, a compiled limit, a figure the contracts'
+ *     own threat model states, or a labelled rehearsal example. No live state, no fetch, no chain
+ *     read; the vault is not deployed and a zero next to a risk would read as a measurement.
  *   - Any likelihood expressed as a percentage. "Most weeks" is an honest ordering; "12% chance of
  *     assignment" would be a model we do not have.
  *   - Any reassurance the bytecode does not enforce. Every "What the system does" line maps to a
@@ -38,7 +49,7 @@ import { ADDRESSES, CHAIN_ID, CHAIN_NAME, DOCS_URL, MARKET, SHARE_TICKER, addres
 import { GlanceGroup, ImpactLegend, RiskEntry, type RiskGroup } from "./_components/risk-ui";
 
 const DESCRIPTION =
-  "Every way a week here pays nothing, or costs you the collateral: no buyer, assignment, issuer freeze, unaudited contracts, a keeper that can stop.";
+  "Every way a week here pays nothing, or costs you the collateral: no buyer, a fill refused after a rally, assignment, a claim stranded at the close, issuer freeze, unaudited contracts, a keeper that can stop.";
 
 export const metadata: Metadata = {
   // Bare route name: the layout's "%s — Stonkhouse" template applies the suffix. The Open Graph
@@ -65,7 +76,7 @@ const GROUPS: readonly RiskGroup[] = [
     eyebrow: "Ordinary outcomes",
     title: "Not edge cases. Every week ends in one or more of these.",
     intro:
-      "A vault that sells one thing a week can fail to sell it, sell it and have it exercised, or have it exercised without selling it at all.",
+      "A vault that sells one thing a week can fail to sell it, be refused the sale by its own price checks, or sell it and have it exercised.",
     risks: [
       {
         id: "no-buyer",
@@ -75,70 +86,78 @@ const GROUPS: readonly RiskGroup[] = [
         body: (
           <>
             <p>
-              Premium is paid only if a buyer fills. The keeper writes the call and lists it on
-              Overcall. If nobody buys before the book closes (<Num>Fri 20:00 UTC</Num> in
-              Overcall&apos;s current cycle; the registry&apos;s timestamps are what count), the
-              week&apos;s premium is zero and the unsold calls expire worthless.
+              Premium is paid only if a buyer fills. The vault lists the week&apos;s calls on the
+              app&apos;s own fill page, and any Seaport 1.6 client can fill the same order. If nobody
+              buys before the book closes (<Num>Fri 16:00 ET</Num>, which is <Num>20:00 UTC</Num> while
+              US daylight saving time is in effect and <Num>21:00 UTC</Num> after it ends; the
+              call&apos;s own exercise time is what counts), the week&apos;s premium is zero. Calls are
+              written only when bought, so nothing was written.
             </p>
             <p>
               This is the most likely outcome on a thin book, and the book for weekly calls on a
-              tokenised stock is thin.
+              tokenised stock is thin. The listing is not shown on any third-party venue or order
+              book: a buyer has to come to it.
             </p>
           </>
         ),
         cost: (
           <p>
-            The week&apos;s premium, which is zero, and the time. The protocol fee is a share of the
-            premium the vault receives, so an unfilled week pays no fee either. An unsold listing
-            does not protect the collateral from assignment: see the next entry.
+            The week&apos;s premium, which is zero, and the time. The protocol fee is a share of
+            premium, so an unfilled week pays no fee either. Nothing was written, so an unfilled week
+            has nothing that can be assigned.
           </p>
         ),
         response: (
           <>
             <p>
               Publishes it. An empty book is a market fact, not an error, so the week appears in the
-              results with premium <Num>0</Num>, marked unfilled (or assigned, if Valorem assigned
-              part of the vault&apos;s claim anyway), next to the weeks that filled.
+              results with premium <Num>0</Num>, marked unfilled, next to the weeks that filled.
             </p>
             <p>
-              If Overcall&apos;s book does not show the listing, the app&apos;s cycle page falls back
-              to the keeper&apos;s signed order, checks it against the chain, and offers the fill
-              there, labelled as the keeper&apos;s listing. Buyers who only browse Overcall still
-              will not see it, so an invisible listing is still likely to be an unfilled week.
+              The keeper serves the order to the app&apos;s fill page, which checks it against the
+              chain and simulates each fill before it offers the button. A buyer who does not use that
+              page, and does not build the fill in another Seaport client from the order it serves,
+              will not see the listing at all.
             </p>
           </>
         ),
       },
       {
-        id: "assigned-unsold",
-        title: "Assignment in a week nobody bought",
-        often: `Any week ${MARKET} runs`,
-        impact: "upside",
+        id: "refused-fill",
+        title: "A fill refused after a rally",
+        often: `Any week ${MARKET} rises`,
+        impact: "premium",
         body: (
-          <p>
-            The call the vault writes is not private to it. It is one of the {MARKET} options Overcall
-            registers for the week, and anyone who writes the same option writes into the same
-            series. Valorem assigns exercises across all writers of a series, by bucket, not to
-            whoever sold the exercised call. So if buyers of calls that other writers sold exercise,
-            part or all of the vault&apos;s position can be assigned even though its own listing
-            never filled.
-          </p>
+          <>
+            <p>
+              The vault re-checks its premium floor and its strike band at the spot of every fill, not
+              at the spot the listing was priced on. If {MARKET} rises far enough, the listed price falls
+              under the floor and the fill reverts. The keeper then cancels and relists at the new
+              floor, on the same strike, and each relist spends one of the vault&apos;s three listings a
+              week. If {MARKET} rises further, the strike itself falls below the band&apos;s lower bound,
+              and no price fixes that: nothing more can be sold that week.
+            </p>
+            <p>
+              On the fork rehearsal&apos;s listing (strike <Num>223</Num>, <Num>0.856189</Num> USDG a
+              call at spot <Num>211.93</Num>), fills are refused above a spot of about{" "}
+              <Num>214.05</Num> until the keeper reprices, and above about <Num>216.50</Num> the rest
+              of the week cannot be sold at any price.
+            </p>
+          </>
         ),
         cost: (
           <p>
-            Both at once. The week&apos;s premium is zero, and the assigned tokens leave at the
-            strike. The vault receives the strike in USDG, credited to depositors with no fee, and
-            the upside above the strike is gone for that week. <Num>v1</Num> does not buy the tokens
-            back.
+            Premium on the calls that did not sell. A buyer who tries between the rally and the reprice
+            gets a reverted transaction; the app&apos;s fill page simulates the fill first, but a buyer
+            using another client may pay gas for the revert.
           </p>
         ),
         response: (
           <p>
-            Nothing it can do. The vault cannot choose which writers Valorem assigns, and holding its
-            own unsold calls does not shield its collateral: they are worthless after expiry. At the
-            close the vault redeems its claim and gets back the collateral that was not assigned,
-            plus the strike USDG for what was. Deposits stay closed while assignment proceeds sit
-            unredeemed in the claim, so nobody can buy shares into that gap.
+            The refusal is the protection: it stops a buyer taking a near-the-money call at an
+            out-of-the-money price from a quote that has gone stale. The keeper mirrors the check on
+            every tick and reprices, up to the vault&apos;s three listings a week. After that, or once
+            the strike is below the band, the week sells nothing more. Calls already sold stay sold.
           </p>
         ),
       },
@@ -149,14 +168,14 @@ const GROUPS: readonly RiskGroup[] = [
         impact: "upside",
         body: (
           <p>
-            Anyone holding a call of the series the vault wrote may exercise it inside the exercise
-            window (<Num>Fri 20:00</Num> to <Num>Sat 20:00 UTC</Num> in Overcall&apos;s current
-            cycle), and Valorem can assign that exercise to the vault whether or not the call was
-            bought from the vault. Valorem takes the collateral at the strike and leaves the strike
+            Anyone holding a call of the week&apos;s option type may exercise it inside the exercise
+            window (<Num>Fri 16:00</Num> to <Num>Sat 16:00 ET</Num>), and Valorem can assign that
+            exercise to the vault whether or not that particular call was bought from the vault, up to
+            the number the vault sold. Valorem takes the collateral at the strike and leaves the strike
             proceeds in USDG, credited to depositors in full: the protocol fee is charged on premium,
-            never on strike proceeds. At launch the strike is the nearest Overcall rung{" "}
-            <Num>3%</Num> to <Num>12%</Num> above spot at the write, so it takes a move, but not an
-            enormous one.
+            never on strike proceeds. At launch the keeper sets the strike about <Num>5%</Num> above
+            spot when the week is armed, inside a band of <Num>3%</Num> to <Num>12%</Num>, so it takes
+            a move, but not an enormous one.
           </p>
         ),
         cost: (
@@ -175,9 +194,9 @@ const GROUPS: readonly RiskGroup[] = [
             </p>
             <p>
               The vault does defend the accounting around assignment. Deposits close at the
-              cycle&apos;s exercise timestamp, whether or not the keeper is running, and as soon as
-              any contract is assigned, so nobody can mint shares into a position whose collateral
-              has already left.
+              call&apos;s exercise time, whether or not the keeper is running, and stay closed while
+              assignment proceeds wait unredeemed, so nobody can mint shares into a position whose
+              collateral has already left.
             </p>
           </>
         ),
@@ -189,24 +208,26 @@ const GROUPS: readonly RiskGroup[] = [
         impact: "upside",
         body: (
           <p>
-            Valorem assigns by bucket, not perfectly pro rata. The vault can be assigned on some of
-            the contracts it wrote and not on others, so an exercised week usually ends as a mixture
-            rather than a clean swap. Assignment reaches every contract the vault wrote, while
-            premium comes only from the contracts it sold.
+            Anyone can write the same Valorem call as the vault, and Valorem spreads each exercise across
+            the writers of that call, bucket by bucket, not according to who sold the exercised call.
+            The vault can be assigned on some of the contracts it wrote and not on others, so an
+            exercised week usually ends as a mixture rather than a clean swap.
           </p>
         ),
         cost: (
           <p>
-            Predictability, and possibly assignment on contracts that never earned a premium. A
-            redemption from an open week is never a promise of a fixed number of tokens: part of what
-            comes back can be USDG at the strike, and the split is not known until the week closes.
+            Predictability. A redemption from an open week is never a promise of a fixed number of
+            tokens: part of what comes back can be USDG at the strike, and the split is not known until
+            the week closes.
           </p>
         ),
         response: (
           <p>
-            Nothing it can do. Which contracts get assigned is the clearinghouse&apos;s decision, not
-            the vault&apos;s, and there is no call that makes it fairer. The vault pools the result:
-            every depositor gets the same blend, and nobody is singled out for the assigned part.
+            It bounds it, and no more. Because the vault writes only inside the fill that sells, every
+            contract it can be assigned on earned a premium, and someone who writes the same call and
+            exercises it can assign the vault at most what the vault sold. Which of those contracts get
+            assigned is the clearinghouse&apos;s decision. The vault pools the result: every depositor
+            gets the same blend, and nobody is singled out for the assigned part.
           </p>
         ),
       },
@@ -222,42 +243,44 @@ const GROUPS: readonly RiskGroup[] = [
       {
         id: "open-week-deposit",
         title: "Depositing into an open week",
-        often: "Any deposit while a call is open",
+        often: "Any deposit while a week is listed",
         impact: "upside",
         body: (
           <p>
-            Deposits stay open while a call is live, until the exercise timestamp. A deposit then is
-            priced at face value: the share price counts the {MARKET} locked behind the call and
-            does not subtract what the call could cost. The new shares share that week&apos;s result,
-            including any assignment.
+            Deposits stay open while a week is listed, until the exercise time. A deposit then is priced
+            at face value: the share price counts the {MARKET} locked behind calls already sold and does
+            not subtract what they could cost. The new shares buy into the open short and share that
+            week&apos;s result, including any assignment, and later fills that week can write calls
+            against the {MARKET} just deposited.
           </p>
         ),
         cost: (
           <p>
             If {MARKET} is above the strike when you deposit, you pay full price for shares whose
-            collateral may leave at the strike, and your shares take their pro rata part of that
-            loss. Deposits made while the vault is Idle are not exposed this way.
+            collateral may leave at the strike, and your shares take their pro rata part of that loss.
+            Deposits made while the vault is Idle are not exposed this way.
           </p>
         ),
         response: (
           <p>
-            Deposits close at the exercise timestamp without anyone calling anything, and as soon as
-            any contract is assigned, whatever the clock says. They reopen when the week closes and
-            the vault is Idle again.
+            Deposits close at the exercise time without anyone calling anything, and stay closed while
+            assignment proceeds wait unredeemed. A deposit made after a fill in the same transaction is
+            refused, so nobody can take part of the premium of the fill that is paying for their shares.
+            Deposits reopen when the week closes and the vault is Idle again.
           </p>
         ),
       },
       {
         id: "withdrawals-queue",
         title: "Withdrawals wait for the close",
-        often: "Every open week",
+        often: "Every listed week",
         impact: "exit",
         body: (
           <p>
-            A withdrawal settles instantly only while the vault is Idle with nothing written. Once a
-            call is open, the collateral is locked in Valorem until expiry, so a withdrawal started
-            mid-week is queued and completes after the week closes, not before. A queued redemption
-            cannot be cancelled.
+            A withdrawal settles instantly only while the vault is Idle with nothing written. From the
+            moment a week is listed, a withdrawal is queued and completes after the week closes, not
+            before: the collateral of calls sold is locked in Valorem until expiry, and a fill can write
+            against the rest at any moment. A queued redemption cannot be cancelled.
           </p>
         ),
         cost: (
@@ -272,8 +295,10 @@ const GROUPS: readonly RiskGroup[] = [
             The queue is the mechanism, not a discretionary gate. Queued shares are escrowed and
             tagged with an epoch, the epoch settles when the week closes, and you draw a pro rata
             share of the {MARKET} plus the USDG your own queued shares earned. No Stonkhouse key can
-            jump the queue or stop it, and the close is open to anyone an hour after expiry. A Stock
-            Token issuer freeze can still hold up the close until it lifts.
+            jump the queue or stop it, the close is open to anyone an hour after expiry, and while the
+            vault is Idle anyone can settle the queue. A settled withdrawal is paid its {MARKET} whatever
+            USDG is doing; only its USDG can wait. A Stock Token issuer freeze of the vault can still
+            hold up the {MARKET} payout until it lifts.
           </p>
         ),
       },
@@ -285,8 +310,8 @@ const GROUPS: readonly RiskGroup[] = [
         body: (
           <p>
             Plenty of products make an empty week look survivable by paying it in their own token.
-            This one has no token to pay with. Depositors keep the premium left after Overcall&apos;s{" "}
-            <Num>5%</Num> and the <Num>5%</Num> protocol fee, and that is the entire return path.
+            This one has no token to pay with. Depositors keep the premium left after the{" "}
+            <Num>5%</Num> protocol fee, and that is the entire return path.
           </p>
         ),
         cost: (
@@ -314,7 +339,7 @@ const GROUPS: readonly RiskGroup[] = [
     risks: [
       {
         id: "issuer",
-        title: "Issuer freeze or oracle pause",
+        title: "Issuer freeze, burn or oracle pause",
         often: "Rare, and unmitigable",
         impact: "total",
         body: (
@@ -324,13 +349,15 @@ const GROUPS: readonly RiskGroup[] = [
               not shares: no vote, no claim on Nvidia, and issuer credit risk on that entity. The
               issuer can freeze or restrict transfers, blocklist the vault, burn tokens from any
               holder including the vault, and upgrade the token contract, each from a single key with
-              no timelock. The token can also pause its own price oracle.
+              no timelock. The token can also pause its own price oracle, and the issuer can end the
+              series on <Num>30</Num> days&apos; notice, after which the tokens can be redeemed only
+              with identity checks a vault cannot pass.
             </p>
             <p>
-              The two events are different. A freeze stops anything that moves the token, including
-              writing a call and closing the week. An oracle pause stops the vault writing and listing
-              new calls, and nothing else: settlement never reads the oracle, so an open week still
-              closes.
+              The events are different. A freeze stops anything that moves the token, including selling
+              a call, an {MARKET} payout and the {MARKET} leg of the close. An oracle pause stops the
+              vault arming, listing and selling calls, and nothing else: settlement never reads the
+              oracle, so an open week still closes. A burn takes {MARKET} out of the vault outright.
             </p>
           </>
         ),
@@ -338,9 +365,9 @@ const GROUPS: readonly RiskGroup[] = [
         cost: (
           <>
             <p>
-              In the mild case, weeks of nothing: no new calls under either event, and under a freeze
-              an open week that cannot close and redemptions that cannot pay out tokens until it
-              lifts.
+              In the mild case, weeks of nothing: no new calls under either a freeze or an oracle pause,
+              and under a freeze an open week whose claim is stranded at the close and redemptions that
+              cannot pay out tokens until it lifts.
             </p>
             <p>
               In the severe case, the instrument itself. If the issuer fails, the token does not
@@ -353,12 +380,20 @@ const GROUPS: readonly RiskGroup[] = [
           </>
         ),
         response: (
-          <p>
-            There is no technical mitigation, and pretending otherwise would be the dishonest part:
-            that is the asset. What the contracts ensure is that a freeze never traps you
-            procedurally (queueing a redemption and claiming credited USDG keep working), and the
-            vault refuses to write against a paused oracle rather than writing blind.
-          </p>
+          <>
+            <p>
+              There is no technical mitigation, and pretending otherwise would be the dishonest part:
+              that is the asset. What the contracts ensure is that a freeze never traps you
+              procedurally (queueing a redemption, settling the queue and claiming credited USDG keep
+              working, and the close strands the claim rather than locking the vault), and the vault
+              refuses to sell against a paused oracle rather than selling blind.
+            </p>
+            <p>
+              After a burn, the share price shows the loss at once, deposits close while settled
+              withdrawals are unbacked, and every uncollected withdrawal is paid the same fraction of
+              what it was owed rather than first come, first served.
+            </p>
+          </>
         ),
       },
       {
@@ -368,26 +403,61 @@ const GROUPS: readonly RiskGroup[] = [
         impact: "total",
         body: (
           <p>
-            Premium and strike proceeds are paid in USDG, a third-party stablecoin, so you carry
-            whatever risk USDG carries. It is upgradeable by an admin behind a{" "}
-            <Num>24-hour</Num> timelock that Stonkhouse does not control. A separate single key can
-            pause USDG, freeze an address, and wipe the USDG balance of a frozen address, the
-            vault&apos;s included.
+            Premium and strike proceeds are paid in USDG, a third-party stablecoin issued by Paxos, so
+            you carry whatever risk USDG carries. One Paxos key, with no delay, can pause USDG, freeze
+            any address, wipe the balance of a frozen address, and in two transactions burn USDG from
+            any address that is not frozen. The same key proposes and executes upgrades to the token
+            behind a <Num>24-hour</Num> timelock that Stonkhouse does not control. It has frozen
+            addresses on this chain and, so far, has never unfrozen one.
           </p>
         ),
         cost: (
           <p>
-            A pause or a freeze stops USDG claims and USDG payouts until it is resolved, and a wipe
-            would take the USDG a frozen vault holds. If the vault&apos;s address is frozen on a week
-            with strike proceeds to receive, closing the week can revert, and the collateral and the
-            redeem queue wait until the freeze is lifted.
+            A pause or a freeze stops USDG claims and USDG payouts until it is resolved, and a wipe or a
+            burn would take the USDG the vault holds, premium and strike proceeds not yet claimed
+            included. An assigned week&apos;s strike USDG sits in Valorem until the close. If USDG is
+            paused, or the vault or Valorem is frozen on USDG, when the week closes, the claim is
+            stranded: see the next entry.
           </p>
         ),
         response: (
           <p>
-            A USDG-side problem with the protocol fee cannot block the close of a week. That
-            protection covers the fee only. Closing the week is the only way to redeem the Valorem
-            claim, and there is no alternative unwind, rescue function or upgrade path.
+            The vault makes sure a USDG event never traps the {MARKET}. The close completes and strands
+            the claim rather than reverting, a settled withdrawal is paid its {MARKET} whatever USDG is
+            doing and its USDG later, and the protocol fee is paid on a best-effort basis so it can never
+            block anything. What USDG takes, the vault cannot get back.
+          </p>
+        ),
+      },
+      {
+        id: "stranded",
+        title: "A claim stranded at the close",
+        often: "Rare, and outside our control",
+        impact: "total",
+        body: (
+          <p>
+            Closing a week asks Valorem to hand back the vault&apos;s claim: the unassigned {MARKET} and
+            the strike USDG, in one call. Either token&apos;s issuer can make that call fail: USDG
+            paused, the vault or Valorem frozen on USDG, Valorem&apos;s USDG burnt, or the vault
+            blocklisted on the Stock Token in a week that was not fully assigned. When it fails, the week
+            still closes and the vault returns to Idle with the claim kept. The claim is stranded.
+          </p>
+        ),
+        cost: (
+          <p>
+            Time, and your exit. While a claim is stranded, deposits and instant withdrawals are shut and
+            the next week cannot start. Queued withdrawals settle their share of the idle {MARKET} and
+            USDG straight away, and their share of the claim is paid only when the claim is redeemed,
+            which is whenever the issuer lets it through, and possibly never.
+          </p>
+        ),
+        response: (
+          <p>
+            Anyone can call the retry at any time, and the keeper tries every hour; the first attempt
+            Valorem lets through redeems the claim and pays everyone&apos;s share of it. A close starved
+            of gas cannot fake a strand. In the fork rehearsal a USDG freeze of the vault stranded week{" "}
+            <Num>3</Num>; after the unfreeze the retry returned <Num>1</Num> {MARKET} and{" "}
+            <Num>239</Num> USDG, and the next week armed normally.
           </p>
         ),
       },
@@ -398,7 +468,7 @@ const GROUPS: readonly RiskGroup[] = [
     eyebrow: "Third parties",
     title: "Services that can stop the week.",
     intro:
-      "Contracts and services in the path belong to somebody else, and none of them can be overridden from here. Most of their failures end in a skipped week, which is the safe direction.",
+      "Contracts and services in the path belong to somebody else, or run on one key, and none of them can be overridden from here. Most of their failures end in a skipped or unsold week, which is the safe direction.",
     risks: [
       {
         id: "valorem-fee",
@@ -408,62 +478,68 @@ const GROUPS: readonly RiskGroup[] = [
         body: (
           <p>
             Valorem Clear can charge <Num>15 bps</Num> of written notional, paid in {MARKET} from the
-            vault&apos;s balance on top of the collateral at each write, whether or not a buyer
-            fills. It is off today, and the switch belongs to a third party. On a weekly
-            out-of-the-money call that is not small change: the launch floor for a listing is{" "}
-            <Num>0.40%</Num> of spot, so <Num>15 bps</Num> of notional can be a large share of a good
-            week and more than all of a thin one.
+            vault&apos;s balance on top of the collateral each time a fill writes calls. It is off
+            today. The vault settles on its own instance of Valorem Clear, whose fee switch is held by
+            the vault admin&apos;s key, and the vault refuses to sell through the fee until that same
+            admin separately accepts it. On a weekly out-of-the-money call that is not small change: the
+            launch floor for a listing is <Num>0.40%</Num> of spot, so <Num>15 bps</Num> of notional is
+            more than a third of a listing priced at the floor.
           </p>
         ),
         cost: (
           <p>
-            Nothing directly while the fee is not accepted, because the vault refuses to write; the
-            cost is weeks of zero until the admin decides. If the admin accepts it, every write pays
-            it in {MARKET}, filled or not.
+            If the fee is switched on and accepted, every fill takes <Num>15 bps</Num> of the {MARKET} it
+            writes from the vault, and the vault raises that fill&apos;s premium floor by the fee&apos;s
+            value at spot, so the buyer pays for it in USDG. Depositors are compensated at spot, but it
+            is a standing cost on every sale and a less competitive price. An exerciser would also pay{" "}
+            <Num>15 bps</Num> of the strike to the same key. While the fee is on and not accepted,
+            nothing sells.
           </p>
         ),
         response: (
           <p>
-            The vault stops writing rather than paying a fee nobody agreed to. While Valorem reports
-            the fee on and the vault admin has not accepted it, opening a week reverts. Accepting it
-            is an admin decision, recorded on chain as an event, not something the keeper can do.
+            The vault refuses to sell through a fee nobody accepted: arming and every fill revert until
+            the admin accepts it, recorded on chain as an event. Both switches sit on one key with no
+            delay, which is part of the admin risk below.
           </p>
         ),
       },
       {
         id: "outages",
-        title: "Sequencer, price feed or listings API down",
+        title: "Sequencer, price feed or keeper down",
         often: "Occasional",
         impact: "premium",
         body: (
           <>
             <p>
-              {CHAIN_NAME} runs a centralised sequencer with no uptime feed, so an outage shows up
-              here as a stale price. The {MARKET} price feed follows US equity hours and stops over
-              weekends and holidays; a gap longer than the vault&apos;s price-age limit (
-              <Num>4 days</Num> at launch) blocks writing until the feed updates.
+              {CHAIN_NAME} runs a single Robinhood sequencer with no uptime feed, so an outage shows up
+              here as a stale price. The sequencer also screens transactions, and one that touches a
+              restricted address is dropped; if the vault itself were restricted, nothing could reach
+              it. Forcing a transaction in through Ethereum takes <Num>4 days</Num>, and may not escape the
+              screening either. The {MARKET}{" "}
+              price feed follows US equity hours and stops over weekends and holidays; a gap longer than
+              the vault&apos;s price-age limit (<Num>4 days</Num> at launch) blocks arming and selling
+              until the feed updates.
             </p>
             <p>
-              Overcall&apos;s listings API is a third-party service that can reject or drop an order.
-              Any of these, in the hours before the book closes, means no visible listing when buyers
-              are looking.
+              The listing&apos;s details are served by the keeper to the app&apos;s fill page. If either
+              is down in the hours before the close, buyers have no page to fill from.
             </p>
           </>
         ),
         cost: (
           <p>
-            The week&apos;s premium: the same outcome as no buyer, arrived at for an operational
-            reason instead of a market one. A call already written stays written, and assignable,
-            until expiry.
+            The week&apos;s premium: the same outcome as no buyer, arrived at for an operational reason
+            instead of a market one. Calls already sold stay sold, and assignable, until expiry.
           </p>
         ),
         response: (
           <p>
-            The keeper retries the listings API with backoff, and the vault refuses to write or list
-            against a stale or paused price. Before the write that is a skipped week; after it, the
-            written calls sit unlisted, and assignable, until expiry. If Overcall rejects or drops the
-            order, the keeper keeps serving it, and the app&apos;s cycle page can offer it after
-            checking it against the chain.
+            The vault refuses to arm, list or sell against a stale or paused price, so an outage before
+            the arm is a skipped week and one after it leaves the listing unfillable until the feed
+            updates. Nothing is written without a buyer, so an unfillable listing costs no collateral.
+            The close, the queue and a stranded-claim retry are open to anyone, so an outage of the
+            keeper delays them but no key is needed to finish them.
           </p>
         ),
       },
@@ -485,18 +561,26 @@ const GROUPS: readonly RiskGroup[] = [
           <>
             <p>
               <strong className="font-semibold text-ink">
-                The Stonkhouse contracts are not deployed and have not been audited.
+                The Stonkhouse contracts are not deployed and are unaudited.
               </strong>{" "}
-              An internal adversarial review across <Num>13</Num> surfaces raised <Num>72</Num>{" "}
-              findings, of which <Num>51</Num> survived refutation. The contract defects recorded as
-              fixed carry regression tests; the project&apos;s records do not say every surviving
-              finding was fixed. That review was done by the people who wrote the code. It is not an
-              audit, and it does not substitute for one.
+              There has been no external audit. What stands behind them is a test suite and internal
+              reviews by the team that built them. An internal adversarial review on{" "}
+              <Num>2026-09-12</Num> raised <Num>72</Num> findings across <Num>13</Num> surfaces, of
+              which <Num>51</Num> survived refutation; the contract defects recorded as fixed carry
+              regression tests, and the project&apos;s records do not say every surviving finding was
+              fixed. An internal audit on <Num>2026-09-13</Num> found five more, the first of them High:
+              the vault then wrote calls before selling them, and anyone could take the value of the
+              unsold calls in an in-the-money week. The vault was redesigned to write only inside a
+              fill. A review of the redesign on <Num>2026-09-14</Num> reported no Critical, High or
+              Medium finding, one Low that has been fixed, and two informational notes.
             </p>
             <p>
-              Valorem Clear was audited by Zellic in <Num>2022–2023</Num> under its former name,
-              OptionSettlementEngine. That audit covers Valorem, not this vault. Seaport, USDG and the
-              Stock Token are third-party code outside anyone&apos;s control here.
+              None of these is an audit, and none substitutes for one. Valorem Clear&apos;s code was
+              audited by Zellic in <Num>2022–2023</Num> under its former name, OptionSettlementEngine;
+              the vault&apos;s own instance is deployed from that unmodified code, and the audit covers
+              Valorem, not this vault. Valorem&apos;s code has had no commit since <Num>2023</Num>, so
+              there is no patch path behind it. Seaport, USDG and the Stock Token are third-party code
+              outside anyone&apos;s control here.
             </p>
           </>
         ),
@@ -506,8 +590,8 @@ const GROUPS: readonly RiskGroup[] = [
             The deposit cap is the real statement of confidence: <Num>20 {MARKET}</Num> at launch, not
             an open door, and the launch plan is to publish four weekly results, unfilled weeks
             included, before raising it. There is no proxy and no upgrade key, so a bug means a new
-            vault and a migration, not a silent patch. An external audit is planned and has not
-            happened.
+            vault and a migration, not a silent patch. No external audit has been done or is
+            scheduled.
           </p>
         ),
       },
@@ -518,28 +602,30 @@ const GROUPS: readonly RiskGroup[] = [
         impact: "premium",
         body: (
           <p>
-            The keeper is one hot key running a weekly state machine against a third-party cycle. It
-            can crash, run out of gas money, or be looking the wrong way when the window opens.
+            The keeper is one hot key running a weekly state machine. It can crash, run out of gas
+            money, or be looking the wrong way when the week should open.
           </p>
         ),
         cost: (
           <p>
-            A skipped week if it stops before the write. If it stops after the write but before the
-            calls are listed or sold, the collateral stays locked until expiry and the week earns
-            nothing. If it stops after a fill, only delay.
+            A skipped week if it stops before the arm or the listing. If it stops after listing, the
+            app&apos;s fill page has no order to serve and a rally leaves nobody to reprice, so the week
+            most likely sells nothing more; the collateral of calls already sold stays locked until
+            expiry. If it stops after the last fill, only delay.
           </p>
         ),
         response: (
           <>
             <p>
               A stopped keeper cannot strand collateral past the week. Deposits close on the exercise
-              timestamp without anyone calling anything. The keeper can close the week from expiry,
-              and one hour after expiry anyone can: redeem the claim, settle the queue and return the
-              vault to Idle.
+              time without anyone calling anything. The keeper can close the week from expiry, and one
+              hour after expiry anyone can: redeem the claim, settle the queue and return the vault to
+              Idle. Anyone can also settle an Idle queue and retry a stranded claim.
             </p>
             <p>
-              The Guardian cannot close a week; it can only halt writes and cancel or invalidate
-              listings. A halt never blocks a redemption, a USDG claim or the close of a week.
+              The Guardian cannot close a week; it can only halt arming, listings and fills, and cancel
+              or invalidate listings. A halt never blocks a redemption, a USDG claim or the close of a
+              week.
             </p>
           </>
         ),
@@ -551,19 +637,21 @@ const GROUPS: readonly RiskGroup[] = [
         impact: "upside",
         body: (
           <p>
-            Assume the keeper key is stolen outright. The attacker can propose a strike, a size and an
-            order, and can cancel listings. Every one of those goes through the vault, which is the
-            Valorem writer and the Seaport seller, authorises each listing by hash on chain, and
-            checks every field against the current policy (the strike band, the premium floor, the
-            utilisation ceiling and the contract cap) and against the compiled <Num>21</Num>-day
-            cycle limit and one-token lot size.
+            Assume the keeper key is stolen outright. The attacker can create and arm a call, propose an
+            order, and cancel listings. Every one of those goes through the vault, which checks the call
+            it arms against the strike band, the one-token lot and the compiled window limits (exercise
+            at least an hour away, everything over within <Num>21</Num> days), authorises each listing
+            by hash on chain, and checks every field against the current policy: the premium floor, the
+            utilisation ceiling and the contract cap.
           </p>
         ),
         cost: (
           <p>
-            Skipped weeks, or calls written and listed on the least favourable terms the policy
-            allows (the lowest in-band strike, the largest size, a price at the premium floor) and
-            filled by a buyer the attacker controls. That moves option value to the buyer. A fully
+            Skipped weeks, or calls armed and listed on the least favourable terms the policy allows
+            (the lowest in-band strike, the largest size, a price at the premium floor) and bought by a
+            buyer the attacker controls. That moves option value to the buyer: about{" "}
+            <Num>1.1%</Num> of the notional sold per week at launch policy and <Num>50%</Num> implied
+            volatility, by the contracts&apos; own estimate, and more in a volatile week. A fully
             compromised keeper still cannot take a token out of the vault, route premium to itself or
             step outside the policy.
           </p>
@@ -572,7 +660,7 @@ const GROUPS: readonly RiskGroup[] = [
           <p>
             No off-chain component can move money. At launch policy the worst terms are still strikes
             at least <Num>3%</Num> above spot and a gross premium of at least <Num>0.40%</Num> of spot
-            notional per listing, and the admin can revoke the key.
+            notional, checked again at every fill, and the admin can revoke the key.
           </p>
         ),
       },
@@ -585,19 +673,22 @@ const GROUPS: readonly RiskGroup[] = [
           <p>
             The vault admin sets policy inside compiled caps: the strike band, the premium floor, the
             utilisation ceiling, the protocol fee, the contract cap, the deposit cap, the price-age
-            limit, the fee recipient, and whether to accept Valorem&apos;s engine fee. It can halt
-            and unhalt writes and appoint the keeper and the Guardian. At launch the admin is a single
-            deployer key, handed to a <Num>2-of-3</Num> Safe later. There is no timelock in{" "}
+            limit, the fee recipient, and whether to accept Valorem&apos;s engine fee. On the
+            vault&apos;s own clearinghouse the same key also holds the switch that turns that fee on. It
+            can halt and unhalt writes and appoint the keeper and the Guardian. At launch the admin is a
+            single deployer key, handed to a <Num>2-of-3</Num> Safe later. There is no timelock in{" "}
             <Num>v1</Num>.
           </p>
         ),
         cost: (
           <p>
             A band set too tight means weeks where no strike qualifies and the vault simply holds{" "}
-            {MARKET}. A band set too loose means assignment becomes routine. An admin can also
-            redirect up to <Num>20%</Num> of premium to an address it chooses, or loosen policy to
-            the caps and run writes through a keeper it appoints, which moves option value rather
-            than tokens. All of these are legal moves inside the caps.
+            {MARKET}. A band set too loose means assignment becomes routine. An admin can also redirect
+            up to <Num>20%</Num> of premium to an address it chooses; loosen policy to the caps and sell
+            through a keeper it appoints to a buyer it controls, about <Num>2.2%</Num> of the notional
+            sold per week by the contracts&apos; own estimate; or switch on and accept Valorem&apos;s
+            fee, a standing <Num>15 bps</Num> of {MARKET} on every call sold, paid back by buyers at
+            spot. All of these are legal moves inside the caps, and they move value rather than tokens.
           </p>
         ),
         response: (
@@ -619,20 +710,43 @@ const GROUPS: readonly RiskGroup[] = [
  * Page-local pieces that carry copy.
  * ---------------------------------------------------------------------------------------------- */
 
-/** What still works during a Stock Token transfer freeze. */
+type Verdict = "works" | "partly" | "stops";
+
+const VERDICT: Record<Verdict, { label: string; chip: string }> = {
+  works: {
+    label: "Works",
+    chip: "bg-accent-soft text-accent-text",
+  },
+  partly: {
+    label: "Strands",
+    chip: "bg-warn-soft text-warn",
+  },
+  stops: {
+    label: "Stops",
+    chip: "bg-warn-soft text-warn",
+  },
+};
+
+/** What still works during a Stock Token transfer freeze of the vault. */
 function FreezeList() {
-  const rows = [
-    { what: "Queueing a redemption", works: true, why: `Only your ${SHARE_TICKER} moves, into the vault's escrow.` },
-    { what: "Claiming USDG already credited to you", works: true, why: "It moves only USDG." },
+  const rows: { what: string; verdict: Verdict; why: string }[] = [
+    { what: "Queueing a redemption", verdict: "works", why: `Only your ${SHARE_TICKER} moves, into the vault's escrow.` },
+    { what: "Settling the queue while the vault is Idle", verdict: "works", why: "It moves no token." },
+    { what: "Claiming USDG already credited to you", verdict: "works", why: "It moves only USDG." },
+    {
+      what: "Closing the week",
+      verdict: "partly",
+      why: `It completes, but a claim with ${MARKET} to hand back is stranded until the freeze lifts. Anyone can retry.`,
+    },
     {
       what: "Depositing, instant redemption, completing a queued redemption",
-      works: false,
+      verdict: "stops",
       why: `Each moves ${MARKET}.`,
     },
     {
-      what: "Writing a new call, or closing the week",
-      works: false,
-      why: `Each moves ${MARKET} into or out of Valorem.`,
+      what: "Selling a call",
+      verdict: "stops",
+      why: `Each fill moves ${MARKET} into Valorem.`,
     },
   ];
   return (
@@ -651,13 +765,9 @@ function FreezeList() {
               <span className="block text-[13.5px] text-ink-3">{row.why}</span>
             </span>
             <span
-              className={
-                row.works
-                  ? "mt-0.5 inline-flex rounded-full bg-accent-soft px-2.5 py-1.5 text-[12.5px] font-semibold leading-none text-accent-text"
-                  : "mt-0.5 inline-flex rounded-full bg-warn-soft px-2.5 py-1.5 text-[12.5px] font-semibold leading-none text-warn"
-              }
+              className={`mt-0.5 inline-flex rounded-full px-2.5 py-1.5 text-[12.5px] font-semibold leading-none ${VERDICT[row.verdict].chip}`}
             >
-              {row.works ? "Works" : "Stops"}
+              {VERDICT[row.verdict].label}
             </span>
           </li>
         ))}
@@ -670,43 +780,31 @@ function shortAddress(address: string): string {
   return `${address.slice(0, 6)}…${address.slice(-4)}`;
 }
 
-/** The dependencies in the path, with explorer links where there is a contract to check. */
+/** The dependencies in the path, with explorer links where there is a live contract to check. */
 function Dependencies() {
-  const rows: { name: string; address?: string; text: ReactNode }[] = [
-    {
-      name: ADDRESSES.registry.label,
-      address: ADDRESSES.registry.address,
-      text: (
-        <>
-          Publishes each week&apos;s cycle, strikes and deadlines, from a single third-party key. The
-          vault refuses a malformed cycle: longer than <Num>21</Num> days, a lot size other than one
-          token, or options that do not match the cycle. That costs a skipped week. Strikes inside
-          the vault&apos;s band are not second-guessed.
-        </>
-      ),
-    },
-    {
-      name: "Overcall listings API",
-      text: "Shows the vault's listing to buyers. It can reject or drop an order, and an invisible listing is an unfilled week. The app's cycle page then offers the keeper's signed order, checked against the chain, but buyers browsing Overcall will not see it.",
-    },
+  const rows: { name: string; address?: string | null; text: ReactNode }[] = [
     {
       name: ADDRESSES.clear.label,
       address: ADDRESSES.clear.address,
-      text: "Holds the collateral, mints the options and settles assignment. Its engine fee, off today, can be switched on by a third party; the vault then stops writing until the admin accepts it.",
+      text: "Deployed with the vault from Valorem's unmodified code. Holds the collateral of calls sold, mints each call inside the fill that buys it and settles assignment. Its engine fee is off and its switch is held by the vault admin; the vault refuses to sell through that fee until the admin also accepts it.",
     },
     {
       name: ADDRESSES.seaport.label,
       address: ADDRESSES.seaport.address,
-      text: "The listing and fill contract. Third-party code outside Stonkhouse's control.",
+      text: "Settles every fill and asks the vault before it moves anything. Third-party code outside Stonkhouse's control.",
+    },
+    {
+      name: "The keeper and the app's fill page",
+      text: "Create the week's call, price the listing and serve it to buyers. If either is down, the week most likely sells nothing, but nothing is written without a buyer and the close does not need them.",
     },
     {
       name: ADDRESSES.priceFeed.label,
       address: ADDRESSES.priceFeed.address,
-      text: "Read for display and to gate writes and listings only. Settlement never reads it. A stale or broken feed means a skipped week.",
+      text: "Read for display and for the floors checked when a week is armed and a call is sold. Settlement never reads it. A stale or broken feed means a skipped or unsold week.",
     },
     {
       name: CHAIN_NAME,
-      text: "A centralised sequencer with no uptime feed. An outage near the book close means no live listing when buyers are looking.",
+      text: "A single Robinhood sequencer with no uptime feed, which screens transactions against a restricted list. An outage near the book close means no fills when buyers are looking; forcing a transaction in takes 4 days.",
     },
   ];
   return (
@@ -727,6 +825,8 @@ function Dependencies() {
               >
                 <span className="num">{shortAddress(row.address)}</span> on the explorer
               </ExternalLink>
+            ) : row.address === null ? (
+              <p className="mt-1 text-[13px] text-ink-3">Address published at launch</p>
             ) : row.name === CHAIN_NAME ? (
               <p className="mt-1 text-[13px] text-ink-3">
                 Chain <Num>{CHAIN_ID}</Num>
@@ -790,9 +890,9 @@ export default function RisksPage() {
                 You can lose the collateral you deposit.
               </h2>
               <p className="mt-1.5 text-[14.5px] text-ink-2">
-                The Stonkhouse contracts are not deployed and have not been audited, the token&apos;s
-                issuer can freeze it, and a clearinghouse can take the collateral at the strike.
-                Deposit accordingly.
+                The Stonkhouse contracts are not deployed and are unaudited, the token&apos;s issuer can
+                freeze or burn it, and a clearinghouse can take the collateral at the strike. Deposit
+                accordingly.
               </p>
             </div>
           </div>
@@ -824,7 +924,7 @@ export default function RisksPage() {
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Figure boxed size="sm" label="Deposit cap at launch" value="20" unit={MARKET} />
             <Figure boxed size="sm" label="Strike at launch" value="3–12%" unit="above spot" />
-            <Figure boxed size="sm" mono={false} label="External audit" value="Not yet" />
+            <Figure boxed size="sm" mono={false} label="External audit" value="None" />
           </dl>
         </Panel>
       </Container>

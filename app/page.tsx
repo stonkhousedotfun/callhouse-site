@@ -2,14 +2,21 @@
  * stonkhouse.fun/ — the landing page, and the first thing a stranger reads about this product.
  *
  * Built to the approved "Daylight" mockup, section by section: hero with the example week card,
- * the five-step week, why Stonkhouse with the fee slip, the three endings, what can go wrong, and
- * the CTA band. The footer comes from the layout.
+ * the five-step week, why Stonkhouse with the fee slip, the endings (three, plus a close held up by
+ * a token issuer), what can go wrong, and the CTA band. The footer comes from the layout.
+ *
+ * THE PRODUCT DESCRIBED HERE is the 2026-09-13 redesign (leekzor/callhouse-contracts README.md:5-15):
+ * the keeper creates and arms a weekly Valorem option type and nothing is written at arm
+ * (src/Vault.sol rollOpen); the vault lists one Seaport 1.6 order whose zone is the vault, and each
+ * fill writes exactly the calls it buys inside authorizeOrder (src/Vault.sol authorizeOrder,
+ * validateOrder); the floors are re-checked at the spot of each fill (src/lib/ValoremLib.sol:201-256).
+ * There is no third-party venue, registry or venue fee (src/lib/SeaportOrderLib.sol:179-181).
  *
  * One job: leave a reader who skims only the first screen with an ACCURATE expectation. Premium
  * arrives only if somebody buys the call, assignment can take the collateral, the token is a debt
  * security, and the vault is neither deployed nor audited. The hero's disclosure line says all of
  * that next to the headline, not in a footer. If a future edit moves it below the fold, the edit
- * is wrong.
+ * is wrong. "Unaudited" is stated plainly: there is no external audit (owner decision D14).
  *
  * DELIBERATELY ABSENT:
  *   - Wallet code, chain reads and fetches. This is a server component; the only client code is
@@ -51,11 +58,11 @@ import {
   SectionHead,
   WarnIcon,
 } from "@/components/ui";
-import { CHAIN_NAME, MARKET, SHARE_TICKER, VENUE_NAME, appUrl } from "@/lib/site";
+import { CHAIN_NAME, MARKET, SHARE_TICKER, appUrl } from "@/lib/site";
 
 const TITLE = `Stonkhouse — pooled covered calls on ${MARKET} Stock Tokens`;
 
-const DESCRIPTION = `Deposit ${MARKET} Stock Tokens, receive ${SHARE_TICKER} vault shares. Each week the vault writes covered calls, one per whole token, and lists them on ${VENUE_NAME} for USDG. Premium is paid only if a buyer fills, and a week with no buyer pays zero premium.`;
+const DESCRIPTION = `Deposit ${MARKET} Stock Tokens, receive ${SHARE_TICKER} vault shares. Each week the vault lists covered calls for USDG, one per whole token, and writes each call only when a buyer fills. Premium is paid only if a buyer fills, and a week with no buyer pays zero premium.`;
 
 /**
  * `title.absolute` and not a bare string: the layout carries a "%s — Stonkhouse" template, so a
@@ -78,34 +85,41 @@ const OPEN_APP = appUrl("/vault/nvda");
 
 type Step = { title: string; when: string; body: string; key?: boolean };
 
-/** Docs: getting-started/how-it-works.md and product/weekly-cycle.md. */
+/**
+ * Docs: getting-started/how-it-works.md and product/weekly-cycle.md. Times are New York time: the
+ * keeper sets exercise at the NYSE Friday 16:00 ET close (Thursday on a Friday holiday) and expiry
+ * 24 h later (leekzor/callhouse keeper/src/calendar.ts:1-30, :203-241). Deposits close at the
+ * exercise time (src/Vault.sol _depositRefused); the keeper may close from expiry and anyone an
+ * hour later (src/Vault.sol rollClose). Strike about 5% above spot: KEEPER_STRIKE_OTM_BPS 500
+ * (keeper/README.md "The week"); band 3% to 12%: Policy.sol:131-132; utilisation 95%: Policy.sol:134.
+ */
 const STEPS: readonly Step[] = [
   {
     title: "You deposit your stock",
-    when: "until the book closes",
+    when: "until the Friday close",
     body: `${MARKET} Stock Tokens in, ${SHARE_TICKER} shares out, priced at the ${MARKET} behind each share.`,
   },
   {
-    title: "The vault writes calls",
-    when: `when ${VENUE_NAME} opens the week`,
-    body: `Up to 95% of idle ${MARKET} becomes whole calls, one per token, 3% to 12% above spot at launch. No strike in that band, no write.`,
+    title: "The vault lists this week's calls",
+    when: "from the start of the week",
+    body: `The keeper creates this week's call, about 5% above spot, and the vault checks it against its band, 3% to 12% at launch. Up to 95% of the ${MARKET} is offered, one call per token. Nothing is written yet.`,
     key: true,
   },
   {
-    title: `Buyers fill on ${VENUE_NAME}`,
-    when: "until Fri 20:00 UTC",
-    body: `USDG lands in the same transaction: 95% to the vault, 5% to ${VENUE_NAME}. Or nobody buys.`,
+    title: "A buyer fills, and only then is a call written",
+    when: "until Fri 16:00 ET",
+    body: "Each fill writes exactly the calls bought and pays USDG to the vault in the same transaction, after the vault re-checks its price floor. Or nobody buys, and nothing is written.",
     key: true,
   },
   {
     title: "The week closes",
-    when: "from Sat 20:00 UTC",
+    when: "from Sat 16:00 ET",
     body: `Unassigned ${MARKET} comes back, assigned ${MARKET} as strike USDG. The keeper closes at expiry; an hour later, anyone can.`,
   },
   {
     title: "You claim USDG",
     when: "whenever you like",
-    body: "Premium net of fees, and any strike proceeds, wait in your balance. No deadline.",
+    body: "Premium net of the fee, and any strike proceeds, wait in your balance. No deadline.",
   },
 ];
 
@@ -119,11 +133,11 @@ const BENEFITS: readonly Point[] = [
   },
   {
     title: "Hands off",
-    body: "The keeper writes, lists and closes each week inside the vault's policy. You deposit once and check in when you like.",
+    body: "The keeper sets, lists and closes each week inside the vault's policy, and the vault writes each call itself when it sells. You deposit once and check in when you like.",
   },
   {
     title: "Fees only on premium",
-    body: `Stonkhouse takes 5% of the premium the vault receives, capped at 20% in the contracts. Nothing on deposits, idle ${MARKET} or strike proceeds.`,
+    body: `Stonkhouse takes 5% of the premium buyers pay, capped at 20% in the contracts. Nothing on deposits, idle ${MARKET} or strike proceeds.`,
   },
   {
     title: "Every week published",
@@ -131,11 +145,11 @@ const BENEFITS: readonly Point[] = [
   },
   {
     title: "Two ways out",
-    body: "Withdraw instantly while the vault is idle, or queue during a week and settle at the close. Closing the week does not depend on the keeper.",
+    body: "Withdraw instantly while the vault is idle, or queue during a week and settle at the close. Closing the week and settling the queue do not depend on the keeper.",
   },
   {
     title: "Limits in the code",
-    body: "The 1% strike floor, the 20% fee ceiling and the one-token lot size are compiled in. The keeper and guardian cannot move a token.",
+    body: "The 1% strike floor, the 20% fee ceiling and the one-token lot size are compiled in, and a call is written only inside the fill that buys it. The keeper and guardian cannot move a token.",
   },
 ];
 
@@ -143,35 +157,35 @@ const BENEFITS: readonly Point[] = [
 const RISKS: readonly Point[] = [
   {
     title: "Weeks can pay nothing",
-    body: "Premium is paid only if a buyer fills. On a thin book an unfilled week is the most likely outcome, and no dealer is obliged to buy.",
+    body: "Premium is paid only if a buyer fills. On a thin book an unfilled week is the most likely outcome, no dealer is obliged to buy, and after a rally the vault refuses fills until the keeper reprices.",
   },
   {
     title: "Assignment caps your upside",
-    body: `If ${MARKET} runs past the strike, collateral leaves at the strike for USDG, even in a week the vault sold nothing. v1 does not buy it back.`,
+    body: `If ${MARKET} runs past the strike, collateral behind the calls the vault sold leaves at the strike for USDG. v1 does not buy it back.`,
   },
   {
     title: "Withdrawals wait for the close",
-    body: "While a call is open, a withdrawal is queued, cannot be cancelled, and settles at the close, partly in USDG if the week was assigned.",
+    body: "While a week is listed, a withdrawal is queued, cannot be cancelled, and settles at the close, partly in USDG if the week was assigned.",
   },
   {
     title: "Late deposits share the week",
-    body: "A deposit while a call is open is priced at face value and shares that week's result, including any assignment.",
+    body: "A deposit while a week is listed is priced at face value, buys into the open short, and can be written against by later fills.",
   },
   {
     title: "Stock Tokens are not shares",
-    body: "They are debt securities of Robinhood Assets (Jersey) Limited, with no vote or claim on Nvidia, and you carry the issuer's credit risk. The issuer can freeze transfers, which can hold up the close.",
+    body: "They are debt securities of Robinhood Assets (Jersey) Limited, with no vote or claim on Nvidia, and you carry the issuer's credit risk. The issuer can freeze transfers, which can strand the week's close.",
   },
   {
     title: "Unaudited contracts",
-    body: `The vault has had only an internal review, by the people who wrote it. There is no proxy, so a fix means a new vault. The 20 ${MARKET} launch cap is sized to that.`,
+    body: `The vault is unaudited: it has had internal reviews only, by the team that built it, and no external audit. There is no proxy, so a fix means a new vault. The 20 ${MARKET} launch cap is sized to that.`,
   },
   {
     title: "Settings can change",
-    body: "The admin can change the strike band and the fee inside the compiled caps, and the deposit cap with no ceiling, at any time and with no timelock. At launch the admin is a single key.",
+    body: "The admin can change the strike band and the fee inside the compiled caps, the deposit cap with no ceiling, and Valorem's fee switch on the vault's own clearinghouse, at any time and with no timelock. At launch the admin is a single key.",
   },
   {
     title: "Third parties in the path",
-    body: `${VENUE_NAME} runs the cycle and the book, Valorem settles assignment and USDG pays out; the vault cannot override any of them. An oracle pause stops writes and listings, never settlement.`,
+    body: "Valorem settles assignment, Seaport settles fills, and USDG and the Stock Token have issuers who can freeze them; the vault cannot override any of them. A freeze at the close strands the week's claim until it lifts.",
   },
 ];
 
@@ -195,8 +209,9 @@ export default function HomePage() {
             Put your stocks to work, <em className="not-italic text-accent">one week at a time.</em>
           </h1>
           <p className="mt-[22px] max-w-[34em] text-[19px] text-ink-2">
-            Deposit tokenised stocks into a vault. Each week it sells covered calls against them on {VENUE_NAME} and
-            credits what buyers actually pay, less fees, in USDG for you to claim. The first vault holds {MARKET}.
+            Deposit tokenised stocks into a vault. Each week it lists covered calls against them, writes each call only
+            when a buyer pays for it, and credits what buyers actually pay, less the fee, in USDG for you to claim. The
+            first vault holds {MARKET}.
           </p>
 
           <div className="mt-[30px] flex flex-wrap gap-3">
@@ -215,7 +230,7 @@ export default function HomePage() {
 
           <Notice variant="plain" className="mt-[26px]">
             Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. Stock Tokens are
-            debt securities, not Nvidia shares. Not deployed and not audited yet.
+            debt securities, not Nvidia shares. Not deployed yet, and unaudited.
           </Notice>
         </div>
 
@@ -228,7 +243,7 @@ export default function HomePage() {
           id="how-h"
           eyebrow="How it works"
           title="Every week runs the same five steps."
-          intro={`Timing comes from ${VENUE_NAME}'s registry, not a calendar you have to watch. The keeper does the routine work; the contracts make sure nobody needs the keeper to get the week closed.`}
+          intro="The book closes at the US market close, Friday 16:00 New York time: 20:00 UTC while US daylight saving time is in effect, 21:00 UTC after it ends, and Thursday when Friday is an NYSE holiday. The keeper does the routine work; the contracts make sure nobody needs the keeper to get the week closed."
         />
 
         <ol className="grid grid-cols-1 gap-[26px] lg:grid-cols-5 lg:gap-0">
@@ -319,9 +334,9 @@ export default function HomePage() {
       <Section id="endings" labelledBy="endings-h">
         <SectionHead
           id="endings-h"
-          eyebrow="Three endings"
-          title="Every week ends one of three ways."
-          intro={`Knowing all three before you deposit is the whole point. Which one you get is decided by the order book and by what holders of the week's calls do, not by the vault or a price feed. Pick one to see what happens to premium and to the ${MARKET} behind it.`}
+          eyebrow="How a week ends"
+          title="Three endings, and a close that can be held up."
+          intro={`Knowing all four before you deposit is the whole point. Which one you get is decided by buyers, by what holders of the week's calls do and by the token issuers, not by the vault or a price feed. Pick one to see what happens to premium and to the ${MARKET} behind it.`}
         />
         <EndingsTabs />
       </Section>
@@ -358,8 +373,8 @@ export default function HomePage() {
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t border-line pt-8">
           <p className="max-w-[44em] text-[15px] text-ink-2">
-            The risks page also covers partial assignment, keeper failure, USDG, the Valorem fee switch and an outage
-            near the Friday book close.
+            The risks page also covers a fill refused after a rally, a claim stranded at the close, partial assignment,
+            keeper failure, USDG, the Valorem fee switch and an outage near the Friday close.
           </p>
           <Button variant="ghost" href="/risks">
             Read every risk

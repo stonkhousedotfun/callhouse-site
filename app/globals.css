@@ -154,7 +154,7 @@
   }
 
   /* Geist Mono sets visibly larger than Figtree at the same px size. An inline <Num> sitting in running
-     text (a paragraph, a list item, a table cell) is scaled down so "15 bps" or "Fri 20:00 UTC" does
+     text (a paragraph, a list item, a table cell) is scaled down so "15 bps" or "Fri 16:00 ET" does
      not jump out mid-sentence. Figure slots set their own sizes and are not matched; a utility size
      on the element still wins, because this is the base layer. */
   :is(p, li, td, dd, dt, small) > span.num {

@@ -1,6 +1,8 @@
 /**
- * /privacy — the privacy notice for both domains. Adopted 2026-09-13 as v1 (see
- * LEGAL_DOCS_VERSION in lib/legal.ts).
+ * /privacy — the privacy notice for both domains. Adopted 2026-09-13 as v1; renamed to Stonkhouse
+ * as v3 on 2026-09-15; revised as v4 the same day (first drafted 2026-09-14), when the dapp's
+ * third-party listings route was replaced by its own order-feed route (see LEGAL_DOCS_VERSION in
+ * lib/legal.ts).
  *
  * WHY THIS PAGE EXISTS: the product is non-US by construction, so it is served to visitors in
  * the EU and the UK, and a request to app.stonkhouse.fun terminates on a server we run. Until
@@ -32,17 +34,21 @@
  *            (app/providers.tsx) caches in memory only.
  *            lib/hooks.ts useAccountPosition reads your position with useReadContracts, i.e.
  *            from the RPCs, in the browser, so the address reaches them as call data.
- *            lib/api.ts exports fetchAccount(), which would GET /v1/account/{address} on the
- *            indexer; NOTHING CALLS IT (grep fetchAccount web/ — the definition is the only
+ *            lib/api.ts reads /v1/vault, /v1/cycles and /v1/health from the indexer, none keyed
+ *            by address. It also exports fetchAccount(), which would GET /v1/account/{address} on
+ *            the indexer; NOTHING CALLS IT (grep fetchAccount web/ — the definition is the only
  *            hit), and no dapp route path contains an address (web/app has no dynamic
  *            segment). If either changes, the "not sent to a server of ours" sentences below
  *            become false and must change in a paired commit in this repo.
- *            app/api/overcall/listings/route.ts: `runtime = "nodejs"`, GET only, forwards
- *            offerer = the compiled-in VAULT, status=all, limit=50 and, only when the browser
- *            sent exactly `market=<MARKET>`, the compiled-in MARKET — to
- *            ${OVERCALL_API_BASE}/api/orders with an `accept` header and nothing else. No
- *            value from the visitor's request is forwarded. The visitor's IP stops at our
- *            server; Overcall sees our server's.
+ *            app/api/keeper/orders/route.ts: `runtime = "nodejs"`, GET only, the ONLY server
+ *            route in web/app/api. It fetches the one URL in KEEPER_ORDERS_URL, a runtime
+ *            server variable (on Railway the keeper's private address), and "no query string, no
+ *            body and no header reaches the upstream call"; redirects are not followed
+ *            (route.ts header comment; lib/keeperOrders.ts). It then reads the chain through the
+ *            server's own RPC client. The visitor's IP stops at our server; the keeper sees our
+ *            server's. The browser calls it from lib/api.ts fetchKeeperOrderBook() with no
+ *            parameters. (Until 2026-09-14 a different route forwarded to a third-party listings
+ *            API; it was deleted with the contracts redesign.)
  *   indexer/ (in leekzor/callhouse) ponder.schema.ts: every table is derived from on-chain
  *            events. The `user` table is keyed by wallet address and holds share and USDG
  *            figures. src/api/index.ts serves GET /v1/account/:addr (an address in the path)
@@ -96,7 +102,7 @@ import {
   PRIVACY_CONTACT_EMAIL,
   operatorIsDesignated,
 } from "@/lib/legal";
-import { EXPLORER_URL, VENUE_NAME, VENUE_URL, appUrl } from "@/lib/site";
+import { EXPLORER_URL, appUrl } from "@/lib/site";
 
 // The draft sentence is appended from the same flag the in-page marker reads, so the search
 // snippet and the page stop saying "draft" in the same build rather than one lagging the other.
@@ -195,7 +201,7 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>The HTTP request.</strong> Every page and one server route (
-            <Code>/api/overcall/listings</Code>) is answered by a Railway service, which records the
+            <Code>/api/keeper/orders</Code>) is answered by a Railway service, which records the
             same standard HTTP logs as the site: IP address, user agent, path, time.
           </li>
         </DocList>
@@ -214,8 +220,8 @@ export default function PrivacyPage() {
           <li>
             <strong>The Stonkhouse indexer.</strong> A history service we run. It stores wallet
             addresses, share balances and USDG amounts derived from public on-chain events, and
-            nothing that is not already on the chain. The dapp asks it for vault history and
-            listings; it does not ask it for your position today, although the indexer has an
+            nothing that is not already on the chain. The dapp asks it for vault state and weekly
+            history; it does not ask it for your position today, although the indexer has an
             endpoint keyed by address and the dapp contains an unused function that would call it.
             If that is ever wired up, the address will appear in the indexer&apos;s request log
             (which records method, path, status and timing, not IP) and the host it runs on may
@@ -223,17 +229,11 @@ export default function PrivacyPage() {
             commit.
           </li>
           <li>
-            <strong>
-              <DocExternalLink href={VENUE_URL}>
-                {VENUE_NAME}
-              </DocExternalLink>
-              .
-            </strong>{" "}
-            The cycle page asks our server for the vault&apos;s open listings, and our server asks
-            overcall.finance. What is forwarded is the vault&apos;s own address, a fixed status and
-            limit and, when asked, the market symbol — all compiled into the route, none taken from
-            your request. Your IP address and your wallet address are not forwarded; Overcall sees
-            a request from our server. The route is read-only.
+            <strong>The Stonkhouse keeper.</strong> A service we run on a private network. The cycle
+            page asks our server for the vault&apos;s open listing, and our server asks the keeper at
+            one fixed address, then checks the answer against the chain. Nothing from your request is
+            forwarded: not your IP address, not your wallet address, not a query string or a header.
+            The route is read-only, and no third-party listings service is involved.
           </li>
           <li>
             <strong>Railway.</strong> Hosts both domains and the HTTP logs described above.
@@ -346,8 +346,8 @@ export default function PrivacyPage() {
 
       <DocSection {...SECTIONS.transfers}>
         <p>
-          The providers named above — Railway, the RPC providers, {VENUE_NAME} and the explorer —
-          may process data in countries other than yours, including outside the EU and the UK. We
+          The providers named above — Railway, the RPC providers and the explorer — may process
+          data in countries other than yours, including outside the EU and the UK. We
           have not put transfer safeguards of our own in place beyond what those providers publish;
           the only data that reaches them is what this page describes.
         </p>

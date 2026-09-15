@@ -2,20 +2,21 @@ import { Panel } from "@/components/ui";
 
 /**
  * The mockup's fee slip: a lifted receipt that walks one example week from what buyers paid to
- * what depositors are credited. The figures are the fork rehearsal's 23-contract week and must
- * stay labelled as an example. They reconcile with Policy.splitPremium (Overcall's 5% rounded down
- * per contract, then multiplied) and Policy.splitHarvest (Stonkhouse's 5% rounded down on the
- * premium the vault received):
+ * what depositors are credited. The figures are week 2 of the keeper's fork rehearsal of the
+ * redesigned vault (keeper/run-final/report.md, "Week 2") and must stay labelled as an example.
+ * There is one fee line because a listing has one payment leg, USDG to the vault
+ * (leekzor/callhouse-contracts src/lib/SeaportOrderLib.sol:179-213). They reconcile with
+ * Policy.splitHarvest (src/Policy.sol:217-225, 5% rounded down on premium) and the per-share index
+ * (src/Distributor.sol:147):
  *
- *   per contract   0.873192 → Overcall 0.043659, vault 0.829533
- *   23 contracts   gross 20.083416, Overcall 1.004157, vault 19.079259
- *   protocol fee   floor(19.079259 × 5%) = 0.953962 → credited 18.125297
+ *   fills          2 × 0.856189 + 3 × 0.856189 = 4.280945
+ *   protocol fee   floor(4.280945 × 5%) = 0.214047 → credited 4.066898
+ *   per share      floor(4.066898 / 15 shares) = 0.271126
+ *   strike         2 exercised × 223 = 446 USDG, credited fee-free (harvest fee unchanged at 0.214047)
  */
 const ROWS: Array<{ k: string; sub?: string; v: string; minus?: boolean }> = [
-  { k: "Buyers paid", sub: "23 × 0.873192 USDG", v: "20.083416" },
-  { k: "Overcall's 5%", sub: "taken inside each fill", v: "− 1.004157", minus: true },
-  { k: "Vault receives", v: "19.079259" },
-  { k: "Stonkhouse 5%", sub: "of premium only", v: "− 0.953962", minus: true },
+  { k: "Buyers paid", sub: "(2 + 3) × 0.856189 USDG", v: "4.280945" },
+  { k: "Stonkhouse 5%", sub: "of premium only", v: "− 0.214047", minus: true },
 ];
 
 const PERF = "radial-gradient(circle at 7px 7px, var(--ground) 5px, transparent 5.5px)";
@@ -27,7 +28,7 @@ export function FeeSlip() {
         <h3 id="slip-h" className="text-[17px] font-bold">
           What reaches depositors
         </h3>
-        <span className="font-mono text-[12px] font-medium leading-none text-ink-3">example · 23 calls filled</span>
+        <span className="font-mono text-[12px] font-medium leading-none text-ink-3">example · 5 calls filled</span>
       </div>
       <div
         aria-hidden="true"
@@ -51,14 +52,24 @@ export function FeeSlip() {
         ))}
         <div className="-mx-6 mt-1.5 flex flex-wrap items-baseline justify-between gap-3 bg-accent-soft px-6 pb-[22px] pt-[18px]">
           <dt className="font-bold text-accent-text">Credited to depositors</dt>
-          <dd className="num text-[28px] font-semibold leading-none text-accent-text">18.125297</dd>
+          <dd className="num text-[28px] font-semibold leading-none text-accent-text">4.066898</dd>
+        </div>
+        <div className="flex justify-between gap-4 border-b border-dashed border-line-2 py-[11px] text-[15px]">
+          <dt className="text-ink-2">
+            Per cNVDA share
+            <small className="block text-[12.5px] text-ink-3">over the 15 shares then in the vault</small>
+          </dt>
+          <dd className="num whitespace-nowrap text-right text-ink">0.271126</dd>
         </div>
       </dl>
       <div className="grid gap-2 px-6 pb-5 pt-3.5 text-[13px] text-ink-3">
-        <p>USDG, split pro rata across all cNVDA shares. Figures from the fork rehearsal, not a live week.</p>
         <p>
-          Had the week been assigned, the strike USDG would be added to the credit in full and the fee line would
-          not change.
+          USDG, split pro rata across all cNVDA shares. Figures from a fork rehearsal, not a live week. No other fee
+          came out of the fills: each one paid the vault directly.
+        </p>
+        <p>
+          The same week had 2 calls exercised at 223. Their 446 USDG of strike proceeds were added to the credit in
+          full, and the fee line did not change.
         </p>
       </div>
     </Panel>

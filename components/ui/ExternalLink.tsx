@@ -1,7 +1,7 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 
 /**
- * A link that leaves this origin: the app, the docs, the explorer, Overcall. Always a plain <a>
+ * A link that leaves this origin: the app, the docs, the explorer. Always a plain <a>
  * (next/link has no route to prefetch on another host), always a new tab, always
  * `rel="noreferrer noopener"`, and it tells screen-reader users the tab will change.
  *

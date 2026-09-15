@@ -71,7 +71,7 @@ export const metadata: Metadata = {
     template: "%s — Stonkhouse",
   },
   description:
-    "Deposit one tokenised stock, receive vault shares. Each week a keeper writes an Overcall call against it and pays depositors whatever premium actually fills. A week with no buyer pays zero premium.",
+    "Deposit one tokenised stock, receive vault shares. Each week the vault lists covered calls against it, writes each call only when a buyer pays for it, and credits depositors whatever premium actually fills. A week with no buyer pays zero premium.",
   // Per-route canonicals override this; the default is the landing page.
   alternates: { canonical: "/" },
   openGraph: {
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     // share card on any route that sets its own title.
     title: "Stonkhouse — pooled covered calls on Robinhood Chain",
     description:
-      "Deposit one tokenised stock, receive vault shares. Each week a keeper writes an Overcall call against it and pays depositors whatever premium actually fills. A week with no buyer pays zero premium.",
+      "Deposit one tokenised stock, receive vault shares. Each week the vault lists covered calls against it, writes each call only when a buyer pays for it, and credits depositors whatever premium actually fills. A week with no buyer pays zero premium.",
     url: SITE_URL,
     siteName: "Stonkhouse",
     type: "website",

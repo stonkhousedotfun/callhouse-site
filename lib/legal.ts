@@ -70,8 +70,19 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * callhouse.finance to stonkhouse.fun. Both documents now name Stonkhouse, stonkhouse.fun and
  * app.stonkhouse.fun. Nothing else in either document changed. Like v2, published as a correction
  * to the adopted text, not as a draft.
+ * v4 (2026-09-15): the v3 text plus factual corrections for the contracts redesign of 2026-09-13
+ * (leekzor/callhouse-contracts README.md:5-15). The corrections were first drafted 2026-09-14 and
+ * were never published on their own; they reached the live site only in v4, together with the
+ * rename. Terms: the third-party venue and its registry key are gone from the third-party clause and
+ * the affiliation line; the vault's own Valorem Clear instance, its fee switch on the admin key
+ * (AUDIT-FINDINGS-2026-09-14 I-01) and the admin's value levers are stated; custody wording follows
+ * write on fill; a refused fill and an unredeemed claim at the close are named. Privacy: the dapp's
+ * only server route is now its own order feed (web/app/api/keeper/orders), which forwards nothing
+ * from the request; the third-party listings recipient is removed. No change to what either domain
+ * collects. Like v2 and v3, published as a correction to the adopted text, not as a draft;
+ * re-adopting it, or re-publishing it as "draft-", is the owner's call.
  */
-export const LEGAL_DOCS_VERSION = "v3-2026-09-15";
+export const LEGAL_DOCS_VERSION = "v4-2026-09-15";
 
 /** True while LEGAL_DOCS_VERSION still carries the draft prefix. The pages mark themselves from this. */
 export const LEGAL_DOCS_ARE_DRAFT = LEGAL_DOCS_VERSION.startsWith("draft-");

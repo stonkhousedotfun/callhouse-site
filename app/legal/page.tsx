@@ -10,7 +10,9 @@
  * script; "not available to US persons" and "Robinhood Assets (Jersey) Limited" are literal
  * string matches, not sentiments.
  *
- * It mirrors leekzor/callhouse: `web/app/legal/page.tsx` and MUST STAY IN SYNC WITH IT. A change to
+ * It mirrors leekzor/callhouse: `web/app/legal/page.tsx` and MUST STAY IN SYNC WITH IT. (2026-09-14:
+ * the affiliation and "not a claim on" lists dropped the former third-party venue, matching the
+ * app's ported page word for word.) A change to
  * one is a change to both, in paired commits across the two repos — two domains carrying two
  * different versions of the same disclosure is worse than either version on its own. The only
  * permitted divergence is cross-links: /activity is a dapp route and is reached with appUrl(),
@@ -139,7 +141,7 @@ export default function LegalPage() {
           <li>
             {SHARE_TICKER} is a vault share. It represents a pro-rata claim on the {MARKET} Stock
             Tokens the vault holds, plus separately accrued USDG. It is not itself a Stock Token, not a
-            deposit, and not a claim on Stonkhouse, Overcall, Valorem or any Robinhood entity.
+            deposit, and not a claim on Stonkhouse, Valorem or any Robinhood entity.
           </li>
           <li>
             There is no protocol token, no points programme and no airdrop attached to this vault.
@@ -177,8 +179,8 @@ export default function LegalPage() {
       <DocSection {...SECTIONS.noAffiliation}>
         <p>
           Stonkhouse is an independent project. It is not affiliated with, endorsed by, or operated by
-          Robinhood Markets, Inc., Robinhood Assets (Jersey) Limited, Overcall, Valorem, or the issuers
-          of USDG or Seaport. Those names appear here only to identify the third-party contracts and
+          Robinhood Markets, Inc., Robinhood Assets (Jersey) Limited, Valorem, or the issuers of USDG or
+          Seaport. Those names appear here only to identify the third-party contracts and
           services this vault interacts with.
         </p>
       </DocSection>

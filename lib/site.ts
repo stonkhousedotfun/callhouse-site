@@ -15,9 +15,17 @@
  * If an address changes, leekzor/callhouse: `README.md` and `ops/addresses.json` are the source of
  * truth and this file is updated by hand to match.
  *
- * Deliberately absent: chain clients, ABIs, a vault address (the vault is not deployed, and a
- * placeholder would be worse than not showing one), and anything that reads live state. Every
- * number on this site is a fixed policy parameter, not a quote.
+ * Deliberately absent: chain clients, ABIs, and anything that reads live state. Nothing Stonkhouse
+ * deploys is live yet: the vault and the vault's own Valorem Clear instance are listed below with a
+ * null address and render as "published at launch", never as a made-up or placeholder address.
+ * Every number on this site is a fixed policy parameter or a labelled rehearsal example, not a
+ * quote.
+ *
+ * NO VENUE CONSTANT (redesign of 2026-09-13, leekzor/callhouse-contracts `src/lib/SeaportOrderLib.sol`
+ * :179-181 and `README.md`:12-13). The vault sells through its own Seaport 1.6 listing, bought on the
+ * app's fill page (FILL_PAGE_PATH) or through any Seaport 1.6 client. Earlier designs listed through
+ * a third-party venue and read its registry; that constant and the registry row were removed with
+ * them.
  */
 
 /** Strip trailing slashes so joins never produce `//`. */
@@ -62,34 +70,46 @@ export const CHAIN_NAME = "Robinhood Chain";
  */
 export const EXPLORER_URL = "https://robinhoodchain.blockscout.com";
 
-/** Where the weekly cycle actually happens. Third party, not ours. */
-export const VENUE_NAME = "Overcall";
-export const VENUE_URL = "https://overcall.finance";
+/**
+ * The app route where the vault's weekly calls are bought: leekzor/callhouse `web/app/vault/nvda/cycle`.
+ * The only first-party venue; any Seaport 1.6 client can fill the same order with its parameters.
+ */
+export const FILL_PAGE_PATH = "/vault/nvda/cycle";
 
 export type AddressRow = {
   /** Label as it appears in the README addresses table. */
   label: string;
-  /** Checksummed, as confirmed on chain 4663 by leekzor/callhouse: `ops/recon/`. */
-  address: string;
+  /**
+   * Checksummed, as confirmed on chain 4663 by leekzor/callhouse: `ops/recon/`. `null` for a
+   * contract Stonkhouse deploys at launch: the page says "published at launch" instead.
+   */
+  address: string | null;
   /** One line on what it does, for the table's second column. */
   what: string;
 };
 
 /**
- * The contracts a reader can verify before depositing anything. All third-party: the Stonkhouse
- * vault is NOT listed because it is not deployed yet, and the fee Safe is an ops detail, not a
- * public integration point. Insertion order is display order.
+ * The contracts a week touches. Insertion order is display order. The first two are deployed by
+ * Stonkhouse at launch and have no address yet (leekzor/callhouse-contracts `script/Deploy.s.sol`,
+ * `script/DeployClear.s.sol`; the own-Clear decision is recorded in the 2026-09-14 audit findings,
+ * I-01). The rest are third-party contracts already live on 4663. The fee Safe is an ops detail, not
+ * a public integration point, and is not listed.
  */
 export const ADDRESSES = {
+  vault: {
+    label: `Stonkhouse ${MARKET} vault (${SHARE_TICKER})`,
+    address: null,
+    what: "Holds the NVDA, issues cNVDA, and is both the offerer and the zone of its own listing. Not deployed yet.",
+  },
   clear: {
-    label: "Valorem Clear",
-    address: "0x9a7b40e5c1dB1Af822ef091c990b58b02C78C0C0",
-    what: "Writes the calls and holds the collateral until expiry or exercise.",
+    label: "Valorem Clear, the vault's own instance",
+    address: null,
+    what: "Deployed with the vault from Valorem's unmodified code. Holds the collateral of calls sold, mints each call inside the fill that buys it, and settles exercise.",
   },
   seaport: {
     label: "Seaport 1.6",
     address: "0x0000000000000068F116a894984e2DB1123eB395",
-    what: "Matches the listing. The vault is the offerer; a buyer fills or nobody does.",
+    what: "Settles each fill. It asks the vault before moving anything, so every fill runs the vault's own checks.",
   },
   usdg: {
     label: "USDG",
@@ -101,15 +121,10 @@ export const ADDRESSES = {
     address: "0xd0601CE157Db5bdC3162BbaC2a2C8aF5320D9EEC",
     what: "18 decimals. The collateral, and a debt security issued by Robinhood Assets (Jersey) Limited.",
   },
-  registry: {
-    label: `${VENUE_NAME} ${MARKET} registry`,
-    address: "0x8E973cE1A6884E28Ad3E377d5f670Bc0b463f4EA",
-    what: "Defines the weekly cycle and the strike rungs. One registry per market; this one is NVDA's.",
-  },
   priceFeed: {
     label: "Chainlink RHNVDA / USD",
     address: "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
-    what: "8 decimals. Display and the write gate only. Settlement never reads a price feed.",
+    what: "8 decimals. Display, and the price floors checked when a week is armed and a call is sold. Settlement never reads a price feed.",
   },
 } as const satisfies Record<string, AddressRow>;
 

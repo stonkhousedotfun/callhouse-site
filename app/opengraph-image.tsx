@@ -41,9 +41,9 @@ import { CHAIN_NAME, SITE_URL } from "@/lib/site";
  * site it links to sit one click apart. The mark is BrandMark from components/ui/Brand.tsx on the
  * same 26 unit grid.
  *
- * Deliberately absent: a chart, a premium or strike figure, a logo or colour of Robinhood, Overcall
- * or Valorem (we are not affiliated with any of them), a dark variant (platforms show one image to
- * everyone) and a per-route variant (every page shares one card).
+ * Deliberately absent: a chart, a premium or strike figure, a logo or colour of Robinhood or Valorem
+ * (we are not affiliated with either), a dark variant (platforms show one image to everyone) and a
+ * per-route variant (every page shares one card).
  */
 
 const GROUND = "#f5f8f6"; /* --ground */
@@ -76,8 +76,9 @@ const GLYPHS_DISPLAY = unique(WORDMARK + HEADLINE_LEAD + HEADLINE_ACCENT);
 const GLYPHS_BODY = unique(TAGLINE + DOMAIN);
 
 /**
- * The landing page's five-step week, as dots: deposit, write, fill, close, claim. The two steps
- * the vault itself acts on (write and fill) are filled in the accent, as on the landing page.
+ * The landing page's five-step week, as dots: deposit, list, fill (the only moment a call is
+ * written), close, claim. The two steps the vault itself acts on (list and fill) are filled in the
+ * accent, as on the landing page.
  */
 const TRACK: readonly boolean[] = [false, true, true, false, false];
 
