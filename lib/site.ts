@@ -44,7 +44,7 @@ export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https
 export const X_URL = normalizeBase(process.env.NEXT_PUBLIC_X_URL ?? "https://x.com/stonkhouse");
 
 /** App and keeper repo. */
-export const GITHUB_URL = normalizeBase(process.env.NEXT_PUBLIC_GITHUB_URL ?? "https://github.com/leekzor/callhouse");
+export const GITHUB_URL = normalizeBase(process.env.NEXT_PUBLIC_GITHUB_URL ?? "https://github.com/stonkhousedotfun/callhouse");
 
 /** The dapp. Every CTA on this site points into it. */
 export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.stonkhouse.fun");
