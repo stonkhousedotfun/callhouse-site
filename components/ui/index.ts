@@ -14,6 +14,7 @@ export { ExternalLink } from "./ExternalLink";
 export type { ExternalLinkProps } from "./ExternalLink";
 export { Figure, Num } from "./Figure";
 export type { FigureProps, FigureSize, NumProps, NumTone } from "./Figure";
+export { ClockNote, When } from "./When";
 export { CheckCircleIcon, WarnIcon } from "./icons";
 export { Notice } from "./Notice";
 export type { NoticeProps } from "./Notice";

@@ -162,9 +162,9 @@ export default function LegalPage() {
             offer of securities.
           </li>
           <li>
-            The Stonkhouse smart contracts have not been audited. They are provided as-is,
-            under the MIT licence, with no warranty of any kind. You can lose the collateral you
-            deposit.
+            The Stonkhouse smart contracts have not been audited. An external audit is pending.
+            They are provided as-is, under the MIT licence, with no warranty of any kind. You can
+            lose the collateral you deposit.
           </li>
           <li>
             Past weekly results, including any published on{" "}

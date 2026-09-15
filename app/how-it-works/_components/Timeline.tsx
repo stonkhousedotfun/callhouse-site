@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
  */
 export type TimelineStep = {
   title: string;
-  when: string;
+  when: ReactNode;
   body: ReactNode;
   note?: ReactNode;
   accent?: boolean;
@@ -39,7 +39,7 @@ export function Timeline({ steps }: { steps: TimelineStep[] }) {
           >
             {i + 1}
           </span>
-          <div className="grid gap-x-8 gap-y-1.5 pt-1 lg:grid-cols-[minmax(0,210px)_minmax(0,1fr)] lg:pt-2.5">
+          <div className="grid gap-x-8 gap-y-1.5 pt-1 lg:grid-cols-[minmax(0,240px)_minmax(0,1fr)] lg:pt-2.5">
             <p className="font-mono text-[12.5px] font-medium leading-[1.35] text-accent-text lg:pt-1">{step.when}</p>
             <div>
               <h3 className="text-[length:clamp(18.5px,1.8vw,21px)] font-bold tracking-[-0.015em]">{step.title}</h3>

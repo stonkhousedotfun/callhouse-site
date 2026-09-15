@@ -19,7 +19,7 @@ import Link from "next/link";
 
 import { Container } from "@/components/ui/Container";
 import { ExternalLink } from "@/components/ui/ExternalLink";
-import { APP_URL, CHAIN_ID, CHAIN_NAME, DOCS_URL, EXPLORER_URL, MARKET, SHARE_TICKER } from "@/lib/site";
+import { APP_URL, CHAIN_ID, CHAIN_NAME, DOCS_URL, EXPLORER_URL, MARKET, SHARE_TICKER, STATUS } from "@/lib/site";
 
 const PAGES = [
   { href: "/how-it-works", label: "How it works" },
@@ -73,7 +73,9 @@ export function Footer() {
             Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited or Valorem.
             Nothing here is financial advice or an offer of securities.
           </p>
-          <p className="max-w-[70em]">The Stonkhouse contracts have not been audited.</p>
+          <p className="max-w-[70em]">
+            {STATUS.phase}. {STATUS.auditLine}
+          </p>
         </div>
       </Container>
     </footer>

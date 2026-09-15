@@ -37,6 +37,7 @@ import Link from "next/link";
 import {
   Button,
   Chip,
+  ClockNote,
   Container,
   ExternalLink,
   Figure,
@@ -46,6 +47,9 @@ import {
   Section,
   SectionHead,
 } from "@/components/ui";
+import { WEEK } from "@/lib/clock";
+import { EXAMPLE } from "@/lib/exampleWeek";
+import { fmtPct } from "@/lib/format";
 import {
   ADDRESS_ROWS,
   CHAIN_ID,
@@ -53,7 +57,10 @@ import {
   DOCS_URL,
   FILL_PAGE_PATH,
   MARKET,
+  OPEN_APP,
   SHARE_TICKER,
+  STATUS,
+  VAULT_APP,
   addressUrl,
   appUrl,
 } from "@/lib/site";
@@ -106,7 +113,7 @@ const STEPS: TimelineStep[] = [
   {
     title: "The keeper creates the week's call",
     when: "After the last week closes",
-    body: `It creates this week's option type on Valorem Clear: one ${MARKET} per contract, paid for in USDG, a strike about 5% above spot rounded to a whole USDG, exercise at the NYSE close on Friday at 16:00 New York time (Thursday if Friday is an NYSE holiday), and expiry 24 hours later. Anyone can create an option type, and creating one writes nothing.`,
+    body: `It creates this week's option type on Valorem Clear: one ${MARKET} per contract, paid for in USDG, a strike about ${fmtPct(5)} above spot rounded to a whole USDG, exercise at the NYSE close on ${WEEK.close} (Thursday if Friday is an NYSE holiday), and expiry 24 hours later. Anyone can create an option type, and creating one writes nothing.`,
   },
   {
     title: "The vault arms it",
@@ -115,7 +122,7 @@ const STEPS: TimelineStep[] = [
   },
   {
     title: "It lists the calls for USDG",
-    when: "Until the exercise time",
+    when: `Until ${WEEK.close}`,
     accent: true,
     body: `The keeper proposes one Seaport 1.6 order, and the vault authorises it on chain only if every field matches its own state: offered by the vault, with the vault as the order's zone, sized to what the vault could still write (at launch up to 95% of its ${MARKET} and 50 contracts), paid in USDG to the vault and nobody else, priced at or above the premium floor, and ending by the exercise time. The vault validates the order on Seaport itself, so the order needs no signature. At most three listings are authorised a week, and each new one is a reprice.`,
     note: (
@@ -137,27 +144,27 @@ const STEPS: TimelineStep[] = [
     note: (
       <>
         A fill can be refused after a rally, because the floors follow spot. On the rehearsal&apos;s listing (strike{" "}
-        <Num>223</Num>, <Num>0.856189</Num> USDG a call at spot <Num>211.93</Num>), a spot above about{" "}
-        <Num>214.05</Num> lifts the floor past the ask and fills are refused until the keeper reprices; above about{" "}
-        <Num>216.50</Num> the strike falls below the band&apos;s <Num>3%</Num> floor, and no price can sell the rest of
-        that week. In the rehearsal the first fill of a week used <Num>462,677</Num> gas and a later one{" "}
-        <Num>289,157</Num>.
+        <Num>{EXAMPLE.strike}</Num>, <Num>{EXAMPLE.ask}</Num> USDG a call at spot <Num>{EXAMPLE.spot}</Num>), a spot above
+        about <Num>{EXAMPLE.refuseSpot}</Num> lifts the floor past the ask and fills are refused until the keeper
+        reprices; above about <Num>{EXAMPLE.bandSpot}</Num> the strike falls below the band&apos;s <Num>{fmtPct(3)}</Num>{" "}
+        floor, and no price can sell the rest of that week. In the rehearsal the first fill of a week used{" "}
+        <Num>{EXAMPLE.firstFillGas}</Num> gas and a later one <Num>{EXAMPLE.laterFillGas}</Num>.
       </>
     ),
   },
   {
     title: "The book closes",
-    when: "Fri 16:00 ET",
-    body: "This is the call's exercise time, fixed when the option type was created, and it is the real deadline: 20:00 UTC while US daylight saving time is in effect, 21:00 UTC after it ends. From that moment deposits close, nothing more can be sold or written, and anyone can lock the book, which cancels a listing still live. Nothing depends on anyone calling it, so a stopped keeper cannot hold the week open.",
+    when: WEEK.close,
+    body: "This is the call's exercise time, fixed when the option type was created, and it is the real deadline. From that moment deposits close, nothing more can be sold or written, and anyone can lock the book, which cancels a listing still live. Nothing depends on anyone calling it, so a stopped keeper cannot hold the week open.",
   },
   {
     title: "The exercise window runs to expiry",
-    when: "Fri 16:00 → Sat 16:00 ET",
+    when: WEEK.window,
     body: "Holders of this week's calls can exercise them in Valorem. The vault does nothing in this phase: whether a call is exercised is decided by whoever holds it. NVDA taken by an exercise leaves the vault's claim at once; the strike USDG for it arrives at the close.",
   },
   {
     title: "The week closes",
-    when: "From Sat 16:00 ET",
+    when: `From ${WEEK.expiry}`,
     accent: true,
     body: "The keeper can close from expiry, and anyone can one hour later. One transaction cancels any listing still live, redeems the Valorem claim if anything was sold (NVDA back, or strike USDG where it was assigned), takes the protocol fee from the premium alone, credits the rest per share with any strike USDG in full, settles the withdrawal queue and returns the vault to Idle.",
     note: "If a token issuer makes the redeem fail, the close still completes and keeps the claim, stranded, until a retry succeeds. The phases section below says what that shuts.",
@@ -247,17 +254,17 @@ const POLICY_ROWS: RuleRow[] = [
     id: "min-otm",
     cells: {
       param: "Strike, minimum above spot",
-      launch: <Num>3%</Num>,
+      launch: <Num>{fmtPct(3)}</Num>,
       cap: (
         <>
-          Floor <Num>1%</Num>. Stops an admin selling at-the-money calls.
+          Floor <Num>{fmtPct(1)}</Num>. Stops an admin selling at-the-money calls.
         </>
       ),
     },
   },
   {
     id: "max-otm",
-    cells: { param: "Strike, maximum above spot", launch: <Num>12%</Num>, cap: <>Ceiling <Num>25%</Num></> },
+    cells: { param: "Strike, maximum above spot", launch: <Num>{fmtPct(12)}</Num>, cap: <>Ceiling <Num>{fmtPct(25)}</Num></> },
   },
   {
     id: "min-premium",
@@ -265,18 +272,18 @@ const POLICY_ROWS: RuleRow[] = [
       param: "Minimum premium, checked at approval and at every fill",
       launch: (
         <>
-          <Num>0.40%</Num> of spot notional
+          <Num>{fmtPct(0.4)}</Num> of spot notional
         </>
       ),
-      cap: <>Floor <Num>0.10%</Num></>,
+      cap: <>Floor <Num>{fmtPct(0.1)}</Num></>,
     },
   },
   {
     id: "utilization",
     cells: {
       param: `Share of the vault's ${MARKET} that can be sold`,
-      launch: <Num>95%</Num>,
-      cap: <>Ceiling <Num>99.85%</Num></>,
+      launch: <Num>{fmtPct(95)}</Num>,
+      cap: <>Ceiling <Num>{fmtPct(99.85)}</Num></>,
     },
   },
   {
@@ -297,12 +304,12 @@ const POLICY_ROWS: RuleRow[] = [
       param: "Protocol fee",
       launch: (
         <>
-          <Num>5%</Num> of premium
+          <Num>{fmtPct(5)}</Num> of premium
         </>
       ),
       cap: (
         <>
-          Ceiling <Num>20%</Num>. Never on strike proceeds, at any setting.
+          Ceiling <Num>{fmtPct(20)}</Num>. Never on strike proceeds, at any setting.
         </>
       ),
     },
@@ -361,7 +368,7 @@ const POLICY_ROWS: RuleRow[] = [
 const KEEPER_DEFAULTS: Array<{ title: string; body: string }> = [
   {
     title: "Strike",
-    body: "About 5% above spot when the week is armed, rounded to a whole USDG, so inside the 3% to 12% launch band. If it would fall outside the band, the keeper skips the week. The strike cannot change once armed.",
+    body: `About ${fmtPct(5)} above spot when the week is armed, rounded to a whole USDG, so inside the ${fmtPct(3)} to ${fmtPct(12)} launch band. If it would fall outside the band, the keeper skips the week. The strike cannot change once armed.`,
   },
   {
     title: "Size",
@@ -369,7 +376,7 @@ const KEEPER_DEFAULTS: Array<{ title: string; body: string }> = [
   },
   {
     title: "Price",
-    body: "The vault's premium floor at the current spot, plus a 1% margin, rounded up, and never above the strike. In the rehearsal the floor was 0.847711 USDG a call at spot 211.93, and the listing asked 0.856189.",
+    body: `The vault's premium floor at the current spot, plus a ${fmtPct(1)} margin, rounded up, and never above the strike. In the rehearsal the floor was ${EXAMPLE.floor} USDG a call at spot ${EXAMPLE.spot}, and the listing asked ${EXAMPLE.ask}.`,
   },
   {
     title: "Repricing",
@@ -382,7 +389,7 @@ const KEEPER_DEFAULTS: Array<{ title: string; body: string }> = [
 const FEES: Array<{ who: string; size: string; when: string; body: string }> = [
   {
     who: "Stonkhouse",
-    size: "5% of premium",
+    size: `${fmtPct(5)} of premium`,
     when: "When premium is accounted, only above zero",
     body: "Taken when the vault accounts for premium, at the close or when a deposit arrives. Strike proceeds from an assignment are credited to depositors in full: that exclusion is in the contract code, not a setting. The admin can change the rate, never above 20% of premium.",
   },
@@ -410,7 +417,7 @@ const ENDINGS: Array<{
     title: "Nobody bought",
     chip: { tone: "neutral", label: "Most likely on a thin book" },
     body: [
-      "The listing stayed open until the exercise time and nobody filled it. The week pays no premium and no fee is charged.",
+      `The listing stayed open until ${WEEK.close} and nobody filled it. The week pays no premium and no fee is charged.`,
       "Calls are written only when they are bought, so nothing was written and nothing can be assigned: the NVDA never left the vault, and the close simply returns it to Idle. The week is published like any other, not hidden as an error. In the fork rehearsal's first week, 23 calls were offered and the week closed with 0 USDG.",
     ],
     premium: "None",
@@ -423,7 +430,7 @@ const ENDINGS: Array<{
     chip: { tone: "accent", label: "Premium kept" },
     body: [
       "Buyers paid for some or all of the calls, each fill wrote exactly what it bought, and no exercise was assigned to the vault, usually because NVDA stayed below the strike. The options expire worthless to their holders.",
-      "Premium, less Stonkhouse's 5%, is credited to depositors in USDG, and the NVDA behind the calls sold comes back at the close.",
+      `Premium, less Stonkhouse's ${fmtPct(5)}, is credited to depositors in USDG, and the NVDA behind the calls sold comes back at the close.`,
     ],
     premium: "Kept, net of the fee",
     nvda: "Back at the close",
@@ -434,7 +441,7 @@ const ENDINGS: Array<{
     title: "Bought and exercised",
     chip: { tone: "warn", label: "Assigned" },
     body: [
-      "Assignment can take the collateral at the strike. NVDA finished above the strike and holders exercised: the assigned NVDA leaves and comes back as strike USDG, credited to depositors in full with no protocol fee. The premium is still kept, net of the fee, and anything above the strike is given up for that week. In the rehearsal's second week, 2 of the 5 calls sold were exercised at 223, and 446 USDG came back fee-free.",
+      `Assignment can take the collateral at the strike. NVDA finished above the strike and holders exercised: the assigned NVDA leaves and comes back as strike USDG, credited to depositors in full with no protocol fee. The premium is still kept, net of the fee, and anything above the strike is given up for that week. In the rehearsal's second week, ${EXAMPLE.assigned} of the ${EXAMPLE.sold} calls sold were exercised at ${EXAMPLE.strike}, and ${EXAMPLE.strikeProceeds} USDG came back fee-free.`,
       "v1 does not buy the NVDA back. Afterwards each cNVDA share holds less NVDA and more claimable USDG, the vault stays underweight until new deposits add to it, and the next week offers calls against the smaller balance.",
     ],
     premium: "Kept, net of the fee",
@@ -580,9 +587,14 @@ export default function HowItWorksPage() {
       {/* ---------------------------------------------------------------- page head ----------- */}
       <Container className="grid grid-cols-1 items-center gap-9 pb-14 pt-4 sm:pb-[72px] lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-14 lg:pt-10">
         <div>
-          <Chip tone="accent" dot wrap>
-            {CHAIN_NAME} {CHAIN_ID} · Valorem Clear · Seaport 1.6
-          </Chip>
+          <div className="flex flex-wrap gap-2">
+            <Chip tone="accent" dot wrap>
+              {STATUS.phase} · {CHAIN_NAME}
+            </Chip>
+            <Chip tone="warn" wrap>
+              {STATUS.audit}
+            </Chip>
+          </div>
           <h1 className="mt-5 text-[length:clamp(38px,5vw,60px)] font-extrabold leading-[1.03] tracking-[-0.035em]">
             One week, <span className="text-accent">start to finish.</span>
           </h1>
@@ -593,15 +605,15 @@ export default function HowItWorksPage() {
             and the ways it can end.
           </p>
           <div className="mt-[30px] flex flex-wrap gap-3">
-            <Button href={appUrl("/vault/nvda")}>Open the app</Button>
+            <Button href={OPEN_APP}>Open the app</Button>
             <Button variant="ghost" href={DOCS_URL}>
               Read the docs
             </Button>
           </div>
           <Notice variant="plain" className="mt-[26px]">
-            Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. The vault is not
-            deployed and the contracts are unaudited. Every figure here is a policy setting or a labelled example, not
-            a quote.
+            Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. Stonkhouse is in
+            beta. The contracts are unaudited; an external audit is pending. Every figure here is a policy setting or a
+            labelled example, not a quote.
           </Notice>
         </div>
 
@@ -614,16 +626,15 @@ export default function HowItWorksPage() {
           </div>
           <dl className="grid grid-cols-2 gap-3">
             <Figure boxed size="md" label="Deposit cap" value="20" unit={MARKET} />
-            <Figure boxed size="md" label="Sold at most" value="≤ 95%" unit={`of the ${MARKET}`} />
-            <Figure boxed size="md" label="Strike above spot" value="3–12%" />
-            <Figure boxed size="md" label="Protocol fee" value="5%" unit="of premium" />
-            <Figure boxed size="md" label="Book closes" value="Fri 16:00" unit="ET" />
-            <Figure boxed size="md" label="Expiry" value="Sat 16:00" unit="ET" />
+            <Figure boxed size="md" label="Sold at most" value={`≤ ${fmtPct(95)}`} unit={`of the ${MARKET}`} />
+            <Figure boxed size="md" label="Strike above spot" value={`${fmtPct(3)}–${fmtPct(12)}`} />
+            <Figure boxed size="md" label="Protocol fee" value={fmtPct(5)} unit="of premium" />
+            <Figure boxed size="md" label="Book closes" value="Friday 4:00pm" unit="New York" />
+            <Figure boxed size="md" label="Expiry" value="Saturday 4:00pm" unit="New York" />
           </dl>
-          <p className="border-t border-line pt-4 text-[13.5px] text-ink-3">
-            New York time: <Num>20:00 UTC</Num> while US daylight saving time is in effect, <Num>21:00 UTC</Num> after
-            it ends, and Thursday when Friday is an NYSE holiday. The admin can change the settings, never past the
-            limits compiled into the contracts.
+          <ClockNote className="border-t border-line pt-4" />
+          <p className="text-[13.5px] text-ink-3">
+            The admin can change the settings, never past the limits compiled into the contracts.
           </p>
         </Panel>
 
@@ -649,7 +660,7 @@ export default function HowItWorksPage() {
           id="week-h"
           eyebrow="The week"
           title="Eight steps, from a new call to your claim."
-          intro="The clock is the US market close. The keeper sets each week's exercise time at the NYSE close on Friday, 16:00 New York time, and expiry a day later; the vault reads both from the call itself and holds everyone to them. The times below are the keeper's rule, not a promise the contracts make: the contracts accept any window that opens at least an hour out, lasts at least a day and ends within 21 days."
+          intro={`The clock is the US market close. The keeper sets each week's exercise time at the NYSE close on ${WEEK.close}, and expiry a day later; the vault reads both from the call itself and holds everyone to them. The times below are the keeper's rule, not a promise the contracts make: the contracts accept any window that opens at least an hour out, lasts at least a day and ends within 21 days.`}
         />
         <Timeline steps={STEPS} />
         <DocsLink href={DOCS.weeklyCycle}>The weekly cycle</DocsLink>
@@ -1049,8 +1060,8 @@ export default function HowItWorksPage() {
           <strong className="font-semibold text-ink">There is no proxy on v1.</strong> The vault cannot be upgraded in
           place. Fixing anything means deploying Vault v2 and migrating to it, in public, with depositors moving their
           own funds. That is deliberate: an upgradeable vault is a key that can rewrite the rules under a position that
-          is already open. The Stonkhouse contracts are unaudited: there has been no external audit, only internal
-          reviews.
+          is already open. The Stonkhouse contracts are unaudited: there has been no external audit yet, only internal
+          reviews. An external audit is pending.
         </Notice>
 
         <DocsLink href={DOCS.roles}>Roles and admin powers</DocsLink>
@@ -1120,7 +1131,7 @@ export default function HowItWorksPage() {
           </div>
           <div className="flex flex-wrap gap-3">
             <Button href={appUrl("/activity")}>See every published week</Button>
-            <Button variant="inverse" href={appUrl("/vault/nvda")}>
+            <Button variant="inverse" href={VAULT_APP}>
               Open the {SHARE_TICKER} vault
             </Button>
           </div>

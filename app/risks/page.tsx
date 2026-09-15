@@ -43,8 +43,11 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import Link from "next/link";
 
-import { Button, Container, Eyebrow, ExternalLink, Figure, Num, Panel, Section, SectionHead, WarnIcon } from "@/components/ui";
-import { ADDRESSES, CHAIN_ID, CHAIN_NAME, DOCS_URL, MARKET, SHARE_TICKER, addressUrl, appUrl } from "@/lib/site";
+import { Button, Chip, Container, Eyebrow, ExternalLink, Figure, Num, Panel, Section, SectionHead, WarnIcon } from "@/components/ui";
+import { WEEK } from "@/lib/clock";
+import { EXAMPLE } from "@/lib/exampleWeek";
+import { fmtDate, fmtPct } from "@/lib/format";
+import { ADDRESSES, CHAIN_ID, CHAIN_NAME, DOCS_URL, MARKET, SHARE_TICKER, STATUS, addressUrl, appUrl } from "@/lib/site";
 
 import { GlanceGroup, ImpactLegend, RiskEntry, type RiskGroup } from "./_components/risk-ui";
 
@@ -88,10 +91,9 @@ const GROUPS: readonly RiskGroup[] = [
             <p>
               Premium is paid only if a buyer fills. The vault lists the week&apos;s calls on the
               app&apos;s own fill page, and any Seaport 1.6 client can fill the same order. If nobody
-              buys before the book closes (<Num>Fri 16:00 ET</Num>, which is <Num>20:00 UTC</Num> while
-              US daylight saving time is in effect and <Num>21:00 UTC</Num> after it ends; the
-              call&apos;s own exercise time is what counts), the week&apos;s premium is zero. Calls are
-              written only when bought, so nothing was written.
+              buys before the book closes at <Num>{WEEK.close}</Num> — the call&apos;s own exercise
+              time is what counts — the week&apos;s premium is zero. Calls are written only when
+              bought, so nothing was written.
             </p>
             <p>
               This is the most likely outcome on a thin book, and the book for weekly calls on a
@@ -138,10 +140,10 @@ const GROUPS: readonly RiskGroup[] = [
               and no price fixes that: nothing more can be sold that week.
             </p>
             <p>
-              On the fork rehearsal&apos;s listing (strike <Num>223</Num>, <Num>0.856189</Num> USDG a
-              call at spot <Num>211.93</Num>), fills are refused above a spot of about{" "}
-              <Num>214.05</Num> until the keeper reprices, and above about <Num>216.50</Num> the rest
-              of the week cannot be sold at any price.
+              On the fork rehearsal&apos;s listing (strike <Num>{EXAMPLE.strike}</Num>,{" "}
+              <Num>{EXAMPLE.ask}</Num> USDG a call at spot <Num>{EXAMPLE.spot}</Num>), fills are refused
+              above a spot of about <Num>{EXAMPLE.refuseSpot}</Num> until the keeper reprices, and above
+              about <Num>{EXAMPLE.bandSpot}</Num> the rest of the week cannot be sold at any price.
             </p>
           </>
         ),
@@ -169,13 +171,13 @@ const GROUPS: readonly RiskGroup[] = [
         body: (
           <p>
             Anyone holding a call of the week&apos;s option type may exercise it inside the exercise
-            window (<Num>Fri 16:00</Num> to <Num>Sat 16:00 ET</Num>), and Valorem can assign that
-            exercise to the vault whether or not that particular call was bought from the vault, up to
-            the number the vault sold. Valorem takes the collateral at the strike and leaves the strike
-            proceeds in USDG, credited to depositors in full: the protocol fee is charged on premium,
-            never on strike proceeds. At launch the keeper sets the strike about <Num>5%</Num> above
-            spot when the week is armed, inside a band of <Num>3%</Num> to <Num>12%</Num>, so it takes
-            a move, but not an enormous one.
+            window (<Num>{WEEK.window}</Num>), and Valorem can assign that exercise to the vault
+            whether or not that particular call was bought from the vault, up to the number the vault
+            sold. Valorem takes the collateral at the strike and leaves the strike proceeds in USDG,
+            credited to depositors in full: the protocol fee is charged on premium, never on strike
+            proceeds. At launch the keeper sets the strike about <Num>{fmtPct(5)}</Num> above spot when
+            the week is armed, inside a band of <Num>{fmtPct(3)}</Num> to <Num>{fmtPct(12)}</Num>, so it
+            takes a move, but not an enormous one.
           </p>
         ),
         cost: (
@@ -563,15 +565,15 @@ const GROUPS: readonly RiskGroup[] = [
               <strong className="font-semibold text-ink">
                 The Stonkhouse contracts are not deployed and are unaudited.
               </strong>{" "}
-              There has been no external audit. What stands behind them is a test suite and internal
+              There has been no external audit completed; one is pending. What stands behind them is a test suite and internal
               reviews by the team that built them. An internal adversarial review on{" "}
-              <Num>2026-09-12</Num> raised <Num>72</Num> findings across <Num>13</Num> surfaces, of
+              <Num>{fmtDate("2026-09-12")}</Num> raised <Num>72</Num> findings across <Num>13</Num> surfaces, of
               which <Num>51</Num> survived refutation; the contract defects recorded as fixed carry
               regression tests, and the project&apos;s records do not say every surviving finding was
-              fixed. An internal audit on <Num>2026-09-13</Num> found five more, the first of them High:
+              fixed. An internal audit on <Num>{fmtDate("2026-09-13")}</Num> found five more, the first of them High:
               the vault then wrote calls before selling them, and anyone could take the value of the
               unsold calls in an in-the-money week. The vault was redesigned to write only inside a
-              fill. A review of the redesign on <Num>2026-09-14</Num> reported no Critical, High or
+              fill. A review of the redesign on <Num>{fmtDate("2026-09-14")}</Num> reported no Critical, High or
               Medium finding, one Low that has been fixed, and two informational notes.
             </p>
             <p>
@@ -590,8 +592,8 @@ const GROUPS: readonly RiskGroup[] = [
             The deposit cap is the real statement of confidence: <Num>20 {MARKET}</Num> at launch, not
             an open door, and the launch plan is to publish four weekly results, unfilled weeks
             included, before raising it. There is no proxy and no upgrade key, so a bug means a new
-            vault and a migration, not a silent patch. No external audit has been done or is
-            scheduled.
+            vault and a migration, not a silent patch. No external audit has been completed. One is
+            pending, and the 20 {MARKET} cap stays until a report is published.
           </p>
         ),
       },
@@ -849,7 +851,13 @@ export default function RisksPage() {
       {/* Page head: the lede and how to read the page on the left, the standing disclosures on the right. */}
       <Container className="grid grid-cols-1 items-start gap-9 pb-16 pt-6 lg:grid-cols-[minmax(0,1.05fr)_minmax(0,0.95fr)] lg:gap-14 lg:pb-20 lg:pt-12">
         <div>
-          <Eyebrow>Risks</Eyebrow>
+          <div className="flex flex-wrap gap-2">
+            <Chip tone="accent" dot>
+              {STATUS.phase}
+            </Chip>
+            <Chip tone="warn">{STATUS.audit}</Chip>
+          </div>
+          <Eyebrow className="mt-5">Risks</Eyebrow>
           <h1 className="mt-3 text-[length:clamp(36px,4.8vw,56px)] font-extrabold leading-[1.04] tracking-[-0.03em]">
             Everything that can go wrong.
           </h1>
@@ -890,9 +898,9 @@ export default function RisksPage() {
                 You can lose the collateral you deposit.
               </h2>
               <p className="mt-1.5 text-[14.5px] text-ink-2">
-                The Stonkhouse contracts are not deployed and are unaudited, the token&apos;s issuer can
-                freeze or burn it, and a clearinghouse can take the collateral at the strike. Deposit
-                accordingly.
+                The Stonkhouse contracts are not deployed and are unaudited — an external audit is
+                pending — the token&apos;s issuer can freeze or burn it, and a clearinghouse can take the
+                collateral at the strike. Deposit accordingly.
               </p>
             </div>
           </div>
@@ -923,8 +931,8 @@ export default function RisksPage() {
 
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
             <Figure boxed size="sm" label="Deposit cap at launch" value="20" unit={MARKET} />
-            <Figure boxed size="sm" label="Strike at launch" value="3–12%" unit="above spot" />
-            <Figure boxed size="sm" mono={false} label="External audit" value="None" />
+            <Figure boxed size="sm" label="Strike at launch" value={`${fmtPct(3)}–${fmtPct(12)}`} unit="above spot" />
+            <Figure boxed size="sm" mono={false} label="External audit" value={STATUS.audit} />
           </dl>
         </Panel>
       </Container>

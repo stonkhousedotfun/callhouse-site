@@ -1,56 +1,34 @@
 /**
- * stonkhouse.fun/ — the landing page, and the first thing a stranger reads about this product.
+ * stonkhouse.fun/ — the product landing. What Stonkhouse is, who it is for, and where it is
+ * in its life: beta, one NVDA vault first, more Stock Token vaults later, pending audit.
  *
- * Built to the approved "Daylight" mockup, section by section: hero with the example week card,
- * the five-step week, why Stonkhouse with the fee slip, the endings (three, plus a close held up by
- * a token issuer), what can go wrong, and the CTA band. The footer comes from the layout.
- *
- * THE PRODUCT DESCRIBED HERE is the 2026-09-13 redesign (leekzor/callhouse-contracts README.md:5-15):
- * the keeper creates and arms a weekly Valorem option type and nothing is written at arm
- * (src/Vault.sol rollOpen); the vault lists one Seaport 1.6 order whose zone is the vault, and each
- * fill writes exactly the calls it buys inside authorizeOrder (src/Vault.sol authorizeOrder,
- * validateOrder); the floors are re-checked at the spot of each fill (src/lib/ValoremLib.sol:201-256).
- * There is no third-party venue, registry or venue fee (src/lib/SeaportOrderLib.sol:179-181).
+ * This page is not the vault. The week in detail, the policy table and the endings live on
+ * /how-it-works. The unabridged failure list lives on /risks. "Open the app" goes to the app
+ * frontpage, not /vault/nvda.
  *
  * One job: leave a reader who skims only the first screen with an ACCURATE expectation. Premium
  * arrives only if somebody buys the call, assignment can take the collateral, the token is a debt
- * security, and the vault is neither deployed nor audited. The hero's disclosure line says all of
- * that next to the headline, not in a footer. If a future edit moves it below the fold, the edit
- * is wrong. "Unaudited" is stated plainly: there is no external audit (owner decision D14).
+ * security, we are in beta, and the contracts are unaudited with an external audit pending. The
+ * hero's disclosure line says the three required phrases next to the headline, not in a footer.
  *
- * DELIBERATELY ABSENT:
- *   - Wallet code, chain reads and fetches. This is a server component; the only client code is
- *     the endings tabs island (app/_components/EndingsTabs.tsx), whose first ending is server
- *     rendered. The vault is not deployed, so a live read would render zeros that mean "not
- *     deployed yet".
- *   - Any forward-looking figure, and any figure scaled past one week. The numbers are either
- *     launch policy (README "Policy (launch)", docs product/policy.md) or fork rehearsal figures,
- *     and the rehearsal figures are labelled as examples where they appear.
- *     scripts/copy-lint.mjs fails CI on the forbidden vocabulary; this page needs no
- *     `copy-lint-allow` escape hatch anywhere, and should not gain one.
- *   - The full policy table, the fee table, the phase machine and the addresses table. They live
- *     on /how-it-works, which owns them.
- *
- * Three phrases are required verbatim in THIS file by scripts/copy-lint.mjs, and they sit in the
- * hero's disclosure line:
+ * Three phrases are required verbatim in THIS file by scripts/copy-lint.mjs:
  *   "Premium is paid only if a buyer fills"
  *   "Assignment can take the collateral at the strike"
  *   "Stock Tokens are debt securities"
- * Reword that line only with `node scripts/copy-lint.mjs` open.
  *
- * Every "go do something" link leaves for app.stonkhouse.fun through appUrl(). A relative href
- * on this domain is a 404, not a route into the dapp.
+ * DELIBERATELY ABSENT: wallet code, chain reads, live figures, any forward-looking return, and
+ * any figure scaled past one week. Roadmap items are product steps, not yield.
  */
 import type { Metadata } from "next";
 import Link from "next/link";
 
-import { EndingsTabs } from "@/app/_components/EndingsTabs";
 import { FeeSlip } from "@/app/_components/FeeSlip";
-import { WeekCard } from "@/app/_components/WeekCard";
+import { StatusCard } from "@/app/_components/StatusCard";
 import {
   Button,
   CheckCircleIcon,
   Chip,
+  ClockNote,
   Container,
   Figure,
   Notice,
@@ -58,16 +36,14 @@ import {
   SectionHead,
   WarnIcon,
 } from "@/components/ui";
-import { CHAIN_NAME, MARKET, SHARE_TICKER, appUrl } from "@/lib/site";
+import { WEEK } from "@/lib/clock";
+import { fmtPct } from "@/lib/format";
+import { CHAIN_NAME, MARKET, OPEN_APP, SHARE_TICKER, STATUS } from "@/lib/site";
 
 const TITLE = `Stonkhouse — pooled covered calls on ${MARKET} Stock Tokens`;
 
-const DESCRIPTION = `Deposit ${MARKET} Stock Tokens, receive ${SHARE_TICKER} vault shares. Each week the vault lists covered calls for USDG, one per whole token, and writes each call only when a buyer fills. Premium is paid only if a buyer fills, and a week with no buyer pays zero premium.`;
+const DESCRIPTION = `Stonkhouse is a pooled covered-call vault for tokenised stocks on ${CHAIN_NAME}. The first vault is ${MARKET}. Each week it lists covered calls and writes them only when a buyer fills. Premium is paid only if a buyer fills. Beta, pending audit.`;
 
-/**
- * `title.absolute` and not a bare string: the layout carries a "%s — Stonkhouse" template, so a
- * plain `title` here would render "Stonkhouse — … — Stonkhouse".
- */
 export const metadata: Metadata = {
   title: { absolute: TITLE },
   description: DESCRIPTION,
@@ -81,111 +57,117 @@ export const metadata: Metadata = {
   },
 };
 
-const OPEN_APP = appUrl("/vault/nvda");
-
-type Step = { title: string; when: string; body: string; key?: boolean };
-
-/**
- * Docs: getting-started/how-it-works.md and product/weekly-cycle.md. Times are New York time: the
- * keeper sets exercise at the NYSE Friday 16:00 ET close (Thursday on a Friday holiday) and expiry
- * 24 h later (leekzor/callhouse keeper/src/calendar.ts:1-30, :203-241). Deposits close at the
- * exercise time (src/Vault.sol _depositRefused); the keeper may close from expiry and anyone an
- * hour later (src/Vault.sol rollClose). Strike about 5% above spot: KEEPER_STRIKE_OTM_BPS 500
- * (keeper/README.md "The week"); band 3% to 12%: Policy.sol:131-132; utilisation 95%: Policy.sol:134.
- */
-const STEPS: readonly Step[] = [
+const WHAT_WE_DO: readonly { title: string; body: string }[] = [
   {
-    title: "You deposit your stock",
-    when: "until the Friday close",
-    body: `${MARKET} Stock Tokens in, ${SHARE_TICKER} shares out, priced at the ${MARKET} behind each share.`,
+    title: "Deposit tokenised stock",
+    body: `${MARKET} Stock Tokens in, ${SHARE_TICKER} shares out. You keep a claim on the stock in the vault. More vaults, one stock each, follow this one.`,
   },
   {
-    title: "The vault lists this week's calls",
+    title: "The vault lists covered calls",
+    body: `Each week it offers calls about ${fmtPct(5)} above spot, up to ${fmtPct(95)} of the stock, and writes a call only in the same transaction a buyer pays for it. A week with no buyer writes nothing.`,
+  },
+  {
+    title: "You claim USDG",
+    body: `Premium, less a ${fmtPct(5)} protocol fee, and any strike proceeds from assignment, wait in your balance. No deadline, and nothing is folded back into your shares.`,
+  },
+];
+
+const STEPS: readonly { title: string; when: string; body: string; key?: boolean }[] = [
+  {
+    title: "You deposit",
+    when: "until the Friday close",
+    body: `${MARKET} in, ${SHARE_TICKER} out, priced at the stock behind each share.`,
+  },
+  {
+    title: "The vault lists the week",
     when: "from the start of the week",
-    body: `The keeper creates this week's call, about 5% above spot, and the vault checks it against its band, 3% to 12% at launch. Up to 95% of the ${MARKET} is offered, one call per token. Nothing is written yet.`,
+    body: `A call about ${fmtPct(5)} above spot, inside a ${fmtPct(3)} to ${fmtPct(12)} band. Nothing is written yet.`,
     key: true,
   },
   {
-    title: "A buyer fills, and only then is a call written",
-    when: "until Fri 16:00 ET",
-    body: "Each fill writes exactly the calls bought and pays USDG to the vault in the same transaction, after the vault re-checks its price floor. Or nobody buys, and nothing is written.",
+    title: "A buyer fills — then a call is written",
+    when: "until Friday 4:00pm",
+    body: "Each fill writes exactly the calls bought and pays USDG in the same transaction. Or nobody buys.",
     key: true,
   },
   {
     title: "The week closes",
-    when: "from Sat 16:00 ET",
-    body: `Unassigned ${MARKET} comes back, assigned ${MARKET} as strike USDG. The keeper closes at expiry; an hour later, anyone can.`,
+    when: "from Saturday 4:00pm",
+    body: `Unassigned ${MARKET} comes back. Assigned ${MARKET} comes back as strike USDG.`,
   },
   {
     title: "You claim USDG",
     when: "whenever you like",
-    body: "Premium net of the fee, and any strike proceeds, wait in your balance. No deadline.",
+    body: "Premium net of the fee, and any strike proceeds. No deadline.",
   },
 ];
 
-type Point = { title: string; body: string };
-
-/** Docs: product/fees.md, product/policy.md, protocol/roles.md, getting-started/withdrawing.md. */
-const BENEFITS: readonly Point[] = [
+const BENEFITS: readonly { title: string; body: string }[] = [
   {
     title: "Paid in USDG",
-    body: "Premium arrives as USDG, tracked per share and never folded into your shares. No protocol token, no points, no airdrop at launch.",
+    body: "Premium arrives as USDG, tracked per share, never folded into your shares. No protocol token, no points, no airdrop at launch.",
   },
   {
     title: "Hands off",
-    body: "The keeper sets, lists and closes each week inside the vault's policy, and the vault writes each call itself when it sells. You deposit once and check in when you like.",
+    body: "The keeper sets, lists and closes each week inside a published policy. You deposit once and check in when you like.",
   },
   {
     title: "Fees only on premium",
-    body: `Stonkhouse takes 5% of the premium buyers pay, capped at 20% in the contracts. Nothing on deposits, idle ${MARKET} or strike proceeds.`,
+    body: `Stonkhouse takes ${fmtPct(5)} of the premium buyers pay, capped at ${fmtPct(20)} in the contracts. Nothing on deposits, idle stock or strike proceeds.`,
   },
   {
     title: "Every week published",
-    body: "Once the vault is live, each closed week is published in the app with its real figures: filled, unfilled or assigned, zeros included. No projections.",
-  },
-  {
-    title: "Two ways out",
-    body: "Withdraw instantly while the vault is idle, or queue during a week and settle at the close. Closing the week and settling the queue do not depend on the keeper.",
-  },
-  {
-    title: "Limits in the code",
-    body: "The 1% strike floor, the 20% fee ceiling and the one-token lot size are compiled in, and a call is written only inside the fill that buys it. The keeper and guardian cannot move a token.",
+    body: "Once live, each closed week is published with its real figures: filled, unfilled or assigned, zeros included. No projections.",
   },
 ];
 
-/** Docs: product/risks.md. The risks page carries the full list. */
-const RISKS: readonly Point[] = [
+const RISKS: readonly { title: string; body: string }[] = [
   {
     title: "Weeks can pay nothing",
-    body: "Premium is paid only if a buyer fills. On a thin book an unfilled week is the most likely outcome, no dealer is obliged to buy, and after a rally the vault refuses fills until the keeper reprices.",
+    body: "Premium is paid only if a buyer fills. On a thin book an unfilled week is the most likely outcome.",
   },
   {
     title: "Assignment caps your upside",
-    body: `If ${MARKET} runs past the strike, collateral behind the calls the vault sold leaves at the strike for USDG. v1 does not buy it back.`,
-  },
-  {
-    title: "Withdrawals wait for the close",
-    body: "While a week is listed, a withdrawal is queued, cannot be cancelled, and settles at the close, partly in USDG if the week was assigned.",
-  },
-  {
-    title: "Late deposits share the week",
-    body: "A deposit while a week is listed is priced at face value, buys into the open short, and can be written against by later fills.",
+    body: `If ${MARKET} runs past the strike, collateral behind sold calls leaves at the strike for USDG. v1 does not buy it back.`,
   },
   {
     title: "Stock Tokens are not shares",
-    body: "They are debt securities of Robinhood Assets (Jersey) Limited, with no vote or claim on Nvidia, and you carry the issuer's credit risk. The issuer can freeze transfers, which can strand the week's close.",
+    body: "They are debt securities of Robinhood Assets (Jersey) Limited, with no vote or claim on Nvidia. The issuer can freeze transfers.",
   },
   {
-    title: "Unaudited contracts",
-    body: `The vault is unaudited: it has had internal reviews only, by the team that built it, and no external audit. There is no proxy, so a fix means a new vault. The 20 ${MARKET} launch cap is sized to that.`,
+    title: "Beta, pending audit",
+    body: `The vault is unaudited: internal reviews only, no external report yet. An external audit is pending. The 20 ${MARKET} launch cap is sized to that.`,
+  },
+];
+
+type RoadmapStep = {
+  when: string;
+  title: string;
+  body: string;
+  current?: boolean;
+};
+
+const ROADMAP: readonly RoadmapStep[] = [
+  {
+    when: "Now",
+    title: "Beta, NVDA first",
+    current: true,
+    body: `Public beta on ${CHAIN_NAME}. One vault, ${MARKET}, write-on-fill covered calls, a ${fmtPct(5)} fee on premium, a 20 ${MARKET} cap. ${STATUS.audit}.`,
   },
   {
-    title: "Settings can change",
-    body: "The admin can change the strike band and the fee inside the compiled caps, the deposit cap with no ceiling, and Valorem's fee switch on the vault's own clearinghouse, at any time and with no timelock. At launch the admin is a single key.",
+    when: "Next",
+    title: "External audit",
+    body: "An external audit of the vault. The report is published on this site. The cap stays where it is until that report lands.",
   },
   {
-    title: "Third parties in the path",
-    body: "Valorem settles assignment, Seaport settles fills, and USDG and the Stock Token have issuers who can freeze them; the vault cannot override any of them. A freeze at the close strands the week's claim until it lifts.",
+    when: "Then",
+    title: "Four published weeks",
+    body: "Four closed weeks on the public record, unfilled weeks included, before the cap moves. A week that paid nothing is a row like any other.",
+  },
+  {
+    when: "Later",
+    title: "More stock vaults",
+    body: "Additional Stock Token vaults, one underlying each, same weekly cycle and the same rules. NVDA is first, not the product.",
   },
 ];
 
@@ -199,19 +181,24 @@ export default function HomePage() {
         className="grid grid-cols-1 items-center gap-9 pb-[72px] pt-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-14 lg:pt-10"
       >
         <div>
-          <Chip tone="accent" dot wrap>
-            Stock Tokens · {CHAIN_NAME} · {MARKET} vault first
-          </Chip>
+          <div className="flex flex-wrap gap-2">
+            <Chip tone="accent" dot wrap>
+              {STATUS.phase} · {CHAIN_NAME}
+            </Chip>
+            <Chip tone="warn" wrap>
+              {STATUS.audit}
+            </Chip>
+          </div>
           <h1
             id="hero-h"
             className="mt-5 text-[length:clamp(40px,5.6vw,66px)] font-extrabold leading-[1.02] tracking-[-0.035em]"
           >
-            Put your stocks to work, <em className="not-italic text-accent">one week at a time.</em>
+            Covered calls on tokenised stocks. <em className="not-italic text-accent">NVDA first.</em>
           </h1>
           <p className="mt-[22px] max-w-[34em] text-[19px] text-ink-2">
-            Deposit tokenised stocks into a vault. Each week it lists covered calls against them, writes each call only
-            when a buyer pays for it, and credits what buyers actually pay, less the fee, in USDG for you to claim. The
-            first vault holds {MARKET}.
+            Stonkhouse is a pooled vault: you deposit a tokenised stock, and each week it lists covered calls against
+            that stock. A call is written only when a buyer pays for it. You claim whatever premium actually fills,
+            less the fee, in USDG. The first vault is {MARKET}. More stocks follow, one vault each.
           </p>
 
           <div className="mt-[30px] flex flex-wrap gap-3">
@@ -222,28 +209,89 @@ export default function HomePage() {
           </div>
 
           <dl className="mt-9 flex flex-wrap gap-x-7 gap-y-4">
-            <Figure label="You deposit" value="Stock Tokens" />
+            <Figure label="Status" value={STATUS.phase} mono={false} />
+            <Figure label="First vault" value={MARKET} />
             <Figure label="You claim" value="USDG" tone="usdg" />
-            <Figure label="Protocol fee" value="5% of premium" />
-            <Figure label="Launch cap" value={`20 ${MARKET}`} />
+            <Figure label="Protocol fee" value={`${fmtPct(5)} of premium`} />
           </dl>
 
           <Notice variant="plain" className="mt-[26px]">
             Premium is paid only if a buyer fills. Assignment can take the collateral at the strike. Stock Tokens are
-            debt securities, not Nvidia shares. Not deployed yet, and unaudited.
+            debt securities, not Nvidia shares. Beta. The contracts are unaudited; an external audit is pending.
           </Notice>
         </div>
 
-        <WeekCard />
+        <StatusCard />
       </Container>
+
+      {/* ------------------------------------------------------------------ what we do */}
+      <Section id="what" labelledBy="what-h">
+        <SectionHead
+          id="what-h"
+          eyebrow="What we do"
+          title="A covered-call desk you don't have to run."
+          intro="Selling calls yourself means picking strikes, posting orders and watching expiries. Stonkhouse does that on a published policy, and publishes every result, including the weeks that pay nothing."
+        />
+        <ol className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+          {WHAT_WE_DO.map((item, i) => (
+            <li key={item.title}>
+              <span className="num grid size-11 place-items-center rounded-full border-2 border-accent bg-accent text-[15px] font-bold text-accent-ink">
+                {i + 1}
+              </span>
+              <h3 className="mt-4 text-[19px] font-bold tracking-[-0.015em]">{item.title}</h3>
+              <p className="mt-2 text-[15.5px] text-ink-2">{item.body}</p>
+            </li>
+          ))}
+        </ol>
+      </Section>
+
+      {/* ------------------------------------------------------------------ first vault */}
+      <Section id="vaults" labelledBy="vaults-h">
+        <SectionHead
+          id="vaults-h"
+          eyebrow="Vaults"
+          title="NVDA now. Other stocks next."
+          intro="Launch is one vault, one stock. The product is built for a row of them — each with its own collateral, its own week, its own share token — not a basket."
+        />
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1.1fr)_minmax(0,0.9fr)]">
+          <article className="rounded-lg border border-accent/30 bg-accent-soft p-[26px]">
+            <Chip tone="accent" dot>
+              Live first
+            </Chip>
+            <h3 className="mt-4 text-[26px] font-extrabold tracking-[-0.02em]">{MARKET}</h3>
+            <p className="mt-2 max-w-[34em] text-[15.5px] text-ink-2">
+              Nvidia Stock Tokens, shares of {SHARE_TICKER}. Launch cap 20 {MARKET}, protocol fee {fmtPct(5)} of
+              premium, strike about {fmtPct(5)} above spot inside a {fmtPct(3)}–{fmtPct(12)} band. Same week, every
+              week, New York time.
+            </p>
+            <dl className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+              <Figure label="Share token" value={SHARE_TICKER} />
+              <Figure label="Launch cap" value="20" unit={MARKET} />
+              <Figure label="Sold at most" value={fmtPct(95)} />
+              <Figure label="Book closes" value="Friday 4:00pm" unit="NY" />
+            </dl>
+          </article>
+          <article className="rounded-lg border border-dashed border-line-2 bg-surface p-[26px]">
+            <Chip>Next</Chip>
+            <h3 className="mt-4 text-[26px] font-extrabold tracking-[-0.02em] text-ink-2">More stocks</h3>
+            <p className="mt-2 max-w-[34em] text-[15.5px] text-ink-2">
+              Additional Stock Token vaults on {CHAIN_NAME}, one underlying each, after NVDA is live and the audit
+              report is public. We will not name the next ticker until that vault is actually being built.
+            </p>
+            <p className="mt-5 text-[14px] text-ink-3">
+              Same design: deposit the token, weekly covered calls, claim USDG. No multi-asset pool, no points.
+            </p>
+          </article>
+        </div>
+      </Section>
 
       {/* ------------------------------------------------------------------ how it works */}
       <Section id="how" labelledBy="how-h">
         <SectionHead
           id="how-h"
-          eyebrow="How it works"
-          title="Every week runs the same five steps."
-          intro="The book closes at the US market close, Friday 16:00 New York time: 20:00 UTC while US daylight saving time is in effect, 21:00 UTC after it ends, and Thursday when Friday is an NYSE holiday. The keeper does the routine work; the contracts make sure nobody needs the keeper to get the week closed."
+          eyebrow="How a week runs"
+          title="Five steps, the same every week."
+          intro={`The book closes with the US market on ${WEEK.close}. The keeper does the routine work; the contracts make sure nobody needs the keeper to get the week closed.`}
         />
 
         <ol className="grid grid-cols-1 gap-[26px] lg:grid-cols-5 lg:gap-0">
@@ -256,7 +304,6 @@ export default function HomePage() {
               >
                 {last ? null : (
                   <>
-                    {/* Dashed connector to the next step: down the left edge below lg, across above it. */}
                     <span
                       aria-hidden="true"
                       className="absolute -bottom-[26px] left-[21px] top-11 w-0.5 lg:hidden"
@@ -296,9 +343,11 @@ export default function HomePage() {
           })}
         </ol>
 
-        <p className="mt-11">
+        <ClockNote className="mt-10" />
+
+        <p className="mt-6">
           <Link href="/how-it-works" className="link font-semibold text-accent-text">
-            Every phase, the policy limits and the contract addresses
+            The full week, the policy limits and the contract addresses
             <span aria-hidden="true"> →</span>
           </Link>
         </p>
@@ -309,8 +358,8 @@ export default function HomePage() {
         <SectionHead
           id="benefits-h"
           eyebrow="Why Stonkhouse"
-          title="A covered call desk you don't have to run."
-          intro="Selling calls yourself means picking strikes, posting orders and watching expiries. Stonkhouse does that on a published policy with its limits compiled into the contracts, and publishes every result, including the weeks that pay nothing."
+          title="Policy in the contracts, results on the record."
+          intro="Limits are compiled in. Premium is a fill, or it is zero. The fee slip is one rehearsal week, labelled as one, not a quote."
         />
 
         <div className="grid grid-cols-1 items-start gap-12 lg:grid-cols-[minmax(0,1.15fr)_minmax(0,0.85fr)]">
@@ -330,15 +379,32 @@ export default function HomePage() {
         </div>
       </Section>
 
-      {/* ------------------------------------------------------------------ three endings */}
-      <Section id="endings" labelledBy="endings-h">
+      {/* ------------------------------------------------------------------ roadmap */}
+      <Section id="roadmap" labelledBy="roadmap-h">
         <SectionHead
-          id="endings-h"
-          eyebrow="How a week ends"
-          title="Three endings, and a close that can be held up."
-          intro={`Knowing all four before you deposit is the whole point. Which one you get is decided by buyers, by what holders of the week's calls do and by the token issuers, not by the vault or a price feed. Pick one to see what happens to premium and to the ${MARKET} behind it.`}
+          id="roadmap-h"
+          eyebrow="Roadmap"
+          title="Where Stonkhouse is going."
+          intro="Product steps, not a return. Nothing here is a date, a ticker we have not started, or a figure for a week that has not closed."
         />
-        <EndingsTabs />
+        <ol className="grid grid-cols-1 gap-4 lg:grid-cols-4">
+          {ROADMAP.map((step) => (
+            <li
+              key={step.title}
+              className={
+                step.current
+                  ? "rounded-lg border border-accent/30 bg-accent-soft p-5"
+                  : "rounded-lg border border-line bg-surface p-5"
+              }
+            >
+              <p className="font-body text-[12.5px] font-bold uppercase tracking-[0.1em] text-accent-text">
+                {step.when}
+              </p>
+              <h3 className="mt-3 text-[18.5px] font-bold tracking-[-0.015em]">{step.title}</h3>
+              <p className="mt-2 text-[14.5px] text-ink-2">{step.body}</p>
+            </li>
+          ))}
+        </ol>
       </Section>
 
       {/* ------------------------------------------------------------------ risks */}
@@ -349,7 +415,7 @@ export default function HomePage() {
           title="What can go wrong."
           intro={
             <p>
-              Plainly, before anything else. The full list, with what the contracts do about each one, is on{" "}
+              The short list. The full list, with what the contracts do about each one, is on{" "}
               <Link href="/risks" className="link">
                 the risks page
               </Link>
@@ -373,8 +439,8 @@ export default function HomePage() {
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-x-8 gap-y-4 border-t border-line pt-8">
           <p className="max-w-[44em] text-[15px] text-ink-2">
-            The risks page also covers a fill refused after a rally, a claim stranded at the close, partial assignment,
-            keeper failure, USDG, the Valorem fee switch and an outage near the Friday close.
+            Also on the risks page: a fill refused after a rally, a claim stranded at the close, withdrawals during a
+            week, keeper failure, USDG, and the Valorem fee switch.
           </p>
           <Button variant="ghost" href="/risks">
             Read every risk
@@ -390,11 +456,11 @@ export default function HomePage() {
               id="cta-h"
               className="max-w-[18em] text-[length:clamp(28px,3.4vw,40px)] font-bold leading-[1.08] tracking-[-0.03em] text-ground"
             >
-              Deposit your stock, and let the week run.
+              Start with NVDA. Let the week run.
             </h2>
             <p className="mt-2.5 max-w-[34em] text-ground/75">
-              Read the risks first. Once the vault is live, connect a wallet in the app on {CHAIN_NAME} and deposit{" "}
-              {MARKET}, the first vault, up to the cap. This site never asks for a wallet.
+              Stonkhouse is in beta, and an external audit is pending. Read the risks first. The app is on {CHAIN_NAME}.
+              This site never asks for a wallet.
             </p>
           </div>
           <div className="flex flex-wrap gap-3">

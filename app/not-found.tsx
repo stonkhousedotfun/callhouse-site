@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 const PAGES = [
-  { href: "/", label: "Home", what: "What the vault does, and the three ways a week can end" },
+  { href: "/", label: "Home", what: "What Stonkhouse is: NVDA first, more stocks later" },
   { href: "/how-it-works", label: "How it works", what: "One week, start to finish" },
   { href: "/risks", label: "Risks", what: "What can go wrong, before you deposit" },
   { href: "/legal", label: "Legal", what: "Who this is for, and what the collateral actually is" },
@@ -40,7 +40,7 @@ export default function NotFound() {
           There is nothing <span className="text-accent">at this address.</span>
         </h1>
         <p className="mt-[22px] max-w-[34em] text-[19px] text-ink-2">
-          The link is old or mistyped. This site is six pages: what the vault does, how a week runs,
+          The link is old or mistyped. This site is six pages: what Stonkhouse is, how a week runs,
           what can go wrong, and the legal position. Pick one, or head straight to the app.
         </p>
         <div className="mt-[30px] flex flex-wrap gap-3">
