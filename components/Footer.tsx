@@ -19,7 +19,17 @@ import Link from "next/link";
 
 import { Container } from "@/components/ui/Container";
 import { ExternalLink } from "@/components/ui/ExternalLink";
-import { APP_URL, CHAIN_ID, CHAIN_NAME, DOCS_URL, EXPLORER_URL, MARKET, SHARE_TICKER, STATUS } from "@/lib/site";
+import {
+  APP_URL,
+  CHAIN_ID,
+  CHAIN_NAME,
+  DOCS_URL,
+  EXPLORER_URL,
+  MARKET,
+  STATUS,
+  TOKEN_ADDRESS,
+  addressUrl,
+} from "@/lib/site";
 
 const PAGES = [
   { href: "/how-it-works", label: "How it works" },
@@ -40,8 +50,14 @@ export function Footer() {
       <Container>
         <div className="grid gap-3.5 border-t border-line pb-12 pt-8 text-[13.5px] text-ink-3">
           <p>
-            <span className="font-display font-bold text-ink-2">Stonkhouse</span> · <span className="num">{SHARE_TICKER}</span>{" "}
-            · {MARKET} on {CHAIN_NAME} <span className="num">{CHAIN_ID}</span>
+            <span className="font-display font-bold text-ink-2">Stonkhouse</span> · {MARKET} on {CHAIN_NAME}{" "}
+            <span className="num">{CHAIN_ID}</span>
+          </p>
+          <p>
+            Contract{" "}
+            <ExternalLink href={addressUrl(TOKEN_ADDRESS)} className={`${LINK} num break-all`}>
+              {TOKEN_ADDRESS}
+            </ExternalLink>
           </p>
           <nav aria-label="Footer">
             <ul className="flex flex-wrap gap-x-[18px] gap-y-2">

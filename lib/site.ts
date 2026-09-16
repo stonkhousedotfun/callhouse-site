@@ -122,7 +122,15 @@ export type AddressRow = {
  * Clear is not verified, and its 16,110-byte runtime equals, outside the trailing CBOR metadata, a
  * Clear that Sourcify verifies against valorem-core 6436c823.
  */
+/** StonkHouse token on Robinhood Chain. */
+export const TOKEN_ADDRESS = "0xc2525b7c68b6d66dE5AABFEDC7B13314F389D5C4";
+
 export const ADDRESSES = {
+  token: {
+    label: "StonkHouse token",
+    address: TOKEN_ADDRESS,
+    what: "The STONKHOUSE token (18 decimals) on Robinhood Chain.",
+  },
   factory: {
     label: `Stonkhouse ${MARKET} account factory`,
     address: "0xc4A5Cd0DE91CaB7F5Ebe2114bc63Fbb43E642BBb",
