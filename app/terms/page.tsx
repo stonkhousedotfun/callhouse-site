@@ -61,7 +61,7 @@ import {
   OPERATOR_LEGAL_NAME,
   operatorIsDesignated,
 } from "@/lib/legal";
-import { MARKET, OPEN_APP, SHARE_TICKER } from "@/lib/site";
+import { MARKET, OPEN_APP } from "@/lib/site";
 
 // The draft sentence is appended from the same flag the in-page marker reads, so the search
 // snippet and the page stop saying "draft" in the same build rather than one lagging the other.
@@ -377,7 +377,7 @@ export default function TermsPage() {
         </p>
         <p>
           The privacy notice is at <DocLink href="/privacy">/privacy</DocLink>, the perimeter and the legal
-          form of the collateral are at <DocLink href="/legal">/legal</DocLink>, and {SHARE_TICKER} itself
+          form of the collateral are at <DocLink href="/legal">/legal</DocLink>, and the app
           lives at{" "}
           <DocExternalLink href={OPEN_APP}>
             app.stonkhouse.fun

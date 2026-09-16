@@ -1,16 +1,8 @@
 /**
  * "What reaches depositors": the fee slip beside the benefits list.
  *
- * Figures are week 2 of the keeper's fork rehearsal — see lib/exampleWeek.ts. They reconcile the
- * way the contracts round (src/Policy.sol:217-225, src/Distributor.sol:147). Display rounds USDG
- * to dollar-like decimals; the comment below keeps the base units.
- *
- *   gross         2 × 856189 + 3 × 856189 = 4280945
- *   protocol fee  floor(4280945 × 500 / 10000) = 214047
- *   net           4280945 − 214047 = 4066898
- *   per share     floor(4066898 × 1e27 / 15e18) = 0.271126 USDG per cNVDA
- *
- * They are an example, labelled as one, not a quote or a forecast.
+ * Figures are a labelled example at week 1's live ask (1 USDG) — see lib/exampleWeek.ts.
+ * 5% is taken in the Seaport order; 95% goes to the writer's wallet. Not a quote or a forecast.
  */
 import type { ReactNode } from "react";
 

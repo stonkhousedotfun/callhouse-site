@@ -46,7 +46,7 @@ import {fileURLToPath} from "node:url";
 
 const ROOT = join(fileURLToPath(new URL(".", import.meta.url)), "..");
 const EXT = new Set([".tsx", ".ts", ".jsx", ".js", ".md", ".mdx", ".html", ".json"]);
-const SKIP_DIR = new Set(["node_modules", ".next", "dist", "out", ".git", "coverage"]);
+const SKIP_DIR = new Set(["node_modules", ".next", "dist", "out", ".git", "coverage", ".firecrawl"]);
 
 /** The package under compliance: this repo, rooted at the repo root. It must exist. */
 const PACKAGES = [{name: "site", dir: ROOT}];

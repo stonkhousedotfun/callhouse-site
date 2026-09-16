@@ -33,13 +33,12 @@
 import type { Metadata } from "next";
 
 import { LEGAL_DOCS_ARE_DRAFT, NOT_YET_DESIGNATED, SECURITY_CONTACT_EMAIL } from "@/lib/legal";
-import { MARKET, SHARE_TICKER, appUrl } from "@/lib/site";
+import { MARKET } from "@/lib/site";
 
 import {
   Callout,
   DOC_LINK,
   Code,
-  DocExternalLink,
   DocLink,
   DocList,
   DocSection,
@@ -61,7 +60,7 @@ export const metadata: Metadata = {
 const SECTIONS = {
   geographic: { id: "geographic-restrictions", title: "Geographic restrictions" },
   stockToken: { id: "stock-token", title: "What a Stock Token is" },
-  share: { id: "vault-share", title: `What ${SHARE_TICKER} is` },
+  share: { id: "vault-share", title: "Your account" },
   noAdvice: { id: "no-advice", title: "No advice, no guarantee" },
   noAffiliation: { id: "no-affiliation", title: "No affiliation" },
   reporting: { id: "reporting", title: "Reporting a vulnerability" },
@@ -110,7 +109,7 @@ export default function LegalPage() {
       <DocSection {...SECTIONS.stockToken}>
         <DocList>
           <li>
-            The collateral in this vault is a tokenised instrument issued by{" "}
+            The collateral in your account is a tokenised instrument issued by{" "}
             <strong>Robinhood Assets (Jersey) Limited</strong>. Stock Tokens are debt securities issued
             by that entity. They are not shares in the underlying company.
           </li>
@@ -123,15 +122,15 @@ export default function LegalPage() {
             issuer fails, the token&apos;s value does not survive independently of it.
           </li>
           <li>
-            The issuer can <strong>freeze or restrict transfers</strong>, which can stop this vault
-            writing, settling, or paying out tokens until it is lifted. The token can also pause its
-            own price oracle, which stops this vault arming, listing and writing new calls; settlement does
+            The issuer can <strong>freeze or restrict transfers</strong>, which can stop an account
+            depositing, listing, settling, or paying out until it is lifted. The token can also pause its
+            own price oracle, which stops new listings; settlement does
             not read the oracle. No Stonkhouse contract can override either.
           </li>
           <li>
             Corporate actions — splits, dividend adjustments — are expressed through an ERC-8056
             display multiplier rather than by rebasing balances. The app shows the adjusted figure
-            clearly labelled as display-only; all vault accounting uses raw balances.
+            clearly labelled as display-only; accounting uses raw balances.
           </li>
         </DocList>
       </DocSection>
@@ -139,15 +138,15 @@ export default function LegalPage() {
       <DocSection {...SECTIONS.share}>
         <DocList>
           <li>
-            {SHARE_TICKER} is a vault share. It represents a pro-rata claim on the {MARKET} Stock
-            Tokens the vault holds, plus separately accrued USDG. It is not itself a Stock Token, not a
-            deposit, and not a claim on Stonkhouse, Valorem or any Robinhood entity.
+            Each wallet opens its own account. {MARKET} you deposit stays in that account. Only the
+            amount you offer can be sold. It is not a pooled vault share, not itself a Stock Token,
+            and not a claim on Stonkhouse, Valorem or any Robinhood entity.
           </li>
           <li>
-            There is no protocol token, no points programme and no airdrop attached to this vault.
+            There is no protocol token, no points programme and no airdrop.
           </li>
           <li>
-            Premium is paid only when a buyer fills the weekly listing. A week with no buyer pays
+            Premium is paid only when a buyer fills your listing. A week with no buyer pays
             nothing, and an exercised call takes collateral at the strike.{" "}
             <DocLink href="/risks">The risks page</DocLink> carries the full risk list, and{" "}
             <DocLink href="/how-it-works">how it works</DocLink> describes the cycle those outcomes come from.
@@ -167,11 +166,7 @@ export default function LegalPage() {
             no warranty of any kind. You can lose the collateral you deposit.
           </li>
           <li>
-            Past weekly results, including any published on{" "}
-            <DocExternalLink href={appUrl("/activity")}>
-              the activity page
-            </DocExternalLink>
-            , describe what has already happened and say nothing about what any future week will do.
+            Past weekly results describe what has already happened and say nothing about what any future week will do.
           </li>
         </DocList>
       </DocSection>
@@ -181,7 +176,7 @@ export default function LegalPage() {
           Stonkhouse is an independent project. It is not affiliated with, endorsed by, or operated by
           Robinhood Markets, Inc., Robinhood Assets (Jersey) Limited, Valorem, or the issuers of USDG or
           Seaport. Those names appear here only to identify the third-party contracts and
-          services this vault interacts with.
+          services this product interacts with.
         </p>
       </DocSection>
 

@@ -18,15 +18,14 @@
  * this site is a policy setting as read on chain on 2026-09-15, a compiled limit, or a labelled
  * example, not a quote. What changes week to week (strike, ask, fills) lives in the app.
  *
- * LIVE ADDRESSES (confirmed on chain 4663, 2026-09-15): vault.clear(), vault.seaport(), vault.usdg(),
- * vault.asset() and vault.priceFeed() return exactly the rows below, and the vault's runtime links
- * both libraries. hasRole() confirms the three role holders in ROLE_KEYS, and the Clear's feeTo() is
- * ROLE_KEYS.clearFeeTo.
+ * LIVE ADDRESSES (confirmed on chain 4663, 2026-09-15): factory.implementation(), factory.clear(),
+ * factory.seaport(), factory.usdg(), factory.asset() and factory.priceFeed() return exactly the
+ * rows below. hasRole() confirms the three role holders in ROLE_KEYS, and the Clear's feeTo() is
+ * ROLE_KEYS.clearFeeTo. The closed pooled vault is not listed here.
  *
- * NO VENUE CONSTANT (redesign of 2026-09-13, stonkhousedotfun/callhouse-contracts `src/lib/SeaportOrderLib.sol`
- * :179-181 and `README.md`:12-13). The vault sells through its own Seaport 1.6 listing, served on the
- * app's cycle page (FILL_PAGE_PATH). Earlier designs listed through a third-party venue and read its
- * registry; that constant and the registry row were removed with them.
+ * NO VENUE CONSTANT. Isolated accounts sell through their own Seaport 1.6 1-lot orders, served on
+ * the app's book (FILL_PAGE_PATH). Earlier designs listed through a third-party venue and then
+ * through a pooled vault; those rows were removed with them.
  */
 
 /** Strip trailing slashes so joins never produce `//`. */
@@ -50,12 +49,12 @@ export const GITHUB_URL = normalizeBase(process.env.NEXT_PUBLIC_GITHUB_URL ?? "h
 export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.stonkhouse.fun");
 
 /**
- * Join a dapp route onto APP_URL. `appUrl("/vault/nvda")` and `appUrl("vault/nvda")` both give
- * `https://app.stonkhouse.fun/vault/nvda`, and `appUrl()` gives the bare origin with no trailing
- * slash. An absolute URL is passed through untouched so callers can hand this any href.
+ * Join a dapp route onto APP_URL. `appUrl("/account")` gives `https://app.stonkhouse.fun/account`,
+ * and `appUrl()` gives the bare origin with no trailing slash. An absolute URL is passed through
+ * untouched so callers can hand this any href.
  *
- * "Open the app" goes to the app frontpage (`OPEN_APP`), not the vault. A visitor who is ready to
- * deposit is sent to `VAULT_APP`. The two are different pages; do not collapse them.
+ * "Open the app" goes to the app frontpage (`OPEN_APP`). A visitor who is ready to deposit is sent
+ * to `VAULT_APP` (`/account`). The two are different pages; do not collapse them.
  */
 export function appUrl(path = ""): string {
   if (/^[a-z][a-z0-9+.-]*:/i.test(path)) return path;
@@ -70,8 +69,9 @@ export const OPEN_APP = APP_URL;
 export const VAULT_APP = appUrl("/account");
 
 /**
- * First (and so far only) market. Matches MARKET / SHARE_TICKER in stonkhousedotfun/callhouse:
- * `web/lib/contracts.ts`.
+ * First (and so far only) market. Matches MARKET in stonkhousedotfun/callhouse `web/lib/contracts.ts`.
+ * Isolated accounts have no share token. SHARE_TICKER is kept for the closed pooled vault's leftover
+ * copy on /terms and /collect.
  */
 export const MARKET = "NVDA";
 export const SHARE_TICKER = "cNVDA";
@@ -98,8 +98,8 @@ export const CHAIN_NAME = "Robinhood Chain";
 export const EXPLORER_URL = "https://robinhoodchain.blockscout.com";
 
 /**
- * The app route where the vault's weekly calls are bought and exercised: stonkhousedotfun/callhouse
- * `web/app/vault/nvda/cycle`. The only venue that serves the vault's order.
+ * The app route where listed lots are bought and exercised: stonkhousedotfun/callhouse
+ * `web/app/book`. The only venue that serves live account orders.
  */
 export const FILL_PAGE_PATH = "/book";
 
@@ -115,12 +115,10 @@ export type AddressRow = {
 };
 
 /**
- * The contracts a week touches. Insertion order is display order. The first four were deployed by
- * the Stonkhouse admin key on 2026-09-15 (the Clear in block 63467465, the vault in 63467882); the
- * rest are third-party contracts. Sourcify v2: the vault is `match` on creation and runtime code,
- * both libraries `match` on runtime code (partial matches: everything but the metadata hash); the
- * Clear is not verified, and its 16,110-byte runtime equals, outside the trailing CBOR metadata, a
- * Clear that Sourcify verifies against valorem-core 6436c823.
+ * The contracts a week touches. Insertion order is display order. The factory and implementation
+ * were deployed on 2026-09-15; the Clear is Stonkhouse's instance of Valorem. The Clear is not
+ * source-verified; its runtime equals, outside the trailing CBOR metadata, a Clear that Sourcify
+ * verifies against valorem-core 6436c823.
  */
 /** StonkHouse token on Robinhood Chain. */
 export const TOKEN_ADDRESS = "0xc2525b7c68b6d66dE5AABFEDC7B13314F389D5C4";
@@ -151,19 +149,19 @@ export const ADDRESSES = {
   seaportOrderLib: {
     label: "SeaportOrderLib",
     address: "0x6B617a0B578Ef6EDCD07774468f08b3778272D8A",
-    what: "Library linked into the vault. Checks the shape of every listing the keeper proposes.",
+    what: "Library from the closed pooled vault. Isolated accounts build their own 1-lot orders.",
     verified: "Verified on Sourcify as a partial match.",
   },
   valoremLib: {
     label: "ValoremLib",
     address: "0xd3CB94893EAb55e425cCd77Db98458b38D75Fa3d",
-    what: "Library linked into the vault. The arm checks, the checks at each fill, and the price-feed read.",
+    what: "Library linked into each account. The list checks, the checks at each fill, and the price-feed read.",
     verified: "Verified on Sourcify as a partial match.",
   },
   seaport: {
     label: "Seaport 1.6",
     address: "0x0000000000000068F116a894984e2DB1123eB395",
-    what: "Settles each fill. It asks the vault before moving anything, so every fill runs the vault's own checks.",
+    what: "Settles each fill. It asks the seller's account before moving anything, so every fill runs that account's own checks.",
   },
   usdg: {
     label: "USDG",
@@ -178,14 +176,14 @@ export const ADDRESSES = {
   priceFeed: {
     label: "Chainlink RHNVDA / USD",
     address: "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
-    what: "8 decimals. Display, and the price floors checked when a week is armed, a listing is approved and a call is sold. Settlement never reads a price feed.",
+    what: "8 decimals. Display, and the price floors checked when an account lists and a lot fills. Settlement never reads a price feed.",
   },
 } as const satisfies Record<string, AddressRow>;
 
 /**
- * Who holds the keys, as read on chain 2026-09-15 (vault hasRole; Clear feeTo; Safe getOwners and
- * getThreshold). The admin is also the
- * vault's feeRecipient(). The Clear's fee address is a Safe v1.4.1 with one owner and threshold 1.
+ * Who holds the keys, as read on chain 2026-09-15 (factory hasRole; Clear feeTo; Safe getOwners and
+ * getThreshold). The admin is also the factory's feeRecipient(). The Clear's fee address is a Safe
+ * v1.4.1 with one owner and threshold 1.
  */
 export const ROLE_KEYS = {
   admin: "0xEb82c3D0F89d47453F94f0C2b2a2752e27a19d9b",
