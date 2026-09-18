@@ -13,7 +13,7 @@
  *   4. the audit status, stated outright.
  *
  * DELIBERATELY ABSENT: a contract link (the addresses live on /how-it-works#contracts).
- * The old GitBook is labelled legacy v1 here, not advertised as current v2 guidance.
+ * The docs contain current v2 deployment guidance alongside clearly labelled legacy v1 pages.
  */
 import Link from "next/link";
 
@@ -62,7 +62,7 @@ export function Footer() {
               ))}
               <li>
                 <ExternalLink href={DOCS_URL} arrow className={LINK}>
-                  Legacy v1 docs
+                  Documentation
                 </ExternalLink>
               </li>
               <li>

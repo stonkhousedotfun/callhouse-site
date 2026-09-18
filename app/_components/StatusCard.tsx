@@ -19,7 +19,7 @@ export function StatusCard() {
         <Figure boxed size="lg" label="You get paid in" value="USDG" />
         <Figure boxed size="md" label="v2 writer rent" value="Varies" />
       </dl>
-      <p className="text-sm text-ink-2">Planned v2 fee: rent on collateral when an option is minted. The market rate and remaining life set the amount.</p>
+      <p className="text-sm text-ink-2">v2 rent is charged on collateral when an option is minted. The market rate and remaining life set the amount.</p>
 
       <div>
         <p className="text-[13px] font-medium text-ink-3">Contract</p>

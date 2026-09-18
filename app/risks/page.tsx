@@ -878,7 +878,7 @@ export default function RisksPage() {
               labelled for legacy accounts until their run-off is complete.
             </p>
             <p className="text-[14.5px] text-ink-3">
-              Nothing on this page reads the chain. Fee figures are planned v2 launch defaults, not a
+              Nothing on this page reads the chain. Fee figures are v2 launch settings, not a
               live trade quote; writer rent varies by market and time. Check the app&apos;s
               live quote and the relevant contract before transacting.
             </p>
@@ -929,7 +929,7 @@ export default function RisksPage() {
           </div>
 
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Figure boxed size="sm" label="v2 primary premium fee" value={`${FEES_V2.premiumBps / 100}%`} unit="planned launch" />
+            <Figure boxed size="sm" label="v2 primary premium fee" value={`${FEES_V2.premiumBps / 100}%`} unit="launch setting" />
             <Figure boxed size="sm" label="v2 exercise fee default" value={`${FEES_V2.exerciseBps / 100}%`} unit="capped" />
             <Figure boxed size="sm" mono={false} label="External audit" value={STATUS.audit} />
           </dl>
@@ -1025,13 +1025,11 @@ export default function RisksPage() {
                 ? "Dev contracts appear in the dev app book. See how settlement works before trading."
                 : DEV_PREVIEW
                 ? "Dev contracts are not ready yet. See how settlement works before trading."
-                : STATUS.v2 === "Not released"
-                ? "The current app has the v1 book; public v2 trading is not released. See how settlement works before trading."
                 : "Live lots are on the book. To see how one week runs, walk through it step by step."}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            {DEV_PREVIEW && !DEV_CARDS_ENABLED ? null : <Button href={appUrl("/book")}>{DEV_PREVIEW ? "Open dev book" : STATUS.v2 === "Not released" ? "Open current book" : "Open the book"}</Button>}
+            {DEV_PREVIEW && !DEV_CARDS_ENABLED ? null : <Button href={appUrl("/book")}>{DEV_PREVIEW ? "Open dev book" : "Open the book"}</Button>}
             <Button variant="inverse" href="/how-it-works">
               How a week runs
             </Button>

@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 
 import { Button, Container, ExternalLink, Panel, Section, SectionHead } from "@/components/ui";
-import { ADDRESSES, CHAIN_ID, DEV_CARDS_ENABLED, DEV_PREVIEW, FEES_V2, REGISTRY_MARKET_COUNT, STATUS, addressUrl, appUrl } from "@/lib/site";
+import { ADDRESSES, CHAIN_ID, DEV_CARDS_ENABLED, DEV_PREVIEW, FEES_V2, REGISTRY_MARKET_COUNT, addressUrl, appUrl } from "@/lib/site";
 
 const DESCRIPTION = "Choose a call, see its total cost and maximum loss, and receive a payout after settlement when it finishes in the money. Stock owners can set asks and write covered calls.";
 export const metadata: Metadata = {
@@ -29,13 +29,13 @@ const CONTRACTS = [
 ] as const;
 
 export default function HowItWorksPage() {
-  const writingReady = DEV_PREVIEW ? DEV_CARDS_ENABLED : STATUS.v2 !== "Not released";
+  const writingReady = DEV_PREVIEW ? DEV_CARDS_ENABLED : true;
   return <>
     <Section bordered={false}>
       <SectionHead level={1} eyebrow="How it works" title="A small cost. A known maximum loss."
         intro={<p>{DESCRIPTION}</p>} />
       <p className="max-w-[58em] text-ink-2">Stonkhouse lists options on Robinhood Chain Stock Tokens. The registry includes {REGISTRY_MARKET_COUNT} markets; availability and quotes are shown in the app. Stock Tokens are debt securities, not shares.</p>
-      <div className="mt-7 flex flex-wrap gap-3"><Button href={appUrl("/")}>{DEV_PREVIEW ? "Open dev app" : STATUS.v2 === "Not released" ? "Open current app" : "Buy a contract"}</Button><Button variant="ghost" href={writingReady ? appUrl("/earn") : "#write"}>{writingReady ? "Explore writing" : "How writing works"}</Button></div>
+      <div className="mt-7 flex flex-wrap gap-3"><Button href={appUrl("/")}>{DEV_PREVIEW ? "Open dev app" : "Buy a contract"}</Button><Button variant="ghost" href={writingReady ? appUrl("/earn") : "#write"}>{writingReady ? "Explore writing" : "How writing works"}</Button></div>
     </Section>
 
     <Section id="buy" labelledBy="buy-h">
@@ -61,10 +61,10 @@ export default function HowItWorksPage() {
 
     <Section id="fees" labelledBy="fees-h">
       <SectionHead id="fees-h" eyebrow="Fees" title="The full stack, before you trade."
-        intro="These are planned v2 launch defaults, not live fees. The app's current quote, market rent and series-pinned terms govern an actual order." />
+        intro="These are v2 launch settings, not a live quote. The app's current quote, market rent and series-pinned terms govern an actual order." />
       <dl className="grid gap-3 md:grid-cols-2">
         <Panel><dt className="font-bold">Writer collateral rent</dt><dd className="mt-2 text-2xl font-semibold text-accent-text">Varies</dd><p className="mt-2 text-sm text-ink-2">Charged when an option is minted, based on its locked collateral, market rate and time to expiry. Calls pay in Stock Tokens; puts pay in USDG. The rate is fixed for that series when it is created.</p></Panel>
-        <Panel><dt className="font-bold">Primary premium fee</dt><dd className="num mt-2 text-2xl font-semibold text-accent-text">{FEES_V2.premiumBps / 100}%</dd><p className="mt-2 text-sm text-ink-2">Planned launch default on a first sale. Rent is charged separately from premium.</p></Panel>
+        <Panel><dt className="font-bold">Primary premium fee</dt><dd className="num mt-2 text-2xl font-semibold text-accent-text">{FEES_V2.premiumBps / 100}%</dd><p className="mt-2 text-sm text-ink-2">Launch setting on a first sale. Rent is charged separately from premium.</p></Panel>
         <Panel><dt className="font-bold">Taker fee</dt><dd className="num mt-2 text-2xl font-semibold text-accent-text">0.10 USDG cap</dd><p className="mt-2 text-sm text-ink-2">The lesser of {Number(FEES_V2.takerFlatRaw) / 1_000_000} USDG or {FEES_V2.takerCapBps / 100}% of the filled premium, once per take.</p></Panel>
         <Panel><dt className="font-bold">Exercise fee</dt><dd className="num mt-2 text-2xl font-semibold text-accent-text">{FEES_V2.exerciseBps / 100}%</dd><p className="mt-2 text-sm text-ink-2">Based on collateral and taken in kind from an in-the-money payout, never more than {FEES_V2.exercisePayoutCapBps / 100}% of that payout. The rate is set when a series is created.</p></Panel>
       </dl>
@@ -83,7 +83,7 @@ export default function HowItWorksPage() {
 
     <Section id="contracts" labelledBy="contracts-h">
       <SectionHead id="contracts-h" eyebrow="Contracts" title="What makes a v2 trade work."
-        intro={<p>Robinhood Chain {CHAIN_ID}. Public production v2 addresses remain pending until the owner verifies a separate release deployment.</p>} />
+        intro={<p>Robinhood Chain {CHAIN_ID}. The live NVDA contracts first served the dev app and now form the production v2 deployment. Explorer source verification is pending.</p>} />
       <ul className="grid gap-x-12 lg:grid-cols-2">{CONTRACTS.map((row) => <li key={row.label} className="border-t border-line py-5">
         <h3 className="font-bold">{row.label}</h3><p className="mt-1 text-sm text-ink-2">{row.what}</p>
         {row.address ? <ExternalLink href={addressUrl(row.address)} className="link num mt-2 block break-all text-xs text-accent-text">{row.address}</ExternalLink>

@@ -15,7 +15,7 @@ import { SocialLinks } from "@/components/SocialLinks";
 import { Brand } from "@/components/ui/Brand";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { DEV_PREVIEW, OPEN_APP, STATUS } from "@/lib/site";
+import { DEV_PREVIEW, OPEN_APP } from "@/lib/site";
 
 export function Nav() {
   return (
@@ -31,7 +31,7 @@ export function Nav() {
         <div className="order-2 ml-auto flex items-center gap-2 lg:order-3 lg:ml-0">
           <SocialLinks />
           <Button href={OPEN_APP} size="sm">
-            {DEV_PREVIEW ? "Dev app" : STATUS.v2 === "Not released" ? "Open app" : "Buy"}
+            {DEV_PREVIEW ? "Dev app" : "Buy"}
           </Button>
         </div>
       </Container>

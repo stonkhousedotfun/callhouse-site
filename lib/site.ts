@@ -39,7 +39,7 @@ export const SITE_URL = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL ?? "https
 /** Build-time switch for the separate dev site. Never infer preview mode from the hostname. */
 export const DEV_PREVIEW = process.env.NEXT_PUBLIC_DEV_PREVIEW === "1";
 
-/** Legacy v1 GitBook reference, not current v2 documentation. */
+/** Product documentation, including the live v2 NVDA deployment and labelled legacy v1 material. */
 export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.stonkhouse.fun");
 
 /** X (Twitter). Override with NEXT_PUBLIC_X_URL if the handle is not @stonkhousefun. */
@@ -87,7 +87,8 @@ export const SHARE_TICKER = "cNVDA";
 export const REGISTRY_MARKET_COUNT = 35;
 
 /**
- * Public production status, distinct from the separate mainnet dev preview. The landing, footer and risks glance read these so "beta" and
+ * Public production status. The contracts first launched on the mainnet dev host and are now the
+ * production v2 deployment; the dev hostname is not a separate chain or contract set. The landing, footer and risks glance read these so "beta" and
  * "pending audit" cannot drift across pages. "Pending" means no report yet, not that one has
  * started on a named firm. The contracts remain unaudited until a report is published.
  */
@@ -95,10 +96,10 @@ export const STATUS = {
   phase: "Beta",
   audit: "Pending audit",
   auditLine: "The Stonkhouse contracts have not been audited. An external audit is pending.",
-  v2: "Not released",
+  v2: "Live — NVDA",
 } as const;
 
-/** Planned v7 launch defaults. Writer collateral rent varies by market and series, so it has no site-wide rate here. */
+/** v7 launch settings. The app quote and series-pinned terms control actual trades. */
 export const FEES_V2 = {
   premiumBps: 0,
   takerFlatRaw: 100_000n,
@@ -146,33 +147,33 @@ export const TOKEN_ADDRESS = "0xc2525b7c68b6d66dE5AABFEDC7B13314F389D5C4";
 export const ADDRESSES = {
   v2Clearinghouse: {
     label: "v2 Clearinghouse",
-    address: "",
-    what: "No public production address yet. Buyer payouts and writer collateral will be settled here.",
-    verified: "Pending public release",
+    address: "0x22dEf851cD1a3B04Ad7d232bE786d76E6944d424",
+    what: "Holds writer collateral and settles buyer payouts for the live NVDA market.",
+    verified: "Deployed on Robinhood Chain; explorer source verification pending",
   },
   v2OrderBook: {
     label: "v2 OrderBook",
-    address: "",
-    what: "No public production address yet. Buyers and writers will fill on-chain orders here.",
-    verified: "Pending public release",
+    address: "0x9fcAe743C3fA0aEC7DB9b1d01e86464b85759942",
+    what: "Places and fills on-chain NVDA option orders.",
+    verified: "Deployed on Robinhood Chain; explorer source verification pending",
   },
   v2SettlementOracle: {
     label: "v2 SettlementOracle",
-    address: "",
-    what: "No public production address yet. Publishes the averaged settlement price.",
-    verified: "Pending public release",
+    address: "0xb205984b5F2F9010c2bD8aCA46d946Fe1c4F2A54",
+    what: "Finalises the averaged settlement price.",
+    verified: "Deployed on Robinhood Chain; explorer source verification pending",
   },
   v2ExpiryCalendar: {
     label: "v2 ExpiryCalendar",
-    address: "",
-    what: "No public production address yet. Defines daily and weekly New York market expiries.",
-    verified: "Pending public release",
+    address: "0xd0fCeD9Ee6F533aA900BEe8d0523eF4867a5784a",
+    what: "Defines daily and weekly New York market expiries.",
+    verified: "Deployed on Robinhood Chain; explorer source verification pending",
   },
   v2PayoutAdapter: {
     label: "v2 PayoutAdapter",
-    address: "",
-    what: "No public production address yet. Attempts to convert call payouts to USDG within the on-chain slippage bound.",
-    verified: "Pending public release",
+    address: "0xf529CE3708bd2002D6bC974dFC0501c92aE72c30",
+    what: "Attempts to convert call payouts to USDG within the on-chain slippage bound.",
+    verified: "Deployed on Robinhood Chain; explorer source verification pending",
   },
   token: {
     label: "StonkHouse token",

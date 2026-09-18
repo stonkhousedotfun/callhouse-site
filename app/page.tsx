@@ -47,14 +47,11 @@ const BUY_STEPS = [
 ] as const;
 
 export default async function HomePage() {
-  const preview = STATUS.v2 === "Not released";
-  const showCardsFeed = DEV_PREVIEW ? DEV_CARDS_ENABLED : !preview;
-  // A configured development API must not make an undeployed v2 look live or
-  // send visitors to a series route that the current public app cannot serve.
+  const showCardsFeed = DEV_PREVIEW ? DEV_CARDS_ENABLED : true;
   const [hero, cards, stats] = showCardsFeed
     ? await Promise.all([getHero(), getCards(), getStats()])
     : [null, null, null] as const;
-  const appAction = DEV_PREVIEW ? "Open dev app" : preview ? "Open current app" : "See today's contracts";
+  const appAction = DEV_PREVIEW ? "Open dev app" : "See today's contracts";
   const heroQuote = hero?.perShare;
   const headline = "Small bets on big stocks. Lose at most what you pay.";
   const heroSentence = hero && heroQuote ? cardSentence(hero, 100n, {
@@ -65,12 +62,12 @@ export default async function HomePage() {
     <Container as="section" aria-labelledby="hero-h"
       className="grid grid-cols-1 items-center gap-9 pb-[72px] pt-4 lg:grid-cols-[minmax(0,1.08fr)_minmax(0,0.92fr)] lg:gap-14 lg:pt-10">
       <div>
-        <Chip tone="accent" dot wrap>{hero ? `${DEV_PREVIEW ? "Dev contracts" : "Live contracts"} · ${CHAIN_NAME}` : `v2 preview · ${STATUS.v2}`}</Chip>
+        <Chip tone="accent" dot wrap>{hero ? `${DEV_PREVIEW ? "Dev contracts" : "Live contracts"} · ${CHAIN_NAME}` : `${STATUS.v2} · ${CHAIN_NAME}`}</Chip>
         <h1 id="hero-h" className="mt-5 text-[length:clamp(40px,5.6vw,66px)] font-extrabold leading-[1.02] tracking-[-0.035em]">
           {headline}
         </h1>
         <p className="mt-6 max-w-[35em] text-[19px] text-ink-2">
-          {heroSentence ?? "Explore what a call could pay if a stock rises. The example shows the maths; live contracts appear here when the v2 market is available."}
+          {heroSentence ?? "Explore what a call could pay if a stock rises. The example shows the maths; check the app for live NVDA contracts and quotes."}
         </p>
         {hero && !hero.series.isPut ? <p className="mt-2 max-w-[35em] text-sm text-ink-3">A winning call is owed Stock Tokens. USDG conversion may deliver less or fall back to tokens.</p> : null}
         <div className="mt-8 flex flex-wrap gap-3">
