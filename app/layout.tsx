@@ -4,7 +4,7 @@ import { Figtree, Geist_Mono, Schibsted_Grotesk } from "next/font/google";
 import { Footer } from "@/components/Footer";
 import { Nav } from "@/components/Nav";
 
-import { SITE_URL } from "@/lib/site";
+import { DEV_PREVIEW, SITE_URL } from "@/lib/site";
 import "./globals.css";
 
 /**
@@ -42,16 +42,15 @@ const mono = Geist_Mono({
  * because the dapp needs wagmi, viem and @tanstack/react-query mounted above every route. This
  * package has none of those as dependencies and must never acquire them — that is the entire point
  * of splitting the two domains. A marketing page that ships a wallet runtime pays for a connect
- * flow it will never offer, and this site never reads the chain, so every live figure it could render
- * would be a zero. Nothing under this layout fetches, reads a chain, or holds client state beyond
- * the nav's active link. If a page here ever needs a provider, the page belongs on
- * app.stonkhouse.fun.
+ * flow it will never offer. The landing reads only the public v2 cards and stats API on the
+ * server; it never reads the chain. The only new client state is the isolated payoff demo.
+ * If a page here ever needs a wallet provider, that page belongs on app.stonkhouse.fun.
  *
  * `metadataBase` is stonkhouse.fun because that is where this package is served; relative
  * canonicals and Open Graph URLs resolve against it, and without it Next falls back to localhost
  * in a production build.
  *
- * THE robots DECISION — index: true HERE, and index: false in stonkhousedotfun/callhouse:
+ * THE robots DECISION — index: true on production HERE, and index: false in stonkhousedotfun/callhouse:
  * `web/app/layout.tsx`. The pairing is the point, and the two files have to be changed together,
  * in paired commits across the two repos:
  *
@@ -60,26 +59,28 @@ const mono = Geist_Mono({
  *     engine pick which of the two it shows. The disclosures get one address, and it is this one.
  *   - This is the surface scripts/copy-lint.mjs was written for. The page a stranger finds first
  *     should be the page whose wording is checked on every build.
+ * The separate dev build is an explicit exception: DEV_PREVIEW gives all its pages noindex and a
+ * visible banner, while app/robots.ts disallows crawling and app/sitemap.ts returns 404.
  *
  * The title template exists so a route only has to name itself: `title: "Risks"` renders
- * "Risks — Stonkhouse". The default is the full positioning line, used on "/" alone.
+ * "Risks — Stonkhouse". The default follows the buyer-first landing.
  */
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   title: {
-    default: "Stonkhouse — let your stonks work for you",
+    default: "Stonkhouse — small bets on big stocks",
     template: "%s — Stonkhouse",
   },
   description:
-    "Let your stonks work for you. Put NVDA in. Each week someone can pay you for the chance to buy it at a set price.",
+    "Explore Stock Token options with a known maximum option loss: premium and taker fee. Network gas is extra.",
   // Per-route canonicals override this; the default is the landing page.
   alternates: { canonical: "/" },
   openGraph: {
     // Stated in full rather than inherited: the template above would otherwise leak "%s" into a
     // share card on any route that sets its own title.
-    title: "Stonkhouse — let your stonks work for you",
+    title: "Stonkhouse — small bets on big stocks",
     description:
-      "Let your stonks work for you. Put NVDA in. Each week someone can pay you for the chance to buy it at a set price.",
+      "Explore Stock Token options with a known maximum option loss: premium and taker fee. Network gas is extra.",
     url: SITE_URL,
     siteName: "Stonkhouse",
     type: "website",
@@ -89,7 +90,9 @@ export const metadata: Metadata = {
     locale: "en_GB",
   },
   twitter: { card: "summary_large_image" },
-  robots: { index: true, follow: true },
+  robots: DEV_PREVIEW
+    ? { index: false, follow: false, noarchive: true }
+    : { index: true, follow: true },
 };
 
 /**
@@ -111,6 +114,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en" className={`${display.variable} ${body.variable} ${mono.variable}`}>
       <body className="flex min-h-dvh flex-col">
+        {DEV_PREVIEW ? <div role="status" className="border-b border-warn bg-warn-soft px-4 py-2 text-center text-sm font-bold text-warn">
+          DEV PREVIEW · This is a test site.
+        </div> : null}
         <a
           href="#main"
           className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-[10px] focus:bg-surface focus:px-3.5 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-ink focus:shadow-lift"

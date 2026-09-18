@@ -1,6 +1,7 @@
 import { ImageResponse } from "next/og";
 
-import { CHAIN_NAME, SITE_URL } from "@/lib/site";
+import { EXAMPLE_MULTIPLE, EXAMPLE_PAYOFF, EXAMPLE_PAYOUT, EXAMPLE_TAKE, formatUsdg } from "@/lib/examplePayoff";
+import { SITE_URL } from "@/lib/site";
 
 /**
  * The Open Graph card for stonkhouse.fun: the image a link to this site unfurls into in Slack,
@@ -8,13 +9,8 @@ import { CHAIN_NAME, SITE_URL } from "@/lib/site";
  * and `contentType` alongside the default render is what makes Next emit the og:image tags, so
  * nothing imports this file and the layout needs no og.images entry.
  *
- * Rendered once at build time into a static PNG, in the Daylight look: the light ground, the brand
- * mark and wordmark, the landing headline, one plain line saying what the product is, the domain,
- * and the five-step week track as an ornament. No number appears on it, and that is the point: an
- * OG card is cached by every platform that scrapes it, sometimes for weeks, so any figure baked in
- * here would go stale somewhere we cannot reach, and a premium figure on a share card is exactly
- * the kind of claim scripts/copy-lint.mjs exists to keep off this domain. Live numbers live on
- * app.stonkhouse.fun.
+ * Uses the same labelled example as the landing. Social platforms can cache shared images for
+ * hours or days, so an order-book quote must never appear here as if it were current.
  *
  * FONTS ARE BEST EFFORT, AND THE CARD NEVER FAILS THE BUILD OVER THEM. `loadFont` asks Google Fonts
  * for Schibsted Grotesk 800 and Figtree 500, subset to exactly the characters drawn below. The build
@@ -31,7 +27,7 @@ import { CHAIN_NAME, SITE_URL } from "@/lib/site";
  *     the single most common cause of a build failing here, and the message ("Expected <div> to
  *     have explicit display: flex or none") does not name the element. Every container below sets
  *     it, including ones with a single child, so that adding a sibling later cannot break the build.
- *   - Interpolated text is composed into a plain string before it is rendered (see `TAGLINE`),
+ *   - Interpolated text is composed into plain strings before it is rendered,
  *     because a node with several adjacent text children hits the same rule.
  *   - Custom fonts REPLACE the bundled face rather than adding to it, so a character missing from
  *     the font subset renders as nothing. `GLYPHS_*` below are built from the very strings drawn.
@@ -41,17 +37,14 @@ import { CHAIN_NAME, SITE_URL } from "@/lib/site";
  * site it links to sit one click apart. The mark is BrandMark from components/ui/Brand.tsx on the
  * same 26 unit grid.
  *
- * Deliberately absent: a chart, a premium or strike figure, a logo or colour of Robinhood or Valorem
- * (we are not affiliated with either), a dark variant (platforms show one image to everyone) and a
- * per-route variant (every page shares one card).
+ * Deliberately absent: a chart, a logo or colour of Robinhood or Valorem (we are not affiliated
+ * with either), a dark variant (platforms show one image to everyone) and a per-route variant.
  */
 
 const GROUND = "#f5f8f6"; /* --ground */
-const SURFACE = "#ffffff"; /* --surface */
 const INK = "#0c1a15"; /* --ink */
 const INK_2 = "#47584f"; /* --ink-2 */
 const LINE = "#e0e8e3"; /* --line */
-const LINE_2 = "#cfdbd4"; /* --line-2 */
 const ACCENT = "#0a7f55"; /* --accent */
 const ACCENT_INK = "#ffffff"; /* --accent-ink */
 
@@ -66,24 +59,8 @@ const BODY = "Figtree";
 const DOMAIN = SITE_URL.replace(/^https?:\/\//, "");
 
 const WORDMARK = "stonkhouse";
-const HEADLINE_LEAD = "Put your stocks to work,";
-const HEADLINE_ACCENT = "one week at a time.";
-/** Composed here, not interpolated in JSX: see the Satori notes above. */
-const TAGLINE = `Covered calls on tokenised stocks · ${CHAIN_NAME}`;
 
-/** Every character each face has to draw, so the Google Fonts subset cannot miss one. */
-const GLYPHS_DISPLAY = unique(WORDMARK + HEADLINE_LEAD + HEADLINE_ACCENT);
-const GLYPHS_BODY = unique(TAGLINE + DOMAIN);
-
-/**
- * The landing page's five-step week, as dots: deposit, list, fill (the only moment a call is
- * written), close, claim. The two steps the vault itself acts on (list and fill) are filled in the
- * accent, as on the landing page.
- */
-const TRACK: readonly boolean[] = [false, true, true, false, false];
-
-export const alt =
-  "Stonkhouse: Put your stocks to work, one week at a time. Covered calls on tokenised stocks on Robinhood Chain.";
+export const alt = "Stonkhouse: small bets on big stocks. Lose at most what you pay. A payoff scenario with maximum loss.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -126,9 +103,13 @@ function Mark({ size: px }: { size: number }) {
 }
 
 export default async function OpengraphImage() {
+  const headlineLead = "Small bets on big stocks.";
+  const headlineAccent = "Lose at most what you pay.";
+  const payoff = `Example · NVDA at $${formatUsdg(EXAMPLE_PAYOFF.target)}: estimated settlement value ${formatUsdg(EXAMPLE_PAYOUT)} USDG (${EXAMPLE_MULTIPLE?.toFixed(2)}×) on ${formatUsdg(EXAMPLE_TAKE.cost)} USDG cost. Conversion may deliver less or return Stock Tokens.`;
+  const label = "Example · not a live quote";
   const [display, body] = await Promise.all([
-    loadFont(DISPLAY, 800, GLYPHS_DISPLAY),
-    loadFont(BODY, 500, GLYPHS_BODY),
+    loadFont(DISPLAY, 800, unique(WORDMARK + headlineLead + headlineAccent)),
+    loadFont(BODY, 500, unique(payoff + DOMAIN + label)),
   ]);
   // All or nothing. next/og treats any `fonts` array, even an empty one, as a full replacement for
   // its bundled face, so a half-loaded pair would leave one line of the card with no glyphs at all.
@@ -181,24 +162,24 @@ export default async function OpengraphImage() {
               lineHeight: 1.04,
             }}
           >
-            <div style={{ display: "flex", color: INK }}>{HEADLINE_LEAD}</div>
-            <div style={{ display: "flex", color: ACCENT }}>{HEADLINE_ACCENT}</div>
+            <div style={{ display: "flex", color: INK }}>{headlineLead}</div>
+            <div style={{ display: "flex", color: ACCENT }}>{headlineAccent}</div>
           </div>
           <div
             style={{
               display: "flex",
               marginTop: 30,
-              fontSize: 32,
+              fontSize: 27,
               fontWeight: 500,
               lineHeight: 1.3,
               color: INK_2,
             }}
           >
-            {TAGLINE}
+            {payoff}
           </div>
         </div>
 
-        {/* Bottom: a hairline, the domain, and the five-step week track. */}
+        {/* Bottom: a hairline, the domain, and the quote freshness label. */}
         <div
           style={{
             display: "flex",
@@ -209,25 +190,7 @@ export default async function OpengraphImage() {
           }}
         >
           <div style={{ display: "flex", fontSize: 26, fontWeight: 500, color: INK_2 }}>{DOMAIN}</div>
-          <div style={{ display: "flex", alignItems: "center" }}>
-            {TRACK.map((key, i) => (
-              <div key={i} style={{ display: "flex", alignItems: "center" }}>
-                {i > 0 ? (
-                  <div style={{ display: "flex", width: 38, height: 2, background: LINE_2 }} />
-                ) : null}
-                <div
-                  style={{
-                    display: "flex",
-                    width: 22,
-                    height: 22,
-                    borderRadius: 11,
-                    background: key ? ACCENT : SURFACE,
-                    border: `2px solid ${key ? ACCENT : LINE_2}`,
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+          <div style={{ display: "flex", fontSize: 24, fontWeight: 500, color: INK_2 }}>{label}</div>
         </div>
       </div>
     ),

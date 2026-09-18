@@ -1,5 +1,5 @@
 /**
- * /risks — the unabridged failure list for stonkhouse.fun, in the Daylight design.
+ * /risks — v2 buyer and writer risks first, followed by the detailed v1 legacy account record.
  *
  * This page is a product feature, not a legal appendix. The pitch is that the bad weeks are
  * published, so the bad weeks are described here in the register an engineer would use in a
@@ -9,8 +9,7 @@
  *
  * Sources, in order of authority: the live factory and account (stonkhousedotfun/callhouse-contracts
  * src/solo/AccountFactory.sol, src/solo/Account.sol, src/Policy.sol, src/lib/ValoremLib.sol),
- * then the GitBook docs, then this page. Where this page and those disagree, this page is the one
- * that is wrong.
+ * then the implementation. The footer GitBook is a legacy v1 reference, not v2 guidance.
  *
  * ACCURACY PASS 2026-09-15, against factory 0xc4A5Cd0DE91CaB7F5Ebe2114bc63Fbb43E642BBb on 4663:
  * policy() = (300, 1200, 40, 9500, 500, 50) so the premium floor is 0.40% of spot; maxPriceAge()
@@ -34,12 +33,12 @@ import Link from "next/link";
 import { Button, Chip, Container, Eyebrow, ExternalLink, Figure, Num, Panel, Section, SectionHead, WarnIcon } from "@/components/ui";
 import { WEEK } from "@/lib/clock";
 import { SECURITY_CONTACT_EMAIL } from "@/lib/legal";
-import { ADDRESSES, CHAIN_ID, CHAIN_NAME, DOCS_URL, MARKET, STATUS, addressUrl, appUrl } from "@/lib/site";
+import { ADDRESSES, CHAIN_ID, CHAIN_NAME, DEV_CARDS_ENABLED, DEV_PREVIEW, FEES_V2, MARKET, STATUS, addressUrl, appUrl } from "@/lib/site";
 
 import { GlanceGroup, ImpactLegend, RiskEntry, type RiskGroup } from "./_components/risk-ui";
 
 const DESCRIPTION =
-  "Every way a week here pays nothing, or costs you the collateral: no buyer, a fill refused after a rally, assignment, a claim stranded at the close, issuer freeze, contracts with no external audit, a keeper that can stop.";
+  "Buyers can lose the entire premium and taker fee. Thin books, settlement delays and payout conversion can change the result. Writers face capped upside and collateral risk.";
 
 export const metadata: Metadata = {
   title: "Risks",
@@ -54,6 +53,74 @@ export const metadata: Metadata = {
   },
 };
 
+const V2_GROUPS: readonly RiskGroup[] = [
+  {
+    id: "buyers",
+    eyebrow: "Buyers · v2",
+    title: "The cost is known. A payout is not.",
+    intro: "The buyer's maximum option loss is the premium plus taker fee paid; network gas is extra. The stock price and the ability to trade before expiry remain uncertain.",
+    risks: [
+      {
+        id: "buyer-premium-loss", title: "The contract can expire worthless", often: "Common", impact: "buyer-cost",
+        body: <p>A call pays only when its averaged settlement price finishes above its strike. Most options expire worthless. A correct forecast about the stock can still miss the strike or the expiry.</p>,
+        cost: <p>The entire premium and capped taker fee. There is no further buyer collateral to seize.</p>,
+        response: <p>The card and trade ticket show the maximum option loss before the wallet signs. Network gas is extra. The protocol does not refund an expired option.</p>,
+      },
+      {
+        id: "thin-book", title: "A thin book can make an exit costly", often: "Possible at any time", impact: "buyer-cost",
+        body: <p>A quoted ask may disappear or have too little size. A bid may not exist when you want to sell your option before expiry; crossing a thin spread can cost much of the premium.</p>,
+        cost: <p>Slippage on an entry or resale, up to the full amount paid if no buyer appears and the option expires worthless.</p>,
+        response: <p>The app shows depth and checks orders again before a trade. It cannot create a counterparty or promise a resale price.</p>,
+      },
+      {
+        id: "oracle-dispute", title: "Settlement can be delayed or held", often: "Uncommon, but material", impact: "exit",
+        body: <p>The v2 settlement oracle uses an averaged price around 16:00 New York time. If sources are missing or disagree, a single-source candidate waits and the guardian can hold it. The admin can resolve a stuck result only after the configured delay.</p>,
+        cost: <p>Time without access to a final payout. A wrong settlement price could also change the amount owed.</p>,
+        response: <p>The oracle records source evidence and delay state on-chain. Redemption waits for a finalized price; a keeper cannot choose the price.</p>,
+      },
+      {
+        id: "payout-conversion", title: "A call payout may arrive as Stock Tokens", often: "When conversion fails", impact: "exit",
+        body: <p>An in-the-money call is owed Stock Tokens. The Clearinghouse normally attempts to swap them to USDG within a bounded slippage limit. If the route fails or cannot meet that limit, it pays in kind instead. An issuer transfer freeze can leave an internal ledger balance until withdrawal works.</p>,
+        cost: <p>The time and price risk of holding or converting Stock Tokens instead of receiving USDG immediately. Stock Tokens are debt securities, not shares.</p>,
+        response: <p>The core checks the conversion result against the on-chain slippage bound. A failed transfer is credited to the holder&apos;s ledger rather than blocking every other holder&apos;s redemption.</p>,
+      },
+    ],
+  },
+  {
+    id: "writers-v2",
+    eyebrow: "Writers · v2",
+    title: "Premium trades away some upside.",
+    intro: "Writers must supply collateral and decide how much of it to offer. Minting an option charges rent; a filled call changes the payout they receive at settlement.",
+    risks: [
+      {
+        id: "writer-upside", title: "A rally caps the writer's upside", often: "Whenever a sold call finishes in the money", impact: "upside",
+        body: <p>A filled call gives its buyer the gain above the strike. The writer receives the sale premium at the planned launch primary fee of {FEES_V2.premiumBps / 100}%, but gives up that upside on the amount sold. Settlement returns the remaining Stock Tokens as a net-share amount; it is not simply all shares back or a full cash sale.</p>,
+        cost: <p>The gain above the strike on the collateral behind filled calls, plus any writer rent charged when the option was minted.</p>,
+        response: <p>Only the amount offered can be written. The app shows the writer payoff before an order is signed; an unfilled order can be cancelled.</p>,
+      },
+      {
+        id: "writer-rent", title: "Writer rent is charged at mint", often: "Each new option mint", impact: "collateral-fee",
+        body: <p>The fee is based on locked collateral, the market rate pinned when the series is created, and time remaining to expiry. A call pays in Stock Tokens and a put pays in USDG. An unfilled write ask that has not minted an option pays no rent, but a pre-minted option has already paid it even if its later sale never fills.</p>,
+        cost: <p>The rent can exceed the premium on a cheap option. If a holder brings matching long and short tokens together before expiry, unused rent is returned to whoever closes, in the collateral asset. The initial charge and refund can differ after time passes and amounts are rounded. There is no refund at or after expiry.</p>,
+        response: <p>Check the series-pinned rate and current mint fee in the app before writing. Any rent still held when the series settles accrues to the protocol.</p>,
+      },
+      {
+        id: "keeper-delay", title: "Settlement needs a caller", often: "Possible without automation or during outages", impact: "exit",
+        body: <p>Snapshotting prices, finalizing settlement and redeeming holders require transactions. A cranker can automate them and advance auto-roll strategies, but no cranker has an exclusive settlement privilege: anyone may call the public functions, pay gas and submit the transactions.</p>,
+        cost: <p>A delayed payout, an unrolled strategy, or a missed chance to list. An unavailable keeper does not transfer your collateral to itself.</p>,
+        response: <p>Public functions remain callable. The app and runbooks expose the state so another caller can resume work.</p>,
+      },
+      {
+        id: "oracle-and-admin", title: "The oracle and admin are in the money path", often: "Low-frequency dependency", impact: "total",
+        body: <p>The finalized price controls both long and short payouts. The admin can configure market sources and fees within compiled ceilings and can resolve a stuck settlement after a delay. The guardian can pause new risk and veto a single-source result.</p>,
+        cost: <p>A bad price or contract fault can cost a buyer&apos;s entire premium or a writer&apos;s collateral value. These contracts have no external audit and are non-upgradeable.</p>,
+        response: <p>Rules and limits are on-chain, and close, redeem, withdraw and cancel cannot be paused by a role. Those limits reduce authority; they do not remove implementation or key risk.</p>,
+      },
+    ],
+  },
+];
+
+/** Historical v1 account mechanics stay visible until O2-05 retires the last account. */
 const GROUPS: readonly RiskGroup[] = [
   {
     id: "ordinary",
@@ -801,25 +868,19 @@ export default function RisksPage() {
             Everything that can go wrong.
           </h1>
           <p className="mt-5 max-w-[34em] text-[19px] text-ink-2">
-            The whole list, in the order you are likely to meet it. Most of these are not bugs and
-            have no fix: they are the shape of writing covered calls against a tokenised security on
-            a one-week clock, through contracts other people control.
+            A buyer can lose every USDG paid for a contract. A writer can lose upside on stock
+            committed to a filled call. Settlement, liquidity and issuer restrictions can delay an exit.
           </p>
           <div className="mt-6 grid max-w-[36em] gap-3 text-ink-2">
             <p>
-              You offer some of your stock once a week, and that offer can fail to happen, happen at a
-              poor price, or happen and then be exercised against you. Every entry below says how often
-              to expect it, what it costs you, and what the system does about it. Several say the
-              system does nothing, because an account cannot outvote an issuer or conjure a bidder.
+              The v2 buyer and writer risks come first. Each entry names the possible cost and what
+              the protocol actually does about it. The detailed v1 account risks remain below,
+              labelled for legacy accounts until their run-off is complete.
             </p>
             <p className="text-[14.5px] text-ink-3">
-              Nothing on this page reads the chain. The figures are the factory&apos;s current
-              settings, which the admin can change, and limits compiled into the contracts, not live
-              readings. The same list, with the contract detail, is in{" "}
-              <ExternalLink href={DOCS_URL} className="link">
-                the docs
-              </ExternalLink>
-              .
+              Nothing on this page reads the chain. Fee figures are planned v2 launch defaults, not a
+              live trade quote; writer rent varies by market and time. Check the app&apos;s
+              live quote and the relevant contract before transacting.
             </p>
           </div>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -834,12 +895,11 @@ export default function RisksPage() {
             <WarnIcon size={18} className="mt-[3px] shrink-0 text-danger" />
             <div>
               <h2 id="first-h" className="text-[18px] font-bold leading-snug tracking-[-0.01em]">
-                You can lose the collateral you deposit.
+                Buyers can lose their full cost. Writers can lose upside.
               </h2>
               <p className="mt-1.5 text-[14.5px] text-ink-2">
-                The Stonkhouse contracts have had no external audit, the token&apos;s issuer can freeze
-                or burn it, and a clearinghouse can take listed lots at the strike. Deposit
-                accordingly.
+                Most options expire worthless. The Stonkhouse contracts have had no external audit,
+                and a Stock Token issuer can restrict transfers. Read the full list before trading.
               </p>
             </div>
           </div>
@@ -851,15 +911,15 @@ export default function RisksPage() {
             <ul className="mt-2">
               <li className="flex items-start gap-3 border-t border-line py-3 text-[15.5px] font-semibold leading-snug first:border-t-0">
                 <WarnIcon className="mt-0.5 shrink-0 text-warn" />
-                <span>Premium is paid only if a buyer fills.</span>
+                <span>A buyer can lose the entire premium and taker fee.</span>
               </li>
               <li className="flex items-start gap-3 border-t border-line py-3 text-[15.5px] font-semibold leading-snug">
                 <WarnIcon className="mt-0.5 shrink-0 text-warn" />
-                <span>Assignment can take the collateral at the strike.</span>
+                <span>Premium is paid only if a buyer fills. Assignment can take the collateral at the strike.</span>
               </li>
               <li className="flex items-start gap-3 border-t border-line py-3 text-[15.5px] font-semibold leading-snug">
                 <WarnIcon className="mt-0.5 shrink-0 text-warn" />
-                <span>Stock Tokens are debt securities, not Nvidia shares.</span>
+                <span>Stock Tokens are debt securities, not shares.</span>
               </li>
               <li className="flex items-start gap-3 border-t border-line pt-3 text-[15.5px] font-semibold leading-snug">
                 <WarnIcon className="mt-0.5 shrink-0 text-warn" />
@@ -869,8 +929,8 @@ export default function RisksPage() {
           </div>
 
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Figure boxed size="sm" label="Min premium today" value="0.40%" unit="of spot" />
-            <Figure boxed size="sm" label="Strike band today" value="3–12%" unit="above spot" />
+            <Figure boxed size="sm" label="v2 primary premium fee" value={`${FEES_V2.premiumBps / 100}%`} unit="planned launch" />
+            <Figure boxed size="sm" label="v2 exercise fee default" value={`${FEES_V2.exerciseBps / 100}%`} unit="capped" />
             <Figure boxed size="sm" mono={false} label="External audit" value={STATUS.audit} />
           </dl>
         </Panel>
@@ -880,20 +940,33 @@ export default function RisksPage() {
         <SectionHead
           id="at-a-glance-h"
           eyebrow="At a glance"
-          title="The whole list on one screen."
+          title="The risks, on one screen."
           intro="Each row links to its full entry. The grey line is how often to expect it; the chip is the worst it can cost you."
         />
         <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2">
-          {GROUPS.map((group) => (
+          {[...V2_GROUPS, ...GROUPS.map((group) => ({ ...group, eyebrow: `Legacy accounts · ${group.eyebrow}` }))].map((group) => (
             <GlanceGroup key={group.id} group={group} />
           ))}
           <ImpactLegend />
         </div>
       </Section>
 
-      {GROUPS.map((group) => (
+      {V2_GROUPS.map((group) => (
         <Section key={group.id} id={group.id} labelledBy={`${group.id}-h`}>
           <SectionHead id={`${group.id}-h`} eyebrow={group.eyebrow} title={group.title} intro={group.intro} />
+          <div>{group.risks.map((risk) => <RiskEntry key={risk.id} risk={risk} />)}</div>
+        </Section>
+      ))}
+
+      <Section id="legacy-accounts" labelledBy="legacy-accounts-h">
+        <SectionHead id="legacy-accounts-h" eyebrow="Legacy accounts · v1" title="Earlier account risks remain published."
+          intro="These Valorem and Seaport paths describe v1 accounts during their run-off. They are not the v2 Clearinghouse and OrderBook path." />
+        <p className="max-w-[65em] text-sm text-ink-2">The v1 contracts remain relevant until all positions expire and their holders finish withdrawing. The historical fee, keeper and oracle descriptions below apply only to those accounts.</p>
+      </Section>
+
+      {GROUPS.map((group) => (
+        <Section key={group.id} id={group.id} labelledBy={`${group.id}-h`}>
+          <SectionHead id={`${group.id}-h`} eyebrow={`Legacy accounts · ${group.eyebrow}`} title={group.title} intro={group.intro} />
           <div>
             {group.risks.map((risk) => (
               <RiskEntry key={risk.id} risk={risk} />
@@ -948,11 +1021,17 @@ export default function RisksPage() {
               The bad weeks will be published too.
             </h2>
             <p className="mt-2.5 max-w-[34em] text-ground/75">
-              Live lots are on the book. To see how one week runs, walk through it step by step.
+              {DEV_PREVIEW && DEV_CARDS_ENABLED
+                ? "Dev contracts appear in the dev app book. See how settlement works before trading."
+                : DEV_PREVIEW
+                ? "Dev contracts are not ready yet. See how settlement works before trading."
+                : STATUS.v2 === "Not released"
+                ? "The current app has the v1 book; public v2 trading is not released. See how settlement works before trading."
+                : "Live lots are on the book. To see how one week runs, walk through it step by step."}
             </p>
           </div>
           <div className="flex flex-wrap gap-3">
-            <Button href={appUrl("/book")}>Open the book</Button>
+            {DEV_PREVIEW && !DEV_CARDS_ENABLED ? null : <Button href={appUrl("/book")}>{DEV_PREVIEW ? "Open dev book" : STATUS.v2 === "Not released" ? "Open current book" : "Open the book"}</Button>}
             <Button variant="inverse" href="/how-it-works">
               How a week runs
             </Button>

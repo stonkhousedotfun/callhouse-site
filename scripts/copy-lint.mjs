@@ -61,8 +61,21 @@ const FORBIDDEN = [
   {re: /backed\s+by\s+nvidia/i, why: 'TECHSPEC 7.3: "backed by Nvidia the company" is not allowed'},
   {re: /dividend\s+paid\s+(in\s+cash\s+)?by\s+nvidia/i, why: "TECHSPEC 7.3: Nvidia does not pay you a dividend"},
   {re: /guaranteed\s+(yield|return|premium)/i, why: "premium is paid only if a buyer fills; nothing is guaranteed"},
+  {re: /\bguaranteed\b/i, why: "do not promise an outcome"},
   {re: /risk[-\s]?free/i, why: "assignment and issuer freeze are real risks"},
+  {re: /\bcan['’]?t\s+lose\b/i, why: "a buyer can lose the full cost"},
+  {re: /\bfree\s+money\b/i, why: "do not describe a risky trade as free money"},
 ];
+
+/** v1 account history on /risks keeps its original 5% fee; only v2 copy uses the new rent rule. */
+const V2_FEE_FILES = new Set([
+  "app/_components/FeeSlip.tsx",
+  "app/_components/StatusCard.tsx",
+  "app/how-it-works/page.tsx",
+  "app/risks/page.tsx",
+  "lib/site.ts",
+]);
+const V2_OLD_FEE = /first[- ]sale (?:premium )?fee|fee from that premium|our fee[^\n]*5\s*%|premiumBps:\s*500\b/i;
 
 /**
  * Disclosures required on specific routes. `pkg` names the package the page lives
@@ -97,9 +110,11 @@ const REQUIRED = [
     pkg: "site",
     page: "app/page.tsx",
     phrases: [
+      "the most you can lose is what you pay",
+      "Most options expire worthless",
+      "Stock Tokens are debt securities, not shares",
       "Premium is paid only if a buyer fills",
       "Assignment can take the collateral at the strike",
-      "Stock Tokens are debt securities",
     ],
   },
   {
@@ -162,6 +177,15 @@ function lintPackages(packages, required) {
     for (const file of files) {
       const rel = relative(dir, file).split("\\").join("/");
       const lines = readFileSync(file, "utf8").split("\n");
+      if (V2_FEE_FILES.has(rel)) {
+        const source = lines.join("\n");
+        const v2Source = rel === "app/risks/page.tsx"
+          ? source.split("/** Historical v1 account mechanics")[0]
+          : source;
+        if (V2_OLD_FEE.test(v2Source)) {
+          errors.push(`${name}/${rel}  outdated v2 first-sale fee copy or default — describe writer collateral rent and the 0% launch primary premium fee`);
+        }
+      }
       const caught = new Set();
       lines.forEach((line, i) => {
         if (line.includes("copy-lint-allow")) return;
@@ -255,8 +279,36 @@ function selfTest() {
       (e) => e.some((x) => x.includes("forbidden copy")),
     );
     expect(
+      "stale v2 first-sale fee copy is caught",
+      () => writeFileSync(join(site, "app", "risks", "page.tsx"), "Premium is paid only if a buyer fills\nconst V2_GROUPS = 'first-sale fee';\n"),
+      (e) => e.some((x) => x.includes("outdated v2 first-sale fee")),
+    );
+    expect(
+      "the old v2 premium fee default is caught",
+      () => {
+        mkdirSync(join(site, "lib"), {recursive: true});
+        writeFileSync(join(site, "lib", "site.ts"), "export const FEES_V2 = {premiumBps: 500};\n");
+      },
+      (e) => e.some((x) => x.includes("outdated v2 first-sale fee")),
+    );
+    expect(
+      "historical v1 fee language on the risks page stays allowed",
+      () => writeFileSync(join(site, "app", "risks", "page.tsx"), "Premium is paid only if a buyer fills\n/** Historical v1 account mechanics */\nconst GROUPS = 'first-sale fee';\n"),
+      (e) => e.length === 0,
+    );
+    expect(
       "a forbidden phrase wrapped across lines is caught",
       () => writeFileSync(join(site, "prose.tsx"), "the projected\n   yield on offer\n"),
+      (e) => e.some((x) => x.includes("spans a line break")),
+    );
+    expect(
+      "buyer loss claims are caught",
+      () => writeFileSync(join(site, "prose.tsx"), "You can't lose on these contracts\n"),
+      (e) => e.some((x) => x.includes("forbidden copy")),
+    );
+    expect(
+      "wrapped free-money claims are caught",
+      () => writeFileSync(join(site, "prose.tsx"), "free\n money for everyone\n"),
       (e) => e.some((x) => x.includes("spans a line break")),
     );
     expect(

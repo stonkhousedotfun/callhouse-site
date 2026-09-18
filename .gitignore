@@ -2,11 +2,25 @@
 node_modules/
 .next/
 out/
+.turbo/
+.vercel/
+coverage/
+playwright-report/
+test-results/
 *.tsbuildinfo
 next-env.d.ts
 
 # Local environment. .env.example is the documented template and IS committed.
 .env*
 !.env.example
+*.pem
+*.key
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.mnemonic
+*.secret
+*.log
 
 .DS_Store

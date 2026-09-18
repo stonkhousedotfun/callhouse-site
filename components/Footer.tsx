@@ -2,7 +2,7 @@
  * Footer for stonkhouse.fun (the mockup's .footer). Server component: nothing here hydrates.
  *
  * Four rows, in this order:
- *   1. what this is: product, share ticker, collateral, chain.
+ *   1. what this is: product, registry market count, chain.
  *   2. where to go: how it works, risks, legal, terms, privacy, then the links that leave this
  *      domain (docs, the app, the explorer), each marked ↗ and opening a new tab. Risks and legal
  *      live here, not in the top bar.
@@ -12,8 +12,8 @@
  *      across the two repos.
  *   4. the audit status, stated outright.
  *
- * DELIBERATELY ABSENT: a vault contract link (the addresses live on /how-it-works#contracts). GitHub
- * and GitBook sit in the top bar, not here.
+ * DELIBERATELY ABSENT: a contract link (the addresses live on /how-it-works#contracts).
+ * The old GitBook is labelled legacy v1 here, not advertised as current v2 guidance.
  */
 import Link from "next/link";
 
@@ -25,10 +25,8 @@ import {
   CHAIN_NAME,
   DOCS_URL,
   EXPLORER_URL,
-  MARKET,
+  REGISTRY_MARKET_COUNT,
   STATUS,
-  TOKEN_ADDRESS,
-  addressUrl,
 } from "@/lib/site";
 
 const PAGES = [
@@ -50,14 +48,8 @@ export function Footer() {
       <Container>
         <div className="grid gap-3.5 border-t border-line pb-12 pt-8 text-[13.5px] text-ink-3">
           <p>
-            <span className="font-display font-bold text-ink-2">Stonkhouse</span> · {MARKET} on {CHAIN_NAME}{" "}
-            <span className="num">{CHAIN_ID}</span>
-          </p>
-          <p>
-            Contract{" "}
-            <ExternalLink href={addressUrl(TOKEN_ADDRESS)} className={`${LINK} num break-all`}>
-              {TOKEN_ADDRESS}
-            </ExternalLink>
+            <span className="font-display font-bold text-ink-2">Stonkhouse</span> · <span className="num">{REGISTRY_MARKET_COUNT}</span> markets in the registry · {CHAIN_NAME}{" "}
+            <span className="num">{CHAIN_ID}</span>. Live availability is shown in the app.
           </p>
           <nav aria-label="Footer">
             <ul className="flex flex-wrap gap-x-[18px] gap-y-2">
@@ -70,7 +62,7 @@ export function Footer() {
               ))}
               <li>
                 <ExternalLink href={DOCS_URL} arrow className={LINK}>
-                  Docs
+                  Legacy v1 docs
                 </ExternalLink>
               </li>
               <li>
@@ -86,7 +78,7 @@ export function Footer() {
             </ul>
           </nav>
           <p className="max-w-[70em]">
-            Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited or Valorem.
+            Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited or Valorem (legacy accounts).
             Nothing here is financial advice or an offer of securities.
           </p>
           <p className="max-w-[70em]">{STATUS.phase}.</p>

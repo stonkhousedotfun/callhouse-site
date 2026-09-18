@@ -2,11 +2,11 @@
  * Top bar for stonkhouse.fun. Server component; the only client code is NavLinks
  * (usePathname for the active "How it works" link).
  *
- * Visual order: brand, how a week runs, then on the right X / GitHub / GitBook and "Open the app".
+ * Visual order: brand, how a week runs, then on the right X / GitHub and "Open the app".
  * Risks and legal live in the footer, not here. Below 960px the how-it-works link drops under the
- * brand and the right cluster, so the button and the marks stay reachable without a menu.
+ * brand and the right cluster, so the Buy button and the marks stay reachable without a menu.
  *
- * "Open the app" and the three marks leave this origin. They are plain new-tab <a>s.
+ * "Buy" and the two marks leave this origin. They are plain new-tab <a>s.
  *
  * DELIBERATELY ABSENT: any wallet or connect control. This package has no wallet code.
  */
@@ -15,7 +15,7 @@ import { SocialLinks } from "@/components/SocialLinks";
 import { Brand } from "@/components/ui/Brand";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { OPEN_APP } from "@/lib/site";
+import { DEV_PREVIEW, OPEN_APP, STATUS } from "@/lib/site";
 
 export function Nav() {
   return (
@@ -31,7 +31,7 @@ export function Nav() {
         <div className="order-2 ml-auto flex items-center gap-2 lg:order-3 lg:ml-0">
           <SocialLinks />
           <Button href={OPEN_APP} size="sm">
-            Open the app
+            {DEV_PREVIEW ? "Dev app" : STATUS.v2 === "Not released" ? "Open app" : "Buy"}
           </Button>
         </div>
       </Container>
