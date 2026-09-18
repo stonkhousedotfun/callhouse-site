@@ -6,7 +6,7 @@
  * app button, the header) is rendered by the server component in components/Nav.tsx.
  *
  * DELIBERATELY ABSENT: a "Home" link (the wordmark is the way home), Risks and Legal (those live
- * in the footer), Docs-as-text (the GitBook mark in the top-right is the docs), any wallet or
+ * in the footer), a current-v2 docs link (the existing GitBook is legacy v1), any wallet or
  * connect control, and any JS menu.
  *
  * Exact-match active test only: a prefix test would light every link that shares a prefix.

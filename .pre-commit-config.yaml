@@ -1,0 +1,48 @@
+# Requires local gitleaks, semgrep, node, and pnpm; all hooks are check-only.
+# The Git hook is not installed from this linked worktree (shared hook directory).
+minimum_pre_commit_version: '3.2.0'
+repos:
+  - repo: https://github.com/gitleaks/gitleaks
+    rev: v8.30.1
+    hooks:
+      - id: gitleaks-system
+        pass_filenames: false
+        always_run: true
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+        args: [--maxkb=1024]
+      - id: check-case-conflict
+      - id: check-json
+      - id: check-merge-conflict
+      - id: check-toml
+      - id: check-yaml
+      - id: detect-private-key
+
+  - repo: local
+    hooks:
+      - id: semgrep-local
+        name: Semgrep public-site rules
+        entry: semgrep scan --config .semgrep/precommit.yaml --error --skip-unknown-extensions
+        language: system
+        files: '\.(c?js|mjs|tsx?)$'
+      - id: public-scope
+        name: Public release scope and whitespace
+        entry: node scripts/check-commit-scope.mjs
+        language: system
+        pass_filenames: false
+        always_run: true
+      - id: public-copy
+        name: Public copy claims
+        entry: pnpm -s copy-lint
+        language: system
+        pass_filenames: false
+        files: '\.(md|tsx?)$'
+      - id: shared-math-twins
+        name: App/site math twins
+        entry: pnpm -s check-twins
+        language: system
+        pass_filenames: false
+        files: '^(lib/(payoff|payoffCurve|rent)\.ts|scripts/check-twins\.mjs)$'

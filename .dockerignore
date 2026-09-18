@@ -25,5 +25,7 @@ coverage
 
 # ---- docs and deploy config: read by humans and Railway, never by `next build` ----
 *.md
+*.mdx
+*.markdown
 Dockerfile
 railway.json

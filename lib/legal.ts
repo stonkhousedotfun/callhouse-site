@@ -93,8 +93,14 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * changed beyond those factual corrections. The version string stays v4-2026-09-15.
  * v5 (2026-09-15): the Terms and /legal now say an external audit is pending (owner decision the
  * same day) and link the app home. No other change.
+ * v6 (2026-09-16): the product descriptions follow the buyer-first v2 path and label v1 account
+ * mechanics as legacy. Privacy now describes optional notifier subscriptions and the indexer
+ * account reads. This version does not designate the still-unknown operator or governing law.
+ * v7 (2026-09-17): the public v2 release copy describes buyer costs, writer collateral, manual
+ * settlement, indexer account reads and optional notifications. The v1 Valorem/Seaport path is
+ * identified as legacy. The operator and governing-law gaps remain visible.
  */
-export const LEGAL_DOCS_VERSION = "v5-2026-09-15";
+export const LEGAL_DOCS_VERSION = "v7-2026-09-17";
 
 /** True while LEGAL_DOCS_VERSION still carries the draft prefix. The pages mark themselves from this. */
 export const LEGAL_DOCS_ARE_DRAFT = LEGAL_DOCS_VERSION.startsWith("draft-");

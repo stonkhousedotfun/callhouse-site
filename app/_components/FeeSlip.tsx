@@ -1,95 +1,41 @@
-/**
- * "What reaches depositors": the fee slip beside the benefits list.
- *
- * Figures are a labelled example at week 1's live ask (1 USDG) — see lib/exampleWeek.ts.
- * 5% is taken in the Seaport order; 95% goes to the writer's wallet. Not a quote or a forecast.
- */
-import type { ReactNode } from "react";
+/** The v7 launch fee example: buyer USDG math and writer collateral rent are separate assets. */
+import { Panel } from "@/components/ui";
+import { EXAMPLE_TAKE, formatUsdg } from "@/lib/examplePayoff";
+import { FEES_V2 } from "@/lib/site";
 
-import { Num, Panel } from "@/components/ui";
-import { EXAMPLE } from "@/lib/exampleWeek";
+const premiumFee = EXAMPLE_TAKE.premium * BigInt(FEES_V2.premiumBps) / 10_000n;
+const writerPremium = EXAMPLE_TAKE.premium - premiumFee;
 
-const MINUS = "−";
-
-function Row({
-  label,
-  note,
-  value,
-  minus = false,
-}: {
-  label: string;
-  note?: ReactNode;
-  value: string;
-  minus?: boolean;
-}) {
-  return (
-    <div className="flex justify-between gap-4 border-b border-dashed border-line-2 py-[11px] text-[15px]">
-      <dt className="text-ink-2">
-        {label}
-        {note ? <small className="block text-[12.5px] text-ink-3">{note}</small> : null}
-      </dt>
-      <dd className={minus ? "num whitespace-nowrap text-right text-ink-2" : "num whitespace-nowrap text-right"}>
-        {minus ? `${MINUS} ${value}` : value}
-      </dd>
-    </div>
-  );
+function Row({ label, value, note }: { label: string; value: string; note?: string }) {
+  return <div className="flex justify-between gap-4 border-b border-dashed border-line-2 py-3 text-sm">
+    <dt className="text-ink-2">{label}{note ? <small className="block text-xs text-ink-3">{note}</small> : null}</dt>
+    <dd className="num whitespace-nowrap text-right font-medium">{value}</dd>
+  </div>;
 }
 
 export function FeeSlip() {
-  return (
-    <Panel as="article" lift pad="none" aria-labelledby="slip-h" className="overflow-hidden">
-      <div className="flex flex-wrap items-baseline justify-between gap-2.5 px-6 pb-4 pt-[22px]">
-        <h3 id="slip-h" className="text-[17px] font-bold">
-          What the writer receives
-        </h3>
-        <span className="num text-xs font-medium text-ink-3">example · {EXAMPLE.sold} calls filled</span>
-      </div>
-
-      <div
-        aria-hidden="true"
-        className="mx-1 h-3.5"
-        style={{
-          backgroundImage: "radial-gradient(circle at 7px 7px, var(--ground) 5px, transparent 5.5px)",
-          backgroundSize: "14px 14px",
-          backgroundRepeat: "repeat-x",
-        }}
-      />
-
-      <dl className="px-6 pb-1.5 pt-2">
-        <Row
-          label="Buyers paid"
-          note={
-            <>
-              <Num>
-                ({EXAMPLE.fillA} + {EXAMPLE.fillB}) × {EXAMPLE.ask}
-              </Num>{" "}
-              USDG
-            </>
-          }
-          value={EXAMPLE.gross}
-        />
-        <Row label="Stonkhouse 5%" note="of premium only" value={EXAMPLE.fee} minus />
-      </dl>
-
-      <dl>
-        <div className="flex flex-wrap items-baseline justify-between gap-3 bg-accent-soft px-6 pb-[22px] pt-[18px]">
-          <dt className="font-bold text-accent-text">Paid to the writer</dt>
-          <dd className="num text-[28px] font-semibold leading-none text-accent-text">{EXAMPLE.net}</dd>
-        </div>
-      </dl>
-
-      <dl className="px-6 pt-1.5">
-        <Row
-          label="Per filled lot"
-          note="premium on that contract, net of the fee"
-          value={EXAMPLE.perShare}
-        />
-      </dl>
-
-      <p className="px-6 pb-5 pt-3.5 text-[13px] text-ink-3">
-        Premium goes to the account that sold the lot. Strike proceeds, if assigned, go to that same account with no
-        fee. Figures from a labelled example, not a live week or a forecast.
-      </p>
-    </Panel>
-  );
+  return <Panel as="article" lift pad="none" aria-labelledby="slip-h" className="overflow-hidden">
+    <div className="px-6 pb-4 pt-6">
+      <h3 id="slip-h" className="text-lg font-bold">What the fees look like</h3>
+      <p className="mt-1 text-xs font-medium text-ink-3">Example · 1 NVDA call covering 1 share · ask 1.00 USDG</p>
+    </div>
+    <dl className="px-6">
+      <Row label="Premium" value={`${formatUsdg(EXAMPLE_TAKE.premium)} USDG`} />
+      <Row label="Buyer taker fee" note={`Lesser of ${formatUsdg(FEES_V2.takerFlatRaw)} USDG or ${FEES_V2.takerCapBps / 100}% of premium`} value={`${formatUsdg(EXAMPLE_TAKE.fee)} USDG`} />
+      <Row label="Maximum option loss" note="Premium plus taker fee; network gas is extra" value={`${formatUsdg(EXAMPLE_TAKE.cost)} USDG`} />
+      <Row label="Primary premium fee" note={`${FEES_V2.premiumBps / 100}% planned launch default`} value={`${formatUsdg(premiumFee)} USDG`} />
+      <Row label="Writer collateral rent" note="Charged at mint in the collateral asset; market rate and time to expiry vary" value="Varies" />
+    </dl>
+    <dl><div className="mt-3 flex justify-between gap-4 bg-accent-soft px-6 py-5">
+      <dt className="font-bold text-accent-text">Premium to writer on this fill</dt>
+      <dd className="num text-xl font-semibold text-accent-text">{formatUsdg(writerPremium)} USDG</dd>
+    </div></dl>
+    <p className="px-6 py-5 text-sm text-ink-2">
+      At an in-the-money settlement, the exercise fee is {FEES_V2.exerciseBps / 100}% of collateral and
+      never more than {FEES_V2.exercisePayoutCapBps / 100}% of the payout. It is taken from the
+      payout. Premium is paid only if a buyer fills. A writer pays rent when the option is minted,
+      even if its premium is lower than the rent. Closing a matching long and short before expiry
+      returns unused rent to whoever closes, in the collateral asset; no rent is refunded at or after expiry.
+    </p>
+  </Panel>;
 }

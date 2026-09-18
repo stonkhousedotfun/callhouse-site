@@ -10,12 +10,9 @@
 # THE LAYERING IS THE POINT: manifests → install → sources → build. Copy the sources before the
 # install and every one-line copy edit reinstalls node_modules from scratch.
 #
-# This image reads EIGHT build variables, and all eight are display strings: the two domain URLs
-# plus the six operator facts the legal pages render (lib/legal.ts). The site has no wallet code
-# and makes no chain reads at all — there is no RPC here, no vault address, no indexer URL,
-# nothing to misconfigure into a wrong-contract failure. If this list ever grows past display
-# strings — anything that smells of chain configuration — something has been added to this repo
-# that belongs in the app (stonkhousedotfun/callhouse, web/).
+# The build accepts three domain URLs, one optional read-only public indexer API URL, two dev
+# preview switches, and six operator facts for the legal pages. There is no wallet, RPC or contract configuration here.
+# The API is used only by server-rendered cards and stats, with a labelled example on failure.
 #
 # DELIBERATELY ABSENT:
 #   - No `corepack prepare pnpm@<x>`. package.json carries `packageManager`, so corepack resolves
@@ -23,10 +20,9 @@
 #     unpinned corepack once resolved pnpm 12 for the keeper image and the install died.
 #   - No `pnpm install --no-frozen-lockfile`. The lockfile is the reproducibility contract; an
 #     install that is allowed to rewrite it is a different tree every build.
-#   - No NEXT_PUBLIC_VAULT / RPC / API ARGs. Adding one would mean the site had started reading
-#     the chain. v1 shows no live data: the vault is not deployed, so every live number would be
-#     a zero, and a zero on a landing page reads as a broken product rather than as an honest
-#     pre-launch state.
+#   - No NEXT_PUBLIC_VAULT / RPC ARGs. The one optional public API URL below is read-only:
+#     server-rendered v2 cards and stats. The build must still succeed without it, using a
+#     clearly labelled example. No chain client, wallet code or privileged endpoint is bundled.
 #   - No `next start`. The standalone output ships its own server; `next start` would need the
 #     full node_modules tree this image deliberately does not carry.
 #   - No HEALTHCHECK instruction. Railway owns the healthcheck (railway.json).
@@ -61,8 +57,8 @@ RUN pnpm install --frozen-lockfile
 # =============================================================================================
 # BUILD-TIME CONFIGURATION. READ THIS BEFORE CHANGING A VARIABLE IN THE RAILWAY UI.
 #
-# All eight values below are INLINED INTO THE JAVASCRIPT by `next build`. They are not read at
-# runtime.
+# NEXT_PUBLIC_* values are inlined by `next build`; the optional read-only API base is also
+# available to the server renderer. None is a secret. Changing one requires a rebuild.
 #
 #   1. A Railway service variable reaches a Dockerfile build ONLY if the Dockerfile declares it as
 #      an ARG. An undeclared variable is silently absent during the build and the compiled-in
@@ -89,10 +85,20 @@ RUN pnpm install --frozen-lockfile
 
 ARG NEXT_PUBLIC_SITE_URL="https://stonkhouse.fun"
 ENV NEXT_PUBLIC_SITE_URL=$NEXT_PUBLIC_SITE_URL
+ARG NEXT_PUBLIC_DEV_PREVIEW="0"
+ENV NEXT_PUBLIC_DEV_PREVIEW=$NEXT_PUBLIC_DEV_PREVIEW
+ARG NEXT_PUBLIC_DEV_CARDS="0"
+ENV NEXT_PUBLIC_DEV_CARDS=$NEXT_PUBLIC_DEV_CARDS
 ARG NEXT_PUBLIC_APP_URL="https://app.stonkhouse.fun"
 ENV NEXT_PUBLIC_APP_URL=$NEXT_PUBLIC_APP_URL
 ARG NEXT_PUBLIC_DOCS_URL="https://docs.stonkhouse.fun"
 ENV NEXT_PUBLIC_DOCS_URL=$NEXT_PUBLIC_DOCS_URL
+ARG NEXT_PUBLIC_X_URL="https://x.com/stonkhousefun"
+ENV NEXT_PUBLIC_X_URL=$NEXT_PUBLIC_X_URL
+ARG NEXT_PUBLIC_GITHUB_URL="https://github.com/stonkhousedotfun/callhouse"
+ENV NEXT_PUBLIC_GITHUB_URL=$NEXT_PUBLIC_GITHUB_URL
+ARG NEXT_PUBLIC_API_URL
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 
 # ---- operator facts for /terms, /privacy, /legal#reporting and /.well-known/security.txt.
 #      Read by lib/legal.ts; every value is a counsel decision, and no default is provided. ----
@@ -150,8 +156,8 @@ ENV HOSTNAME=0.0.0.0
 # injected value wins; this keeps `docker run` locally on a predictable port.
 ENV PORT=3000
 
-# No runtime variables. This site has no server-side configuration at all — no API proxy, no
-# secrets, nothing read per request.
+# No privileged runtime variables or API proxy. The compiled site uses only the read-only public
+# API base, and renders an example when the API is unavailable.
 
 RUN addgroup -g 1001 -S nodejs && adduser -u 1001 -S nextjs -G nodejs
 

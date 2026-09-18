@@ -1,9 +1,9 @@
 import type { MetadataRoute } from "next";
 
-import { SITE_URL } from "@/lib/site";
+import { DEV_PREVIEW, SITE_URL } from "@/lib/site";
 
 /**
- * /robots.txt for stonkhouse.fun. Allow everything.
+ * /robots.txt for stonkhouse.fun. Production allows indexing; the separate dev build disallows all.
  *
  * THE PAIRING, AND WHY IT IS SPLIT — this file and stonkhousedotfun/callhouse: `web/app/robots.ts` are one
  * decision written twice, in opposite directions, in two repos. This domain is indexed;
@@ -21,17 +21,17 @@ import { SITE_URL } from "@/lib/site";
  * So: one indexed domain, one that is not. If you ever find yourself allowing the app, you are
  * also volunteering to keep two copies of a securities disclosure ranking against each other.
  *
- * SITE_URL is inlined at build time (NEXT_PUBLIC_*, see .env.example), so the `sitemap` and
- * `host` values below are baked into the generated robots.txt. A preview deployment that was
- * built without NEXT_PUBLIC_SITE_URL set will advertise the production host here — which is
- * another reason previews should not be publicly reachable.
+ * SITE_URL is inlined at build time (NEXT_PUBLIC_*, see .env.example), so the production
+ * `sitemap` and `host` values below are baked into robots.txt. Dev mode emits only Disallow: /,
+ * with no production host or sitemap URL.
  *
- * Deliberately absent: per-agent rules, crawl-delay, and any disallow. There is no /api, no
- * search page, no session-parameterised URL and no user content on this site — four static
+ * Deliberately absent in production: per-agent rules, crawl-delay, and any disallow. There is no /api, no
+ * search page, no session-parameterised URL and no user content on this site — six public
  * routes, all of which we want read. A disallow list here would only be a list of things that do
  * not exist.
  */
 export default function robots(): MetadataRoute.Robots {
+  if (DEV_PREVIEW) return { rules: [{ userAgent: "*", disallow: "/" }] };
   return {
     rules: [
       {

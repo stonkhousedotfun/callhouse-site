@@ -21,11 +21,11 @@ export const DOCS = {
   addresses: `${DOCS_URL}/protocol/addresses`,
 } as const;
 
-/** A "go deeper" line under a section: "In the docs: The weekly cycle ↗". */
+/** A legacy v1 reference link; do not present these pages as current v2 mechanics. */
 export function DocsLink({ href, children, className }: { href: string; children: ReactNode; className?: string }) {
   return (
     <p className={cn("mt-8 text-[15px] text-ink-3", className)}>
-      In the docs:{" "}
+      Legacy v1 docs:{" "}
       <ExternalLink href={href} arrow className="link font-semibold text-accent-text">
         {children}
       </ExternalLink>

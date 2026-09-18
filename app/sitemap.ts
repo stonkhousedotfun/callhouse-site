@@ -1,21 +1,22 @@
 import type { MetadataRoute } from "next";
+import { notFound } from "next/navigation";
 
-import { SITE_URL } from "@/lib/site";
+import { DEV_PREVIEW, SITE_URL } from "@/lib/site";
 
 /**
- * /sitemap.xml for stonkhouse.fun. Six routes, listed by hand.
+ * /sitemap.xml for production stonkhouse.fun. Six routes, listed by hand. The separate dev
+ * preview returns 404, so it does not publish a sitemap.
  *
  * The list is literal rather than derived from the filesystem on purpose. This site has exactly
- * six public pages — four product pages and the two legal documents added 2026-09-12 — and
- * adding another is a product decision (README.md: "Adding a fifth means asking whether it
- * is marketing or product"), so a new route SHOULD require an edit here. A globbed sitemap would
+ * six public pages — landing, mechanics, risks, legal, terms and privacy — and
+ * adding another is a product decision, so a new route SHOULD require an edit here. A globbed sitemap would
  * quietly publish anything that landed in app/. /.well-known/security.txt is not a page and is
  * not listed.
  *
  * LASTMODIFIED IS A FIXED CONSTANT, NOT A CLOCK. `new Date()` or `Date.now()` at module scope
  * would stamp every build with the moment the container was built, so a rebuild with no copy
  * change — a dependency bump, a Railway redeploy, a retried CI job — would tell crawlers all
- * four disclosure pages had just been revised. That trains them to ignore the field. It also
+ * six pages had just been revised. That trains them to ignore the field. It also
  * makes the build non-reproducible: two builds of the same commit would emit different bytes.
  * Bump the constant BY HAND, in the same commit, when the copy on these pages actually changes.
  *
@@ -34,19 +35,20 @@ import { SITE_URL } from "@/lib/site";
  * Last real change to the copy on these pages, ISO 8601. Hand-maintained. Passed as a string so
  * no Date is constructed during the build and the output is byte-identical every time.
  */
-const CONTENT_REVISED = "2026-09-15T00:00:00.000Z";
+const CONTENT_REVISED = "2026-09-18T00:00:00.000Z";
 
 export default function sitemap(): MetadataRoute.Sitemap {
+  if (DEV_PREVIEW) notFound();
   return [
     {
-      // The landing. What the vault does, the weekly cycle, the link into the app.
+      // Buyer-first landing, live cards when available, and the link into the app.
       url: `${SITE_URL}/`,
       lastModified: CONTENT_REVISED,
       changeFrequency: "monthly",
       priority: 1,
     },
     {
-      // The cycle in detail: phase machine, policy table, addresses.
+      // Buyer and writer flows, settlement, fees and v2 contract status.
       url: `${SITE_URL}/how-it-works`,
       lastModified: CONTENT_REVISED,
       changeFrequency: "monthly",

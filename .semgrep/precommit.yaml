@@ -1,0 +1,8 @@
+rules:
+  - id: no-dynamic-code-execution
+    languages: [javascript, typescript]
+    severity: ERROR
+    message: Dynamic code execution is not allowed in the public site.
+    pattern-either:
+      - pattern: eval(...)
+      - pattern: new Function(...)

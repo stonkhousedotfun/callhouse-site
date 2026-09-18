@@ -6,7 +6,8 @@
  * the factual sentences against the live deployment: the Clear's fee switch is its feeTo(), a
  * one-owner Safe (0xff14…CF61), not the admin key; the admin is a single hot key with no timelock;
  * "not audited" became "no external audit"; the keeper's Cboe price source and its order feed were
- * named (see LEGAL_DOCS_VERSION in lib/legal.ts).
+ * named (see LEGAL_DOCS_VERSION in lib/legal.ts). v7 updates the product description for v2 and
+ * labels the Valorem/Seaport path as legacy while v1 positions run off.
  *
  * WHY THIS PAGE EXISTS: /legal says access is restricted by the Terms of Use rather than by a
  * technical control, and until 2026-09-12 there was no such document. A restriction that points
@@ -175,18 +176,17 @@ export default function TermsPage() {
             holds a token.
           </li>
           <li>
-            There is no custody. {MARKET} Stock Tokens you deposit are held by the vault contract and,
-            behind calls that have been sold, by the Valorem clearinghouse until the week closes. The
-            vault has no upgrade path and no function that moves a depositor&apos;s tokens anywhere but
-            back to the depositor or into a call a buyer has paid for. The admin can change policy
-            inside compiled-in caps and has no function that transfers a depositor&apos;s tokens,
-            although its settings, including whether the vault accepts a Valorem engine fee, can still
-            cost depositors value. The admin is currently a single key with no timelock.
+            The interface has no custody: a wallet signs each transaction. In v2, buyers pay premium
+            and a capped taker fee to acquire long options, while writers lock Stock Tokens or USDG
+            collateral in the Clearinghouse behind their orders. The contracts are non-upgradeable.
+            Admin settings are bounded by compiled ceilings and cannot transfer user collateral,
+            though fee and oracle choices can affect value. The admin is currently a single key with
+            no timelock. Legacy v1 accounts use their own vault and Valorem Clear during run-off.
           </li>
           <li>
-            There is no account. Nothing is registered, no password exists, and no know-your-customer
-            check is run. Your wallet address is the only identity the interface sees, and it is
-            public chain data.
+            There is no username or password account and no know-your-customer check. Your wallet
+            address is public chain data. Optional notifications create a wallet-linked subscription
+            with a channel target and preferences, as described in the privacy notice.
           </li>
           <li>
             The same contracts are reachable without this interface, from any tool that can send a
@@ -222,12 +222,13 @@ export default function TermsPage() {
 
       <DocSection {...SECTIONS.risks}>
         <p>
-          Premium is paid only if a buyer fills the weekly listing; a week with no buyer pays nothing,
-          and the vault can refuse a fill when the price has moved. Assignment can take the collateral
-          at the strike. The collateral is a debt security whose issuer can freeze transfers, and the
-          vault cannot override that. You can lose the collateral
-          you deposit. <DocLink href="/risks">The risks page</DocLink> is the full list and is part of these
-          terms by reference; read it before depositing.
+          A buyer can lose the entire premium and taker fee if an option expires worthless. A writer
+          receives premium only when an order fills, pays collateral rent when an option is minted,
+          and gives up upside above the strike on collateral committed to a filled call. The Stock
+          Token is a debt security whose issuer can restrict transfers. An oracle dispute can delay
+          settlement, and a call payout may arrive in Stock Tokens when USDG conversion fails.{" "}
+          <DocLink href="/risks">The risks page</DocLink> is part of these terms by reference; read
+          it before trading.
         </p>
       </DocSection>
 
@@ -235,32 +236,28 @@ export default function TermsPage() {
         <DocList>
           <li>
             The Stonkhouse contracts have had no external audit, only internal reviews. An external
-            audit is pending. They are published under the MIT licence, as-is, and there is no upgrade
-            path: a bug means a new vault and a migration, not a patch.
+            audit is pending. The published source includes files with different license notices;
+            check each applicable notice before reuse. The contracts have no upgrade path: a bug
+            may require a new deployment and migration, not a patch.
           </li>
           <li>
-            Seaport, the {MARKET} Stock Token, USDG, the RPC providers and Cboe, whose delayed option
-            quotes the keeper prices each week from, are third parties. None of
-            them is operated by, or answerable to, the people who publish this interface. The Stock
-            Token and USDG can be paused, frozen or upgraded by their issuers&apos; keys. The Stock
-            Token issuer can freeze transfers, which can stop this vault selling calls and paying out
-            tokens; it can also pause its oracle, which stops the vault arming, listing and selling
-            calls but not settling, because settlement does not read the oracle. A pause or freeze by
-            either issuer at the end of a week can leave the vault&apos;s Valorem claim unredeemed
-            until it lifts. When a dependency the vault needs stops, that part of the vault stops
-            with it.
+            The {MARKET} Stock Token, USDG, RPC providers, market-data sources and any payout
+            conversion route are third-party dependencies. None is operated by the people who
+            publish this interface. Issuer restrictions can halt token transfers. In v2, oracle
+            source availability and agreement determine the settlement price and can delay it;
+            conversion of an in-the-money call to USDG may fail within the on-chain slippage bound,
+            leaving a Stock Token payout instead.
           </li>
           <li>
-            Valorem Clear is third-party code. The instance this vault settles on is deployed from
-            that code alongside the vault. Its fee switch is held by a separate Safe with a single
-            owner, and the vault&apos;s admin key decides whether the vault accepts that fee. The
-            upstream code has had no commit since 2023, and there is no patch path behind it.
+            Legacy v1 accounts use Seaport and Valorem Clear. Valorem&apos;s fee switch is held by a
+            separate Safe with one owner, and the legacy vault&apos;s admin decides whether it accepts
+            that fee. Those dependencies remain relevant until the last v1 position is closed.
           </li>
           <li>
-            There is no third-party venue or registry. The keeper creates each week&apos;s call and
-            proposes its listing, and the vault checks both against compiled-in limits and its
-            policy. Those checks bound a hostile or mistaken keeper; they do not stop it selling on
-            the least favourable terms the policy allows.
+            V2 orders live in the Stonkhouse OrderBook. No automated settlement cranker is currently
+            deployed. Anyone may snapshot, finalize or redeem when the contracts allow it, but a
+            caller must submit each transaction and pay gas. An unavailable operator can delay a
+            payout even though it has no exclusive settlement privilege.
           </li>
         </DocList>
       </DocSection>
@@ -296,10 +293,12 @@ export default function TermsPage() {
 
       <DocSection {...SECTIONS.ip}>
         <p>
-          The contracts the interface points at are published under the MIT licence. The text and
-          design of this site are not open-licensed: you may read them and link to them, and no
-          other right is granted. Nothing here gives you any right to the Stonkhouse name or mark, or
-          to the names and marks of the third parties this site names, which belong to their owners.
+          Published contract source files carry their own license notices. Those notices govern
+          reuse of the respective source; this page
+          does not grant a separate license. The text and design of this site are not open-licensed:
+          you may read them and link to them, and no other right is granted. Nothing here gives you
+          any right to the Stonkhouse name or mark, or to the names and marks of the third parties
+          this site names, which belong to their owners.
         </p>
       </DocSection>
 
@@ -307,7 +306,7 @@ export default function TermsPage() {
         <p>
           You stop being bound by stopping using the interface. The interface may be suspended,
           changed or withdrawn at any time, without notice. The contracts it points at are on a
-          public chain and do not depend on this site: withdrawing from the vault remains possible
+          public chain and do not depend on this site: contract redemption and withdrawal remain possible
           without it, from any tool that can send a transaction.
         </p>
       </DocSection>

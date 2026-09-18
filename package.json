@@ -10,7 +10,8 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "copy-lint": "node scripts/copy-lint.mjs"
+    "copy-lint": "node scripts/copy-lint.mjs",
+    "check-twins": "node scripts/check-twins.mjs"
   },
   "dependencies": {
     "next": "^16.3.5",

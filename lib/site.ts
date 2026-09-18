@@ -14,9 +14,9 @@
  * page that makes no chain calls at all. This file DISPLAYS these addresses; it never calls them.
  * If an address changes, this file is updated by hand to match the chain.
  *
- * Deliberately absent: chain clients, ABIs, and anything that reads live state. Every number on
- * this site is a policy setting as read on chain on 2026-09-15, a compiled limit, or a labelled
- * example, not a quote. What changes week to week (strike, ask, fills) lives in the app.
+ * Deliberately absent: chain clients and ABIs. The v2 landing may read the public, read-only
+ * indexer API on the server. It renders live values only after validation and otherwise uses a
+ * labelled example. The v1 address facts below remain historical until the migration is complete.
  *
  * LIVE ADDRESSES (confirmed on chain 4663, 2026-09-15): factory.implementation(), factory.clear(),
  * factory.seaport(), factory.usdg(), factory.asset() and factory.priceFeed() return exactly the
@@ -36,7 +36,10 @@ function normalizeBase(url: string): string {
 /** This site. Used for canonical URLs and metadataBase. */
 export const SITE_URL = normalizeBase(process.env.NEXT_PUBLIC_SITE_URL ?? "https://stonkhouse.fun");
 
-/** Depositor documentation and the protocol reference (GitBook, synced from stonkhousedotfun/callhouse-docs). */
+/** Build-time switch for the separate dev site. Never infer preview mode from the hostname. */
+export const DEV_PREVIEW = process.env.NEXT_PUBLIC_DEV_PREVIEW === "1";
+
+/** Legacy v1 GitBook reference, not current v2 documentation. */
 export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https://docs.stonkhouse.fun");
 
 /** X (Twitter). Override with NEXT_PUBLIC_X_URL if the handle is not @stonkhousefun. */
@@ -47,6 +50,11 @@ export const GITHUB_URL = normalizeBase(process.env.NEXT_PUBLIC_GITHUB_URL ?? "h
 
 /** The dapp. Every CTA on this site points into it. */
 export const APP_URL = normalizeBase(process.env.NEXT_PUBLIC_APP_URL ?? "https://app.stonkhouse.fun");
+
+/** Explicitly enable dev cards only after the separate app and API are ready. */
+export const DEV_CARDS_ENABLED = DEV_PREVIEW && process.env.NEXT_PUBLIC_DEV_CARDS === "1" &&
+  SITE_URL === "https://dev.stonkhouse.fun" && APP_URL === "https://dev.app.stonkhouse.fun" &&
+  Boolean(process.env.NEXT_PUBLIC_API_URL?.trim());
 
 /**
  * Join a dapp route onto APP_URL. `appUrl("/account")` gives `https://app.stonkhouse.fun/account`,
@@ -75,9 +83,11 @@ export const VAULT_APP = appUrl("/account");
  */
 export const MARKET = "NVDA";
 export const SHARE_TICKER = "cNVDA";
+/** Twin of callhouse/web/lib/markets.generated.ts GENERATED_MARKETS.length at the v2 registry snapshot. */
+export const REGISTRY_MARKET_COUNT = 35;
 
 /**
- * Public product status. The landing, footer and risks glance read these so "beta" and
+ * Public production status, distinct from the separate mainnet dev preview. The landing, footer and risks glance read these so "beta" and
  * "pending audit" cannot drift across pages. "Pending" means no report yet, not that one has
  * started on a named firm. The contracts remain unaudited until a report is published.
  */
@@ -85,6 +95,16 @@ export const STATUS = {
   phase: "Beta",
   audit: "Pending audit",
   auditLine: "The Stonkhouse contracts have not been audited. An external audit is pending.",
+  v2: "Not released",
+} as const;
+
+/** Planned v7 launch defaults. Writer collateral rent varies by market and series, so it has no site-wide rate here. */
+export const FEES_V2 = {
+  premiumBps: 0,
+  takerFlatRaw: 100_000n,
+  takerCapBps: 1_000,
+  exerciseBps: 25,
+  exercisePayoutCapBps: 1_000,
 } as const;
 
 /** Robinhood Chain mainnet, an Arbitrum Orbit L2. 4663 = 0x1237. */
@@ -124,6 +144,36 @@ export type AddressRow = {
 export const TOKEN_ADDRESS = "0xc2525b7c68b6d66dE5AABFEDC7B13314F389D5C4";
 
 export const ADDRESSES = {
+  v2Clearinghouse: {
+    label: "v2 Clearinghouse",
+    address: "",
+    what: "No public production address yet. Buyer payouts and writer collateral will be settled here.",
+    verified: "Pending public release",
+  },
+  v2OrderBook: {
+    label: "v2 OrderBook",
+    address: "",
+    what: "No public production address yet. Buyers and writers will fill on-chain orders here.",
+    verified: "Pending public release",
+  },
+  v2SettlementOracle: {
+    label: "v2 SettlementOracle",
+    address: "",
+    what: "No public production address yet. Publishes the averaged settlement price.",
+    verified: "Pending public release",
+  },
+  v2ExpiryCalendar: {
+    label: "v2 ExpiryCalendar",
+    address: "",
+    what: "No public production address yet. Defines daily and weekly New York market expiries.",
+    verified: "Pending public release",
+  },
+  v2PayoutAdapter: {
+    label: "v2 PayoutAdapter",
+    address: "",
+    what: "No public production address yet. Attempts to convert call payouts to USDG within the on-chain slippage bound.",
+    verified: "Pending public release",
+  },
   token: {
     label: "StonkHouse token",
     address: TOKEN_ADDRESS,

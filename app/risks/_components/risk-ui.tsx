@@ -22,7 +22,7 @@ import type { ReactNode } from "react";
 import { Panel, WarnIcon } from "@/components/ui";
 import { cn } from "@/lib/cn";
 
-export type Impact = "premium" | "nvda-fee" | "exit" | "upside" | "total";
+export type Impact = "premium" | "buyer-cost" | "collateral-fee" | "nvda-fee" | "exit" | "upside" | "total";
 
 type ImpactStyle = {
   /** Chip text. Short enough to sit beside a title at 390px. */
@@ -35,10 +35,22 @@ type ImpactStyle = {
 };
 
 export const IMPACT: Record<Impact, ImpactStyle> = {
+  "buyer-cost": {
+    label: "Full cost",
+    meaning: "A buyer can lose the entire premium and taker fee paid for a contract.",
+    chip: "bg-warn-soft text-warn",
+    tone: "text-warn",
+  },
   premium: {
     label: "Premium",
     meaning: "Costs a week's premium, or time. The NVDA itself is not what is at stake.",
     chip: "bg-surface-2 text-ink-2",
+    tone: "text-warn",
+  },
+  "collateral-fee": {
+    label: "Collateral fee",
+    meaning: "A v2 option mint charges rent in its collateral asset: Stock Tokens for calls, USDG for puts.",
+    chip: "bg-warn-soft text-warn",
     tone: "text-warn",
   },
   "nvda-fee": {
@@ -68,7 +80,7 @@ export const IMPACT: Record<Impact, ImpactStyle> = {
 };
 
 /** Legend order: least to most severe. */
-export const IMPACT_ORDER: readonly Impact[] = ["premium", "nvda-fee", "exit", "upside", "total"];
+export const IMPACT_ORDER: readonly Impact[] = ["premium", "buyer-cost", "collateral-fee", "nvda-fee", "exit", "upside", "total"];
 
 export type Risk = {
   /** Anchor id. Stable: other pages and the docs may link to /risks#<id>. */

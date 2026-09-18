@@ -10,13 +10,9 @@
  * script; "not available to US persons" and "Robinhood Assets (Jersey) Limited" are literal
  * string matches, not sentiments.
  *
- * It mirrors stonkhousedotfun/callhouse: `web/app/legal/page.tsx` and MUST STAY IN SYNC WITH IT. (2026-09-14:
- * the affiliation and "not a claim on" lists dropped the former third-party venue, matching the
- * app's ported page word for word.) A change to
- * one is a change to both, in paired commits across the two repos — two domains carrying two
- * different versions of the same disclosure is worse than either version on its own. The only
- * permitted divergence is cross-links: /activity is a dapp route and is reached with appUrl(),
- * while the risk list and the mechanics are pages on this domain.
+ * Keep the geographic restriction and Stock Token form in sync with the dapp's
+ * `web/app/legal/page.tsx`. This indexed page also describes v2 buyer and writer flows and links
+ * to the fuller mechanics and risks on this domain. Cross-links to /activity use appUrl().
  *
  * DELIBERATELY ABSENT: no wallet, no chain read, no "I accept" button, no geo gate and no
  * cookie banner. Access is restricted by the Terms of Use at /terms and not by a technical
@@ -33,7 +29,6 @@
 import type { Metadata } from "next";
 
 import { LEGAL_DOCS_ARE_DRAFT, NOT_YET_DESIGNATED, SECURITY_CONTACT_EMAIL } from "@/lib/legal";
-import { MARKET } from "@/lib/site";
 
 import {
   Callout,
@@ -49,7 +44,7 @@ import {
 export const metadata: Metadata = {
   title: "Legal",
   description:
-    "Geographic restrictions and the legal form of Robinhood Chain Stock Tokens used as collateral.",
+    "Geographic restrictions, Stock Token debt securities, buyer option costs and writer collateral on Robinhood Chain.",
   alternates: { canonical: "/legal" },
 };
 
@@ -60,7 +55,7 @@ export const metadata: Metadata = {
 const SECTIONS = {
   geographic: { id: "geographic-restrictions", title: "Geographic restrictions" },
   stockToken: { id: "stock-token", title: "What a Stock Token is" },
-  share: { id: "vault-share", title: "Your account" },
+  share: { id: "vault-share", title: "Options and collateral" },
   noAdvice: { id: "no-advice", title: "No advice, no guarantee" },
   noAffiliation: { id: "no-affiliation", title: "No affiliation" },
   reporting: { id: "reporting", title: "Reporting a vulnerability" },
@@ -70,7 +65,7 @@ export default function LegalPage() {
   return (
     <LegalDocument
       eyebrow="Legal"
-      title="Who this is for, and what the collateral actually is"
+      title="Who this is for, and what Stock Tokens actually are"
       toc={Object.values(SECTIONS)}
     >
       {/* The two phrases below are required, verbatim, by scripts/copy-lint.mjs.
@@ -109,7 +104,7 @@ export default function LegalPage() {
       <DocSection {...SECTIONS.stockToken}>
         <DocList>
           <li>
-            The collateral in your account is a tokenised instrument issued by{" "}
+            The Stock Token underlying these options is a debt security issued by{" "}
             <strong>Robinhood Assets (Jersey) Limited</strong>. Stock Tokens are debt securities issued
             by that entity. They are not shares in the underlying company.
           </li>
@@ -122,10 +117,10 @@ export default function LegalPage() {
             issuer fails, the token&apos;s value does not survive independently of it.
           </li>
           <li>
-            The issuer can <strong>freeze or restrict transfers</strong>, which can stop an account
-            depositing, listing, settling, or paying out until it is lifted. The token can also pause its
-            own price oracle, which stops new listings; settlement does
-            not read the oracle. No Stonkhouse contract can override either.
+            The issuer can <strong>freeze or restrict transfers</strong>. That may delay a writer&apos;s
+            deposit or withdrawal and a buyer&apos;s in-kind payout. V2 settlement uses its own
+            oracle sources and can be delayed when they are missing or disputed. A paused token
+            price feed can also stop new series or orders. No Stonkhouse contract can override an issuer freeze.
           </li>
           <li>
             Corporate actions — splits, dividend adjustments — are expressed through an ERC-8056
@@ -138,16 +133,19 @@ export default function LegalPage() {
       <DocSection {...SECTIONS.share}>
         <DocList>
           <li>
-            Each wallet opens its own account. {MARKET} you deposit stays in that account. Only the
-            amount you offer can be sold. It is not a pooled vault share, not itself a Stock Token,
-            and not a claim on Stonkhouse, Valorem or any Robinhood entity.
+            A buyer pays premium and a capped taker fee for a long option. That full cost can be
+            lost if the contract expires worthless. A writer locks Stock Tokens or USDG as
+            collateral in the v2 Clearinghouse and chooses how much to offer. These option
+            tokens are not pooled vault shares or shares in the underlying company.
           </li>
           <li>
-            There is no protocol token, no points programme and no airdrop.
+            There is no points programme or airdrop for buying or writing these options.
           </li>
           <li>
-            Premium is paid only when a buyer fills your listing. A week with no buyer pays
-            nothing, and an exercised call takes collateral at the strike.{" "}
+            A writer receives premium only when a buyer fills an order. An unfilled order earns
+            no premium; writing a new option charges collateral rent when it is minted. A call
+            that finishes in the money transfers upside above the strike to
+            the buyer. The buyer&apos;s payout may arrive in Stock Tokens if conversion to USDG fails.{" "}
             <DocLink href="/risks">The risks page</DocLink> carries the full risk list, and{" "}
             <DocLink href="/how-it-works">how it works</DocLink> describes the cycle those outcomes come from.
           </li>
@@ -162,8 +160,9 @@ export default function LegalPage() {
           </li>
           <li>
             The Stonkhouse smart contracts have had no external audit, only the project&apos;s own internal
-            reviews. An external audit is pending. They are provided as-is, under the MIT licence, with
-            no warranty of any kind. You can lose the collateral you deposit.
+            reviews. An external audit is pending. They are provided as-is, with no warranty of any
+            kind. Published source files carry their own license notices. Buyers can lose their
+            full cost and writers can lose collateral value.
           </li>
           <li>
             Past weekly results describe what has already happened and say nothing about what any future week will do.
@@ -175,8 +174,8 @@ export default function LegalPage() {
         <p>
           Stonkhouse is an independent project. It is not affiliated with, endorsed by, or operated by
           Robinhood Markets, Inc., Robinhood Assets (Jersey) Limited, Valorem, or the issuers of USDG or
-          Seaport. Those names appear here only to identify the third-party contracts and
-          services this product interacts with.
+          Seaport. Valorem and Seaport are part of legacy v1 accounts during run-off; the v2 path uses
+          its Clearinghouse and OrderBook. Those names identify third-party contracts and services.
         </p>
       </DocSection>
 
