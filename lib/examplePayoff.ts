@@ -1,6 +1,7 @@
-/** Labelled illustration, never a live quote or a forecast. Maths is shared with the web payoff twin. */
-import { costToBuy, multipleAt, payoutAt } from "./payoff";
-import { FEES_V2 } from "./site";
+/** Labelled illustration, never a live quote or a forecast. */
+import { conversionFloorBps } from "./fees.ts";
+import { costToBuy, multipleAt, payoutAt } from "./payoff.ts";
+import { FEES_V2 } from "./site.ts";
 
 export const EXAMPLE_PAYOFF = {
   label: "Example",
@@ -18,12 +19,14 @@ export const EXAMPLE_POSITION = {
   strike: EXAMPLE_PAYOFF.strike,
   units: EXAMPLE_PAYOFF.units,
   exerciseFeeBps: EXAMPLE_PAYOFF.exerciseFeeBps,
+  // Worst permitted conversion loss, conditional on a successful route; not a live quote.
+  conversionFloorBps: conversionFloorBps(300, 100),
 };
 
 export const EXAMPLE_TAKE = costToBuy(
   [{ orderId: "1", price: EXAMPLE_PAYOFF.askPerShare, units: EXAMPLE_PAYOFF.units }],
   EXAMPLE_PAYOFF.units,
-  { takerFeeFlat: FEES_V2.takerFlatRaw, takerFeeCapBps: FEES_V2.takerCapBps },
+  { takerFeeFlat: FEES_V2.takerFlatRaw, takerFeeCapBps: FEES_V2.takerCapBps, discountBps: 0 },
 );
 export const EXAMPLE_PAYOUT = payoutAt(EXAMPLE_PAYOFF.target, EXAMPLE_POSITION);
 export const EXAMPLE_MULTIPLE = multipleAt(EXAMPLE_PAYOFF.target, EXAMPLE_POSITION, EXAMPLE_TAKE.cost);

@@ -201,7 +201,7 @@
 @utility link {
   text-decoration-line: underline;
   text-decoration-thickness: 1px;
-  text-decoration-color: var(--line-2);
+  text-decoration-color: currentColor;
   text-underline-offset: 3px;
   &:hover {
     text-decoration-color: currentColor;

@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
  *
  * <Figure> is one label/value pair and renders `<div><dt/><dd/></div>`, so it MUST sit inside a
  * <dl>. Shapes from the mockup:
- *   - hero facts:     <Figure label="Launch cap" value="20 NVDA" />                  (size md)
+ *   - hero facts:     <Figure label="Live markets" value="NVDA · AAPL" />            (size md)
  *   - week card:      <Figure boxed size="lg" label="Strike" value="225.00" unit="USDG" />
  *   - endings panel:  <Figure boxed caps mono={false} size="sm" label="Premium" value="None" />
  *
@@ -33,10 +33,11 @@ export type NumProps = {
 };
 
 export function Num({ tone, unit, className, children }: NumProps) {
+  const hasUnit = unit === 0 || Boolean(unit);
   return (
     <span className={cn("num", tone ? TONE[tone] : null, className)}>
       {children}
-      {unit ? (
+      {hasUnit ? (
         <>
           {" "}
           <small className="text-[0.625em] font-medium tracking-normal text-ink-3">{unit}</small>
@@ -81,6 +82,7 @@ export function Figure({
   mono = true,
   className,
 }: FigureProps) {
+  const hasUnit = unit === 0 || Boolean(unit);
   return (
     <div className={cn("grid content-start gap-1", boxed ? "rounded-md bg-surface-2 p-3.5" : null, className)}>
       <dt
@@ -93,7 +95,7 @@ export function Figure({
       </dt>
       <dd className={cn("font-semibold", SIZE[size], mono ? "num" : null, tone ? TONE[tone] : null)}>
         {value}
-        {unit ? (
+        {hasUnit ? (
           <>
             {" "}
             <small className="text-[0.625em] font-medium tracking-normal text-ink-3">{unit}</small>

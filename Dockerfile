@@ -50,8 +50,20 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 # first invoked below. Nothing here names a version, so nothing here can disagree.
 RUN corepack enable
 
+# ---- BUG-12-SITE-DEPENDENCIES.md P2-2: NOTHING BELOW THIS LINE RUNS AS ROOT. ----
+# The install and the build used to run as uid 0, so any dependency's install script executed with
+# full privileges and could rewrite .next/standalone/server.js before the runner stage copied it —
+# an image that then passes its healthcheck and serves attacker-modified pages from the real domain.
+# `corepack enable` above must stay root (it writes shims into /usr/local/bin); everything after
+# this does not. node:22-alpine already ships an unprivileged `node` user, so no account is created
+# here — /pnpm is PNPM_HOME and /app is the WORKDIR from the base stage, and both must be writable
+# by it. Pair this with `pnpm.onlyBuiltDependencies` in package.json: the allowlist decides WHICH
+# scripts may run, this decides WHO they run as, and neither alone is sufficient.
+RUN mkdir -p /pnpm && chown -R node:node /pnpm /app
+USER node
+
 # ---- manifests first. This layer changes only when a dependency changes. ----
-COPY package.json pnpm-lock.yaml ./
+COPY --chown=node:node package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
 # =============================================================================================
@@ -120,7 +132,9 @@ ENV NODE_ENV=production
 
 # ---- sources, last. .dockerignore decides what reaches this COPY: no node_modules (the layer
 #      above owns it), no .next, no .git, and no .env file of any kind. ----
-COPY . .
+# --chown because this stage runs as `node` now: a COPY defaults to root-owned files, and
+# `next build` has to write .next/ into this directory.
+COPY --chown=node:node . .
 
 # An absent public/ is a hard COPY failure in the runner, so guarantee it exists rather than
 # making the runner conditional.

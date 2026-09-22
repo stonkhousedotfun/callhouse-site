@@ -8,15 +8,16 @@ wallet code.
 
 This repo was split out of the stonkhousedotfun/callhouse monorepo (it was `site/` there) on 2026-09-13. It builds,
 lints, typechecks and deploys on its own: its own `package.json`, its own `pnpm-lock.yaml`, its own
-Dockerfile and Railway service, its own copy-lint gate.
+Dockerfile and Railway service. (Its copy-lint gate was removed on 2026-09-21.)
 
 ```bash
 pnpm install                 # pnpm 9.10.0 via corepack (packageManager), Node >= 22
 pnpm dev                     # http://localhost:3001  (the app owns 3000 locally)
 pnpm typecheck
 pnpm lint
+pnpm test                    # live-data allowlist and generated market projection tests
 pnpm build                   # emits .next/standalone/server.js
-pnpm copy-lint               # compliance gate: self-test, then the real tree. Also runs in CI
+pnpm check-twins             # checks payoff maths and market projection against sibling v2 sources when present
 ```
 
 ## Sibling repos
@@ -101,7 +102,7 @@ The pairing rule already applies, unchanged, to the other files that mirror the 
 its header comment: `app/legal/page.tsx` (disclosure copy), `app/layout.tsx` and `app/robots.ts`
 (the index/noindex decision), `components/Nav.tsx` and `components/Footer.tsx` (the standing
 disclaimers; their look follows Daylight here and follows the app's own design there until its
-rewrite), and `scripts/copy-lint.mjs` (the forbidden-copy table).
+rewrite). The forbidden-copy table lived in `scripts/copy-lint.mjs`, removed on 2026-09-21.
 
 ## What this is not
 
@@ -127,7 +128,7 @@ If a page here ever needs a number that changes, it belongs on the dapp instead.
 | `/how-it-works` | the cycle in detail: the phase machine, the policy table, write on fill, the addresses, who may call what |
 | `/risks` | the unabridged risk list. No buyer, a fill refused after a rally, assignment, partial assignment, issuer freeze and burn, USDG, a stranded claim, fee switch, admin, contracts with no external audit |
 | `/legal` | geographic restrictions and the legal form of the Stock Token |
-| `/terms`, `/privacy` | adopted by the owner (no counsel), versioned by `LEGAL_DOCS_VERSION`; a revision can be published as a draft first (see "Copy rules") |
+| `/terms`, `/privacy` | adopted by the owner (no counsel); revisions remain published while their wording is reviewed manually (see "Copy rules") |
 
 **What the pages describe** is the vault as redesigned on 2026-09-13 (stonkhousedotfun/callhouse-contracts
 `README.md`): the keeper creates and arms a weekly Valorem call and nothing is written at arm; the vault
@@ -154,50 +155,30 @@ the metadata hash.
 Four product routes. Adding a fifth means asking whether it is marketing or product; product goes
 to the app (stonkhousedotfun/callhouse `web/`).
 
-## Copy rules are a CI gate, not a style preference
+## Copy rules are editorial policy, not a CI gate
 
-`scripts/copy-lint.mjs` scans this whole repo (skipping `node_modules`, `.next` and other build
-output) and fails CI. The rules come from stonkhousedotfun/callhouse README "Frontend copy" and TECHSPEC 7.3,
-and they exist because the product is a tokenized security in a restricted perimeter. This domain is
-the *marketing* surface, which is the surface those rules were written for, so treat them as tighter
-here, not looser.
-
-The app repo carries its own copy of the script for `web/`. The `FORBIDDEN` table is byte-identical
-between the two; `REQUIRED` here is exactly the monorepo's `site` rows. Change a forbidden rule in
-one repo and change it in the other in a paired commit.
+`scripts/copy-lint.mjs` and its CI job were removed on 2026-09-21. Nothing in this repo now
+machine-checks the forbidden phrases or required disclosures below. These rules come from
+stonkhousedotfun/callhouse README "Frontend copy" and TECHSPEC 7.3; they remain editorial
+requirements for a tokenized security in a restricted perimeter, especially on this marketing
+surface. Check changed copy and the corresponding app copy manually.
 
 **Never appears anywhere in this repo:** APY, APR, "10% weekly", "projected yield", "annualized", <!-- copy-lint-allow: this line names the forbidden phrases inside an explicit "never" -->
 "backed by Nvidia", "dividend paid by Nvidia", "guaranteed yield", "risk-free". <!-- copy-lint-allow: same enumeration, continued -->
 
-The escape hatch is a `copy-lint-allow` comment on the same line and it is only for a sentence
-that is an explicit denial. It is not a way to ship the phrase.
+The former `copy-lint-allow` comment is no longer checked. An explicit denial may name a forbidden
+phrase, but the comment itself offers no protection against publishing a false claim.
 
 Never turn a weekly figure into a yearly one, by multiplication, compounding, illustration or
 "for example". No price chart. No candlesticks.
 
-**The legal-docs version gate.** `lib/legal.ts` exports `LEGAL_DOCS_VERSION`; a value starting
-`draft-` makes `/terms` and `/privacy` render "Draft — pending review by counsel" top and bottom,
-and copy-lint requires the marker code to stay in both pages. The documents were adopted as
-`v1-2026-09-13` (owner review against the code, no counsel — stonkhousedotfun/callhouse
-`ops/launch-legal.md` §2 item 9), corrected the same day as `v2-2026-09-13` (the Terms'
-third-party clause: an oracle pause stops writing and listing, not settlement), and revised as
-`v3-2026-09-15` for the rename to Stonkhouse and stonkhouse.fun (names and domains only), then
-`v4-2026-09-15`: the rename plus the corrections for the contracts redesign (no third-party venue or
-registry, the vault's own Valorem Clear instance and its fee switch, the dapp's own order-feed route
-in the privacy notice). Those corrections were first drafted 2026-09-14 and never published on their
-own; they went live together with the rename as v4. An accuracy pass on 2026-09-15, still under
-`v4-2026-09-15`, corrected the Terms against the live deployment (the Clear's fee switch is a
-one-owner Safe, not the admin key; the admin is one key with no timelock; "no external audit"; Cboe
-named as a third party); the privacy notice needed no change. v3 and v4 are corrections published
-like v2, not drafts; v4 still wants the owner's re-adoption. Until adoption, copy-lint also pinned the literal
-`export const LEGAL_DOCS_VERSION = "draft-` line, so dropping the prefix failed CI unless the gate
-was removed in the same commit; that entry was removed in the adoption commit. A future revision
-can be published as a draft first by re-adding the prefix.
-
-Every run starts with a self-test on synthetic trees (forbidden phrase caught, wrapped phrase
-caught, allow-comment honoured, missing disclosure caught, wrapped disclosure passes,
-`node_modules`/`.next` skipped, missing package root is a hard failure). A red self-test
-fails the run before the real tree is looked at.
+**Legal documents.** The Terms and privacy notice were adopted in their v8 form on 2026-09-20.
+The version and draft-display machinery was removed on 2026-09-21: `LEGAL_DOCS_VERSION`, its
+`draft-` prefix, version chips and draft markers no longer exist. Even before removal, the prefix
+marked a draft for readers; it never withheld the page. `lib/legal.ts` now exports only
+`LEGAL_DOCS_REVIEWED = "2026-09-20"` for the `security.txt` expiry date. It is not a wording gate.
+Both documents remain in force, and no version bump or copy-lint run is required or available when
+their wording changes. Review changes against the actual legal and product facts before publishing.
 
 ## The honest framing is the brand
 
@@ -210,7 +191,8 @@ Do not write around any of these. They are the pitch, not the fine print:
 - Stock Tokens are debt securities issued by Robinhood Assets (Jersey) Limited. Not shares, no
   vote, and the issuer can freeze transfers.
 - Not available to US persons.
-- No protocol token, no points, no airdrop at launch.
+- There is no points programme or airdrop for buying or writing these options. A protocol
+  token exists; it does not subsidise a week that earned nothing.
 - The contracts have had no external audit.
 
 No exclamation marks, no marketing adjectives. The register is the app's `web/app/page.tsx`:
@@ -239,20 +221,24 @@ No exclamation marks, no marketing adjectives. The register is the app's `web/ap
 
 ## Addresses and constants are duplicated too
 
-`lib/site.ts` carries the market ticker, the chain, the explorer and the address table, copied by
-hand from stonkhousedotfun/callhouse `web/lib/contracts.ts`, `web/lib/chain.ts` and `README.md` for the same
-reason. This site *displays* those addresses; it never calls them. stonkhousedotfun/callhouse `README.md`
-and `ops/addresses.json` remain the source of truth — update this file from them, never the reverse.
+`lib/site.ts` carries the chain, the explorer and the address table, copied by hand from
+stonkhousedotfun/callhouse `web/lib/contracts.ts`, `web/lib/chain.ts` and `README.md` for the same reason.
+`lib/markets.generated.ts` carries the current live ticker list and registry row count; `check-twins`
+verifies that projection against `ops/markets/tier1.json` in a v2 app checkout. This site *displays*
+those facts; it never calls the chain. The app registry, `README.md` and `ops/addresses.json` remain
+the sources of truth — update the site from them, never the reverse.
 
 ## Environment
 
-Three domain variables, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_DOCS_URL`, plus six operator variables
+Three domain variables, `NEXT_PUBLIC_SITE_URL`, `NEXT_PUBLIC_APP_URL` and `NEXT_PUBLIC_DOCS_URL`, one optional read-only
+`NEXT_PUBLIC_API_URL`, two dev preview switches, plus six operator variables
 for the legal pages; see `.env.example`. All are inlined at build time, so the Dockerfile has to take
 them as build `ARG`s — setting them as runtime variables on the service does nothing. The three domain
 variables default to the production domains, so a local build with no `.env` produces exactly what
 production produces.
 
-The Dockerfile declares all eight: the two domain URLs carry production defaults, the six
+The Dockerfile declares all twelve: the three domain URLs carry production defaults, the API URL
+has no default so an unset build renders labelled examples, and the six
 `NEXT_PUBLIC_OPERATOR_*` / `*_CONTACT_EMAIL` variables are declared with **no default** — an
 unset value compiles to the "not yet designated" gap on the legal pages and a 404 on
 security.txt. As of 2026-09-15 the three `*_CONTACT_EMAIL` variables are set on Railway to
@@ -328,9 +314,18 @@ of 2026-09-13, kept as history.
 |---|---|---|
 | `NEXT_PUBLIC_SITE_URL` | `https://stonkhouse.fun` | Dockerfile ARG default, same value. Safe |
 | `NEXT_PUBLIC_APP_URL` | `https://app.stonkhouse.fun` | Dockerfile ARG default, same value. Safe |
+| `NEXT_PUBLIC_DOCS_URL` | `https://docs.stonkhouse.fun` | Dockerfile ARG default, same value. Safe |
+| `NEXT_PUBLIC_API_URL` | Public v2 indexer base URL | Labelled example cards; build still succeeds |
+| `NEXT_PUBLIC_DEV_PREVIEW` | `1` for the separate dev site | `0`: production indexing and no preview banner |
+| `NEXT_PUBLIC_DEV_CARDS` | `1` only after dev contracts, indexer and app are ready | `0`: dev site keeps labelled examples |
 | `NEXT_PUBLIC_OPERATOR_*`, `NEXT_PUBLIC_*_CONTACT_EMAIL` (six) | As counsel decides — `ops/launch-legal.md` in stonkhousedotfun/callhouse | "not yet designated" on the legal pages, `security.txt` 404. Intended pre-launch |
 
 Set the domain pair anyway; an explicit variable is what a preview environment overrides.
+The dev site uses `https://dev.stonkhouse.fun` and `https://dev.app.stonkhouse.fun`, plus
+`NEXT_PUBLIC_DEV_PREVIEW=1`. That build visibly says DEV PREVIEW, emits `noindex` on every page,
+disallows crawling in `robots.txt`, and returns 404 for `sitemap.xml`. Dev cards require the
+additional `NEXT_PUBLIC_DEV_CARDS=1`, those exact dev URLs and a dev `NEXT_PUBLIC_API_URL`;
+leave that switch off until the dev market data and app routes are ready.
 
 > **`NEXT_PUBLIC_*` is compiled into the JavaScript by `next build`. It is not read at runtime.**
 > Railway passes a service variable into a Dockerfile build only if the Dockerfile declares it as
@@ -419,8 +414,8 @@ docker run --rm -p 3000:3000 callhouse-site      # -> http://localhost:3000
 ## CI
 
 `.github/workflows/ci.yml`: `pnpm install --frozen-lockfile`, `pnpm typecheck`, `pnpm lint`,
-`pnpm build` on Node 22 with pnpm from `packageManager`, plus a separate dependency-free
-`copy-lint` job.
+`pnpm test`, `pnpm build` on Node 22 with pnpm from `packageManager`, plus a separate dependency-free
+`copy-lint` job, removed on 2026-09-21.
 
 **Resolved 2026-09-13:** the `leekzor` account-level Actions billing problem that failed every run
 with `startup_failure` is fixed. If it ever recurs, the fallback is to run the five commands above

@@ -56,54 +56,19 @@ export const PRIVACY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_PRIVACY_CO
 export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_CONTACT_EMAIL);
 
 /**
- * Version stamp of the legal documents, used to derive the `Expires:` line of security.txt and
- * cited on /terms and /privacy. A literal, not a clock: the same commit must build the same
- * bytes (see the note on CONTENT_REVISED in app/sitemap.ts). Bump it by hand, in the same commit
- * as the wording change. Format is `<state>-<YYYY-MM-DD>`; securityTxtExpires() below reads the
- * date part. A value starting "draft-" marks an unadopted draft and the pages mark themselves
- * from it (LEGAL_DOCS_ARE_DRAFT). v1 was adopted 2026-09-13 by the owner, reviewed against the
- * code, without counsel — stonkhousedotfun/callhouse: `ops/launch-legal.md` §2 item 9. The copy-lint gate
- * that once pinned the draft prefix here was removed in the same commit as the adoption.
- * v2 (same day): one factual correction in the Terms' third-party clause — an oracle pause stops
- * writing and listing, not settlement; an issuer freeze can stop settlement.
- * v3 (2026-09-15): the product was renamed from Callhouse to Stonkhouse and its domains moved from
- * callhouse.finance to stonkhouse.fun. Both documents now name Stonkhouse, stonkhouse.fun and
- * app.stonkhouse.fun. Nothing else in either document changed. Like v2, published as a correction
- * to the adopted text, not as a draft.
- * v4 (2026-09-15): the v3 text plus factual corrections for the contracts redesign of 2026-09-13
- * (stonkhousedotfun/callhouse-contracts README.md:5-15). The corrections were first drafted 2026-09-14 and
- * were never published on their own; they reached the live site only in v4, together with the
- * rename. Terms: the third-party venue and its registry key are gone from the third-party clause and
- * the affiliation line; the vault's own Valorem Clear instance, its fee switch on the admin key
- * (AUDIT-FINDINGS-2026-09-14 I-01) and the admin's value levers are stated; custody wording follows
- * write on fill; a refused fill and an unredeemed claim at the close are named. Privacy: the dapp's
- * only server route is now its own order feed (web/app/api/keeper/orders), which forwards nothing
- * from the request; the third-party listings recipient is removed. No change to what either domain
- * collects. Like v2 and v3, published as a correction to the adopted text, not as a draft;
- * re-adopting it, or re-publishing it as "draft-", is the owner's call.
- * v4 accuracy pass (2026-09-15, same version, before v4 was published): the factual sentences of
- * both documents and of /risks were checked against the live deployment on chain 4663 and the code.
- * Corrected in the Terms: the Clear's fee switch is its feeTo(), a Safe with one owner and threshold
- * one, NOT the admin key (the I-01 premise of feeTo = admin was not how the Clear was deployed); the
- * admin is a single key with no timelock; "have not been audited" is now "no external audit, only
- * internal reviews"; Cboe's delayed quotes are named as a third party the keeper prices from; the
- * app's figures may also come from the keeper. The Privacy notice was re-checked against
- * web/app/api/keeper/orders/route.ts, lib/api.ts (fetchAccount still uncalled) and lib/wagmi.ts and
- * needed no change. No change to what either domain collects, and no clause's legal effect was
- * changed beyond those factual corrections. The version string stays v4-2026-09-15.
- * v5 (2026-09-15): the Terms and /legal now say an external audit is pending (owner decision the
- * same day) and link the app home. No other change.
- * v6 (2026-09-16): the product descriptions follow the buyer-first v2 path and label v1 account
- * mechanics as legacy. Privacy now describes optional notifier subscriptions and the indexer
- * account reads. This version does not designate the still-unknown operator or governing law.
- * v7 (2026-09-17): the public v2 release copy describes buyer costs, writer collateral, manual
- * settlement, indexer account reads and optional notifications. The v1 Valorem/Seaport path is
- * identified as legacy. The operator and governing-law gaps remain visible.
+ * The date the legal documents were last reviewed, used for ONE thing: deriving the `Expires:`
+ * line of /.well-known/security.txt, which RFC 9116 makes mandatory.
+ *
+ * THIS IS NOT A GATE. It was `LEGAL_DOCS_VERSION` until 2026-09-21, when the owner removed the
+ * versioning machinery: the rule that wording could not change without bumping a version, the
+ * draft flag derived from a "draft-" prefix, and the chips and markers the pages rendered from
+ * them. The instruction was that nothing should stop us saying something. So nothing here does.
+ *
+ * Update it when the documents are reviewed. Nothing checks that you did - not this file, not a
+ * linter (copy-lint was removed the same day), not CI. A stale date means security.txt advertises
+ * a mailbox whose last review is older than it claims, which is the only cost left.
  */
-export const LEGAL_DOCS_VERSION = "v7-2026-09-17";
-
-/** True while LEGAL_DOCS_VERSION still carries the draft prefix. The pages mark themselves from this. */
-export const LEGAL_DOCS_ARE_DRAFT = LEGAL_DOCS_VERSION.startsWith("draft-");
+export const LEGAL_DOCS_REVIEWED = "2026-09-20";
 
 /**
  * True only when a reader can tell who operates the interface AND how to reach them. A name
@@ -131,18 +96,22 @@ export const OPERATOR_GAP_NOTICE =
 export const NOT_YET_DESIGNATED = "not yet designated";
 
 /**
- * The `Expires:` value for security.txt: the LEGAL_DOCS_VERSION date plus one year, as an ISO
+ * The `Expires:` value for security.txt: LEGAL_DOCS_REVIEWED plus one year, as an ISO
  * 8601 instant. RFC 9116 recommends less than a year; we make it exactly a year from the last
  * review of the documents so a stale file expires on its own rather than advertising a mailbox
  * nobody has checked. Computed from the constant, never from the clock, so the route is
  * byte-identical across builds of the same commit.
  */
-export function securityTxtExpires(): string {
-  const match = /(\d{4})-(\d{2})-(\d{2})$/.exec(LEGAL_DOCS_VERSION);
+export function securityTxtExpires(reviewed = LEGAL_DOCS_REVIEWED): string {
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(reviewed);
   if (!match) {
-    throw new Error(`LEGAL_DOCS_VERSION must end in YYYY-MM-DD, got ${JSON.stringify(LEGAL_DOCS_VERSION)}`);
+    throw new Error(`LEGAL_DOCS_REVIEWED must be YYYY-MM-DD, got ${JSON.stringify(reviewed)}`);
   }
   const [, year, month, day] = match;
+  const reviewedDate = new Date(Date.UTC(Number(year), Number(month) - 1, Number(day)));
+  if (reviewedDate.toISOString().slice(0, 10) !== reviewed) {
+    throw new Error(`LEGAL_DOCS_REVIEWED must be a real date, got ${JSON.stringify(reviewed)}`);
+  }
   // Date.UTC normalises a 29 February forward rather than producing an invalid date.
   return new Date(Date.UTC(Number(year) + 1, Number(month) - 1, Number(day))).toISOString();
 }

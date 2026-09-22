@@ -33,7 +33,7 @@ import Link from "next/link";
 import { Button, Chip, Container, Eyebrow, ExternalLink, Figure, Num, Panel, Section, SectionHead, WarnIcon } from "@/components/ui";
 import { WEEK } from "@/lib/clock";
 import { SECURITY_CONTACT_EMAIL } from "@/lib/legal";
-import { ADDRESSES, CHAIN_ID, CHAIN_NAME, DEV_CARDS_ENABLED, DEV_PREVIEW, FEES_V2, MARKET, STATUS, addressUrl, appUrl } from "@/lib/site";
+import { ADDRESSES, CHAIN_ID, CHAIN_NAME, DEV_CARDS_ENABLED, DEV_PREVIEW, FEES_V2, LEGACY_V1_MARKET, STATUS, TOKEN_ADDRESS, addressUrl, appUrl } from "@/lib/site";
 
 import { GlanceGroup, ImpactLegend, RiskEntry, type RiskGroup } from "./_components/risk-ui";
 
@@ -73,14 +73,14 @@ const V2_GROUPS: readonly RiskGroup[] = [
         response: <p>The app shows depth and checks orders again before a trade. It cannot create a counterparty or promise a resale price.</p>,
       },
       {
-        id: "oracle-dispute", title: "Settlement can be delayed or held", often: "Uncommon, but material", impact: "exit",
-        body: <p>The v2 settlement oracle uses an averaged price around 16:00 New York time. If sources are missing or disagree, a single-source candidate waits and the guardian can hold it. The admin can resolve a stuck result only after the configured delay.</p>,
+        id: "oracle-dispute", title: "Single-source settlement waits one hour", often: "The norm on most approved launch markets", impact: "exit",
+        body: <p>The v2 settlement oracle uses an averaged price around 16:00 New York time. Most markets in the approved 20-market launch use one source: the oracle records a candidate, waits one hour and lets the guardian hold it. Dual-source markets can finalise immediately only when both sources agree; their own configured delay applies when one is missing or they disagree.</p>,
         cost: <p>Time without access to a final payout. A wrong settlement price could also change the amount owed.</p>,
         response: <p>The oracle records source evidence and delay state on-chain. Redemption waits for a finalized price; a keeper cannot choose the price.</p>,
       },
       {
-        id: "payout-conversion", title: "A call payout may arrive as Stock Tokens", often: "When conversion fails", impact: "exit",
-        body: <p>An in-the-money call is owed Stock Tokens. The Clearinghouse normally attempts to swap them to USDG within a bounded slippage limit. If the route fails or cannot meet that limit, it pays in kind instead. An issuer transfer freeze can leave an internal ledger balance until withdrawal works.</p>,
+        id: "payout-conversion", title: "Most launch markets pay calls in Stock Tokens", often: "The default on an unrouted market", impact: "exit",
+        body: <p>An in-the-money call is owed Stock Tokens. Most markets in the approved launch have no qualified USDG conversion route, so they pay those Stock Tokens in kind. A routed market attempts bounded USDG conversion and falls back to Stock Tokens if the route fails or misses its limit. An issuer transfer freeze can leave an internal ledger balance until withdrawal works.</p>,
         cost: <p>The time and price risk of holding or converting Stock Tokens instead of receiving USDG immediately. Stock Tokens are debt securities, not shares.</p>,
         response: <p>The core checks the conversion result against the on-chain slippage bound. A failed transfer is credited to the holder&apos;s ledger rather than blocking every other holder&apos;s redemption.</p>,
       },
@@ -90,19 +90,50 @@ const V2_GROUPS: readonly RiskGroup[] = [
     id: "writers-v2",
     eyebrow: "Writers · v2",
     title: "Premium trades away some upside.",
-    intro: "Writers must supply collateral and decide how much of it to offer. Minting an option charges rent; a filled call changes the payout they receive at settlement.",
+    intro: "Writers must supply collateral and decide how much of it to offer. A first sale pays a fee from its premium; a filled call changes the payout the writer receives at settlement.",
     risks: [
       {
         id: "writer-upside", title: "A rally caps the writer's upside", often: "Whenever a sold call finishes in the money", impact: "upside",
-        body: <p>A filled call gives its buyer the gain above the strike. The writer receives the sale premium at the planned launch primary fee of {FEES_V2.premiumBps / 100}%, but gives up that upside on the amount sold. Settlement returns the remaining Stock Tokens as a net-share amount; it is not simply all shares back or a full cash sale.</p>,
-        cost: <p>The gain above the strike on the collateral behind filled calls, plus any writer rent charged when the option was minted.</p>,
+        body: <p>A filled call gives its buyer the gain above the strike. In the replacement design, the writer receives the sale premium less the {FEES_V2.premiumBps / 100}% first-sale fee, but gives up that upside on the amount sold. Settlement returns the remaining Stock Tokens as a net-share amount; it is not simply all shares back or a full cash sale.</p>,
+        cost: <p>The gain above the strike on the collateral behind filled calls, plus {FEES_V2.premiumBps / 100}% of the first-sale premium.</p>,
         response: <p>Only the amount offered can be written. The app shows the writer payoff before an order is signed; an unfilled order can be cancelled.</p>,
       },
       {
-        id: "writer-rent", title: "Writer rent is charged at mint", often: "Each new option mint", impact: "collateral-fee",
-        body: <p>The fee is based on locked collateral, the market rate pinned when the series is created, and time remaining to expiry. A call pays in Stock Tokens and a put pays in USDG. An unfilled write ask that has not minted an option pays no rent, but a pre-minted option has already paid it even if its later sale never fills.</p>,
-        cost: <p>The rent can exceed the premium on a cheap option. If a holder brings matching long and short tokens together before expiry, unused rent is returned to whoever closes, in the collateral asset. The initial charge and refund can differ after time passes and amounts are rounded. There is no refund at or after expiry.</p>,
-        response: <p>Check the series-pinned rate and current mint fee in the app before writing. Any rent still held when the series settles accrues to the protocol.</p>,
+        id: "writer-fees", title: "A first sale pays a premium fee", often: "Each filled primary sale", impact: "premium",
+        body: <p>The replacement design takes {FEES_V2.premiumBps / 100}% from the premium when a newly written option sells. A true resale of an existing long is {FEES_V2.resalePremiumBps / 100}%. The collateral-based rate for new series launches at {FEES_V2.writerCollateralRatePpm} ppm.</p>,
+        cost: <p>{FEES_V2.premiumBps / 100}% of premium on a filled first sale. An unfilled ask earns no premium and pays no premium fee.</p>,
+        response: <p>Check the app&apos;s current quote before writing. General fee changes have {FEES_V2.feeChangeDelayHours} hours&apos; notice; exercise and collateral-rate changes have {FEES_V2.marketFeeChangeDelayHours} hours&apos; notice.</p>,
+      },
+      {
+        id: "automatic-repricing",
+        title: "Automatic repricing and fair value",
+        often: "Only when the writer opts in",
+        impact: "premium",
+        body: (
+          <p>
+            Smart pricing is optional. When a writer enables it, the PRICER may replace a live ask,
+            but AutoRoller rejects a price outside the writer&apos;s inclusive minimum and maximum ask
+            band. A replacement keeps the remaining size, series and expiry unchanged. The role
+            cannot move collateral, and an in-the-money ask is not repriced.
+          </p>
+        ),
+        cost: (
+          <p>
+            Fair value is an estimate in USDG per Stock Token. It is derived from usable listed-option
+            inputs and may use modeling, interpolation or extrapolation. It is not an executable quote
+            on Stonkhouse or another venue, a fill promise or a price floor. The estimate may be stale,
+            unavailable, uncertain or refused.
+          </p>
+        ),
+        response: (
+          <p>
+            The shipped pricer checks only during the regular session by default. When the session is
+            closed or a usable estimate is unavailable, the existing ask stays at its last price and
+            may become unattractive or cheap. Operators can enable off-session repricing with
+            PRICER_REPRICE_OFF_HOURS, so session-only behavior is a service default rather than a
+            contract rule. A writer can use manual pricing or turn smart pricing off.
+          </p>
+        ),
       },
       {
         id: "keeper-delay", title: "Settlement needs a caller", often: "Possible without automation or during outages", impact: "exit",
@@ -112,9 +143,58 @@ const V2_GROUPS: readonly RiskGroup[] = [
       },
       {
         id: "oracle-and-admin", title: "The oracle and admin are in the money path", often: "Low-frequency dependency", impact: "total",
-        body: <p>The finalized price controls both long and short payouts. The admin can configure market sources and fees within compiled ceilings and can resolve a stuck settlement after a delay. The guardian can pause new risk and veto a single-source result.</p>,
-        cost: <p>A bad price or contract fault can cost a buyer&apos;s entire premium or a writer&apos;s collateral value. These contracts have no external audit and are non-upgradeable.</p>,
-        response: <p>Rules and limits are on-chain, and close, redeem, withdraw and cancel cannot be paused by a role. Those limits reduce authority; they do not remove implementation or key risk.</p>,
+        body: <p>The finalized price controls both long and short payouts. The replacement design separates fee, configuration, listing, treasury and guardian powers into scheduled role lanes; it is not active before broadcast. General fee and role changes wait {FEES_V2.feeChangeDelayHours} hours, while exercise and collateral-rate changes wait {FEES_V2.marketFeeChangeDelayHours} hours. The guardian can pause new risk and veto a single-source result.</p>,
+        cost: <p>A bad price or contract fault can cost a buyer&apos;s entire premium or a writer&apos;s collateral value. No external audit report has been published, and the core is non-upgradeable.</p>,
+        response: <p>Rules and limits are on-chain, each take can cap its total taker-side fee, and close, redeem, withdraw and cancel cannot be paused by a role. No role can move user collateral. Those limits reduce authority; they do not remove implementation or key risk.</p>,
+      },
+    ],
+  },
+  {
+    id: "stonkhouse-token",
+    eyebrow: "STONKHOUSE token · third party",
+    title: "The token and its launch venue sit outside protocol control.",
+    intro: "STONKHOUSE exists, but it does not subsidise an option outcome. Its token contract, launchpad and trading venue are separate third-party surfaces.",
+    risks: [
+      {
+        id: "token-market",
+        title: "Fees and thin liquidity can make an exit costly",
+        often: "Possible whenever the token trades",
+        impact: "total",
+        body: (
+          <>
+            <p>
+              STONKHOUSE is deployed at{" "}
+              <ExternalLink href={addressUrl(TOKEN_ADDRESS)} className="link rounded-sm">
+                <span className="num">{shortAddress(TOKEN_ADDRESS)}</span>
+              </ExternalLink>
+              . Stonkhouse does not control the third-party token contract, launchpad or trading
+              venue. Venue fees can change, and thin liquidity can increase price impact or leave no
+              practical exit at the size you want.
+            </p>
+            <p>
+              No independent STONKHOUSE time-weighted average price has been identified. A quote or
+              median from the same pool is not independent price evidence.
+            </p>
+          </>
+        ),
+        cost: (
+          <p>
+            Swap fees, price impact and token-price loss, potentially including the full amount held.
+          </p>
+        ),
+        response: (
+          <>
+            <p>
+              The site identifies the token contract and states the limit: it cannot guarantee
+              liquidity, fees or a price. Launchpad holder rewards are separate from protocol fees
+              and any protocol burn.
+            </p>
+            <p>
+              A supply burn does not promise price appreciation, a price floor, buy pressure, yield
+              or any return to a holder.
+            </p>
+          </>
+        ),
       },
     ],
   },
@@ -154,7 +234,7 @@ const GROUPS: readonly RiskGroup[] = [
           <p>
             The week&apos;s premium, which is zero, and the time. The protocol fee is a share of the
             ask, so an unfilled week pays no fee either. Nothing was written, so an unfilled week has
-            nothing that can be assigned. Idle {MARKET} you did not list was never at risk.
+            nothing that can be assigned. Idle {LEGACY_V1_MARKET} you did not list was never at risk.
           </p>
         ),
         response: (
@@ -174,14 +254,14 @@ const GROUPS: readonly RiskGroup[] = [
       {
         id: "refused-fill",
         title: "A fill refused after a rally",
-        often: `Any week ${MARKET} rises`,
+        often: `Any week ${LEGACY_V1_MARKET} rises`,
         impact: "premium",
         body: (
           <>
             <p>
               Each account re-checks its premium floor and the lower bound of its strike band at the
-              spot of every fill, not at the spot the week was priced on. If {MARKET} rises and the
-              listed ask falls under the floor, the fill reverts. If {MARKET} rises until the strike
+              spot of every fill, not at the spot the week was priced on. If {LEGACY_V1_MARKET} rises and the
+              listed ask falls under the floor, the fill reverts. If {LEGACY_V1_MARKET} rises until the strike
               is less than <Num>3%</Num> above spot (the band&apos;s lower bound under the current
               policy), no new ask fixes that: nothing more can be sold from that listing.
             </p>
@@ -211,7 +291,7 @@ const GROUPS: readonly RiskGroup[] = [
       {
         id: "assignment",
         title: "Assignment caps your upside",
-        often: `Any week ${MARKET} runs`,
+        often: `Any week ${LEGACY_V1_MARKET} runs`,
         impact: "upside",
         body: (
           <p>
@@ -227,7 +307,7 @@ const GROUPS: readonly RiskGroup[] = [
         cost: (
           <p>
             Every cent of upside above the strike on the lots that sold, and those tokens themselves.
-            v1 does not buy the stock back. Idle lots you did not list cannot be assigned. If {MARKET}{" "}
+            v1 does not buy the stock back. Idle lots you did not list cannot be assigned. If {LEGACY_V1_MARKET}{" "}
             gaps up and keeps going, you sold the move for a week&apos;s premium.
           </p>
         ),
@@ -287,7 +367,7 @@ const GROUPS: readonly RiskGroup[] = [
         impact: "upside",
         body: (
           <p>
-            Depositing while a week is listed does <strong>not</strong> put the new {MARKET} up for
+            Depositing while a week is listed does <strong>not</strong> put the new {LEGACY_V1_MARKET} up for
             sale. New tokens sit idle. What you already listed is pinned: strike, ask, exercise and
             your expiry cannot move if the keeper sets a later week. You cannot change how many lots
             you offered while listed.
@@ -301,7 +381,7 @@ const GROUPS: readonly RiskGroup[] = [
         ),
         response: (
           <p>
-            Idle {MARKET} can still be withdrawn. After your expiry, anyone can settle the account:
+            Idle {LEGACY_V1_MARKET} can still be withdrawn. After your expiry, anyone can settle the account:
             leftover orders cancel and unsold lots unlock.
           </p>
         ),
@@ -313,7 +393,7 @@ const GROUPS: readonly RiskGroup[] = [
         impact: "exit",
         body: (
           <p>
-            Idle {MARKET} can leave at any time. Lots you listed are reserved until a fill takes them
+            Idle {LEGACY_V1_MARKET} can leave at any time. Lots you listed are reserved until a fill takes them
             or until someone settles after your expiry. There is no share token and no redeem queue.
           </p>
         ),
@@ -326,8 +406,8 @@ const GROUPS: readonly RiskGroup[] = [
         response: (
           <p>
             Settle is permissionless after that account&apos;s expiry, so a stopped keeper cannot trap
-            reserved {MARKET} forever. No Stonkhouse key is needed to finish the week. A Stock Token
-            issuer freeze of the account can still hold up the {MARKET} payout until it lifts.
+            reserved {LEGACY_V1_MARKET} forever. No Stonkhouse key is needed to finish the week. A Stock Token
+            issuer freeze of the account can still hold up the {LEGACY_V1_MARKET} payout until it lifts.
           </p>
         ),
       },
@@ -338,8 +418,8 @@ const GROUPS: readonly RiskGroup[] = [
         impact: "premium",
         body: (
           <p>
-            Plenty of products make an empty week look survivable by paying it in their own token.
-            This one has no token to pay with. You keep the ask less the protocol fee (
+            Plenty of products make an empty week look survivable by paying it in a protocol token.
+            Stonkhouse has a token, but a legacy account week is not subsidised by it. You keep the ask less the protocol fee (
             <Num>5%</Num> today; the admin can set it anywhere up to <Num>20%</Num>), and that is the
             entire return path.
           </p>
@@ -352,9 +432,9 @@ const GROUPS: readonly RiskGroup[] = [
         ),
         response: (
           <p>
-            Nothing, deliberately. There is no protocol token, no points programme and no airdrop at
-            launch, so nothing quietly tops up a week that earned nothing. A zero week is shown as
-            zero because there is nothing available to paper over it.
+            Nothing, deliberately. The token does not quietly top up a legacy week that earned
+            nothing. A zero week is shown as zero rather than being papered over by a token payment,
+            points or an airdrop.
           </p>
         ),
       },
@@ -385,9 +465,9 @@ const GROUPS: readonly RiskGroup[] = [
             </p>
             <p>
               The events are different. A freeze stops anything that moves the token, including selling
-              a call, a withdrawal and the {MARKET} leg of settle. An oracle pause stops new lists and
+              a call, a withdrawal and the {LEGACY_V1_MARKET} leg of settle. An oracle pause stops new lists and
               fills, and nothing else: settlement never reads the oracle, so an open week can still
-              settle. A burn takes {MARKET} out of the account outright.
+              settle. A burn takes {LEGACY_V1_MARKET} out of the account outright.
             </p>
           </>
         ),
@@ -419,7 +499,7 @@ const GROUPS: readonly RiskGroup[] = [
               selling blind.
             </p>
             <p>
-              After a burn, the {MARKET} is simply gone from that account. There is no share price to
+              After a burn, the {LEGACY_V1_MARKET} is simply gone from that account. There is no share price to
               haircut and no queue of other depositors.
             </p>
           </>
@@ -451,7 +531,7 @@ const GROUPS: readonly RiskGroup[] = [
         response: (
           <p>
             Settle completes and strands the claim rather than reverting, so a USDG event does not trap
-            the {MARKET} forever. What USDG takes, the account cannot get back.
+            the {LEGACY_V1_MARKET} forever. What USDG takes, the account cannot get back.
           </p>
         ),
       },
@@ -463,21 +543,21 @@ const GROUPS: readonly RiskGroup[] = [
         body: (
           <p>
             Settling a written week asks Valorem to hand back the account&apos;s claim: the unassigned{" "}
-            {MARKET} and the strike USDG, in one call. Either token&apos;s issuer can make that call
+            {LEGACY_V1_MARKET} and the strike USDG, in one call. Either token&apos;s issuer can make that call
             fail. When it fails, settle still clears the listing and leaves the claim in place. The
             claim is stranded.
           </p>
         ),
         cost: (
           <p>
-            Time. Listed leftovers are already cancelled, but written {MARKET} and strike USDG wait
+            Time. Listed leftovers are already cancelled, but written {LEGACY_V1_MARKET} and strike USDG wait
             until Valorem lets a later settle through, and possibly never.
           </p>
         ),
         response: (
           <p>
             Anyone can call settle again after expiry. The first attempt Valorem lets through redeems
-            the claim. Idle {MARKET} was never in the claim.
+            the claim. Idle {LEGACY_V1_MARKET} was never in the claim.
           </p>
         ),
       },
@@ -497,7 +577,7 @@ const GROUPS: readonly RiskGroup[] = [
         impact: "nvda-fee",
         body: (
           <p>
-            Valorem Clear can charge <Num>15 bps</Num> of written notional, paid in {MARKET} from the
+            Valorem Clear can charge <Num>15 bps</Num> of written notional, paid in {LEGACY_V1_MARKET} from the
             account&apos;s balance on top of the collateral each time a fill writes a lot. It is off
             today. Stonkhouse settles on its own instance of Valorem Clear, whose fee switch is held by
             a Safe with a single owner and a threshold of one, not by the factory admin; the factory
@@ -509,7 +589,7 @@ const GROUPS: readonly RiskGroup[] = [
         ),
         cost: (
           <p>
-            If the fee is switched on and accepted, every fill takes <Num>15 bps</Num> of the {MARKET} it
+            If the fee is switched on and accepted, every fill takes <Num>15 bps</Num> of the {LEGACY_V1_MARKET} it
             writes from that account. An exerciser would also pay <Num>15 bps</Num> of the strike into
             the Clear&apos;s fee balance, whether or not the factory accepted the fee. While the fee is
             on and not accepted, nothing sells.
@@ -536,7 +616,7 @@ const GROUPS: readonly RiskGroup[] = [
               read. The sequencer also screens transactions, and one that touches a restricted address
               is dropped; if an account itself were restricted, nothing could reach it. Forcing a
               transaction in through Ethereum takes <Num>4 days</Num>, and may not escape the screening
-              either. The {MARKET} price feed updates through the week, overnight included, and stops
+              either. The {LEGACY_V1_MARKET} price feed updates through the week, overnight included, and stops
               from the Friday close to Sunday evening New York time and over US market holidays; a gap
               longer than the factory&apos;s price-age limit (<Num>4 days</Num> today; the admin can set
               it from <Num>1 hour</Num> to <Num>7 days</Num>) blocks listing and selling until the feed
@@ -608,7 +688,7 @@ const GROUPS: readonly RiskGroup[] = [
         response: (
           <p>
             There is no proxy and no upgrade key on the implementation, so a bug means a new factory
-            and new accounts, not a silent patch. No external audit has been completed. One is pending.
+            and new accounts, not a silent patch. No external audit report has been published.
             There is no bug bounty; report a vulnerability to{" "}
             {SECURITY_CONTACT_EMAIL ? (
               <a className="link" href={`mailto:${SECURITY_CONTACT_EMAIL}`}>
@@ -645,7 +725,7 @@ const GROUPS: readonly RiskGroup[] = [
           <>
             <p>
               A stopped keeper cannot strand collateral past the week. After your expiry, anyone can
-              settle: cancel leftovers, unlock unsold {MARKET}, redeem the claim if Valorem allows.
+              settle: cancel leftovers, unlock unsold {LEGACY_V1_MARKET}, redeem the claim if Valorem allows.
             </p>
             <p>
               The Guardian can halt new lists and fills. A halt never blocks a deposit, an idle
@@ -670,7 +750,7 @@ const GROUPS: readonly RiskGroup[] = [
           <p>
             Skipped weeks, or a week set on the least favourable terms the policy allows (the lowest
             in-band strike, an ask at the premium floor) and bought by a buyer the attacker controls.
-            A fully compromised keeper still cannot withdraw your idle {MARKET}, or list lots you did
+            A fully compromised keeper still cannot withdraw your idle {LEGACY_V1_MARKET}, or list lots you did
             not request.
           </p>
         ),
@@ -703,7 +783,7 @@ const GROUPS: readonly RiskGroup[] = [
             A band set too tight means weeks where no strike qualifies. A band set too loose means
             assignment becomes routine. An admin can also redirect up to <Num>20%</Num> of the ask to
             an address it chooses; loosen policy to the caps; or, once the fee Safe switches
-            Valorem&apos;s fee on, accept it: a standing <Num>15 bps</Num> of {MARKET} on every lot
+            Valorem&apos;s fee on, accept it: a standing <Num>15 bps</Num> of {LEGACY_V1_MARKET} on every lot
             sold. All of these are legal moves inside the caps. Listed accounts have already pinned
             this week&apos;s orders.
           </p>
@@ -751,17 +831,17 @@ function FreezeList() {
     {
       what: "Settling after expiry",
       verdict: "partly",
-      why: `It clears leftover orders, but a claim with ${MARKET} to hand back is stranded until the freeze lifts. Anyone can retry.`,
+      why: `It clears leftover orders, but a claim with ${LEGACY_V1_MARKET} to hand back is stranded until the freeze lifts. Anyone can retry.`,
     },
     {
       what: "Depositing or withdrawing idle NVDA",
       verdict: "stops",
-      why: `Each moves ${MARKET}.`,
+      why: `Each moves ${LEGACY_V1_MARKET}.`,
     },
     {
       what: "Selling a lot",
       verdict: "stops",
-      why: `Each fill moves ${MARKET} into Valorem.`,
+      why: `Each fill moves ${LEGACY_V1_MARKET} into Valorem.`,
     },
   ];
   return (
@@ -878,9 +958,9 @@ export default function RisksPage() {
               labelled for legacy accounts until their run-off is complete.
             </p>
             <p className="text-[14.5px] text-ink-3">
-              Nothing on this page reads the chain. Fee figures are v2 launch settings, not a
-              live trade quote; writer rent varies by market and time. Check the app&apos;s
-              live quote and the relevant contract before transacting.
+              Nothing on this page reads the chain. Fee figures describe the replacement-contract
+              design and are not active before broadcast. Check the app&apos;s live quote and the
+              relevant deployed contract before transacting.
             </p>
           </div>
           <div className="mt-7 flex flex-wrap gap-3">
@@ -898,8 +978,8 @@ export default function RisksPage() {
                 Buyers can lose their full cost. Writers can lose upside.
               </h2>
               <p className="mt-1.5 text-[14.5px] text-ink-2">
-                Most options expire worthless. The Stonkhouse contracts have had no external audit,
-                and a Stock Token issuer can restrict transfers. Read the full list before trading.
+                Most options expire worthless. No external audit report has been published for the
+                Stonkhouse contracts, and a Stock Token issuer can restrict transfers. Read the full list before trading.
               </p>
             </div>
           </div>
@@ -929,7 +1009,7 @@ export default function RisksPage() {
           </div>
 
           <dl className="grid grid-cols-1 gap-3 sm:grid-cols-3">
-            <Figure boxed size="sm" label="v2 primary premium fee" value={`${FEES_V2.premiumBps / 100}%`} unit="launch setting" />
+            <Figure boxed size="sm" label="Replacement first-sale fee" value={`${FEES_V2.premiumBps / 100}%`} unit="design setting" />
             <Figure boxed size="sm" label="v2 exercise fee default" value={`${FEES_V2.exerciseBps / 100}%`} unit="capped" />
             <Figure boxed size="sm" mono={false} label="External audit" value={STATUS.audit} />
           </dl>

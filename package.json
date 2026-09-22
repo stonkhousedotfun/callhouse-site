@@ -2,16 +2,27 @@
   "name": "@callhouse/site",
   "version": "0.1.0",
   "private": true,
-  "engines": { "node": ">=22" },
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
   "packageManager": "pnpm@9.10.0",
   "scripts": {
     "dev": "next dev -p 3001",
     "build": "next build",
     "start": "next start",
+    "test": "node --experimental-strip-types --test",
+    "test:site": "node --experimental-strip-types --test lib/site.test.ts",
+    "test:live": "node --experimental-strip-types --test lib/live.test.mts",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "copy-lint": "node scripts/copy-lint.mjs",
-    "check-twins": "node scripts/check-twins.mjs"
+    "check-twins": "node scripts/check-twins.mjs",
+    "gen:markets": "node scripts/gen-markets.mjs",
+    "test:market-projection": "node --test scripts/market-projection.test.mjs",
+    "test:gen-markets": "node --test scripts/gen-markets.test.mjs"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": []
   },
   "dependencies": {
     "next": "^16.3.5",

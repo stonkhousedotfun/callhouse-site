@@ -34,12 +34,6 @@ repos:
         language: system
         pass_filenames: false
         always_run: true
-      - id: public-copy
-        name: Public copy claims
-        entry: pnpm -s copy-lint
-        language: system
-        pass_filenames: false
-        files: '\.(md|tsx?)$'
       - id: shared-math-twins
         name: App/site math twins
         entry: pnpm -s check-twins

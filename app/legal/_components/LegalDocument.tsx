@@ -2,11 +2,12 @@
  * The document shell /legal, /terms and /privacy share in the Daylight design. Server components
  * only; nothing here hydrates.
  *
- * WHAT THIS FILE MAY DO: layout and type. The three pages are adopted legal documents, and every
- * sentence a reader sees is written in the page files themselves, where scripts/copy-lint.mjs reads
- * it. Nothing in here renders legal wording of its own. The only strings this file adds to a page
- * are navigation ("On this page", the section list, which repeats each page's own h2 text) and the
- * version chip, which prints LEGAL_DOCS_VERSION from lib/legal.ts and nothing else.
+ * WHAT THIS FILE MAY DO: layout and type. /terms and /privacy are adopted legal documents;
+ * /legal is an explanatory disclosure outside that set. Every reader-visible legal sentence is
+ * written in the page files themselves; copy-lint was removed on 2026-09-21, so disclosure wording
+ * must be checked manually. Nothing in here renders legal wording of its own. Its only strings are
+ * navigation ("On this page" and section titles repeated from each page's h2 text). The version
+ * chip was removed on 2026-09-21 with the rest of the legal versioning machinery.
  *
  * Layout: the page head (eyebrow, h1, optional chips) sits on the 1160px container. Under it, a
  * 65ch reading column; from 960px up, a sticky section list in a narrow column to its left. Below
@@ -19,7 +20,6 @@ import type { ReactNode } from "react";
 
 import { Chip, Container, ExternalLink, SectionHead, WarnIcon } from "@/components/ui";
 import { cn } from "@/lib/cn";
-import { LEGAL_DOCS_ARE_DRAFT, LEGAL_DOCS_VERSION } from "@/lib/legal";
 
 /** One row of the section list: the h2's id and its exact heading text. */
 export type TocEntry = { readonly id: string; readonly title: string };
@@ -27,7 +27,7 @@ export type TocEntry = { readonly id: string; readonly title: string };
 type LegalDocumentProps = {
   eyebrow: string;
   title: string;
-  /** Chips under the h1 (the version chip). */
+  /** Optional metadata under the h1. */
   meta?: ReactNode;
   toc: readonly TocEntry[];
   children: ReactNode;
@@ -111,15 +111,6 @@ function TocDisclosure({ toc }: { toc: readonly TocEntry[] }) {
         </ol>
       </details>
     </nav>
-  );
-}
-
-/** "Version v2-2026-09-13", straight from lib/legal.ts. Warn-toned while the documents are a draft. */
-export function VersionChip() {
-  return (
-    <Chip tone={LEGAL_DOCS_ARE_DRAFT ? "warn" : "neutral"}>
-      Version <span className="num">{LEGAL_DOCS_VERSION}</span>
-    </Chip>
   );
 }
 
@@ -217,5 +208,5 @@ export function Callout({ tone, children }: { tone: "bad" | "warn"; children: Re
   );
 }
 
-/** The draft marker's box. The marker's wording stays in each page file, where copy-lint reads it. */
+/** The draft marker's box. The marker's wording stays in each page file, where disclosure policy requires it. Nothing checks it automatically since copy-lint was removed on 2026-09-21. */
 export const DRAFT_MARKER = "rounded-xl bg-warn-soft px-4 py-3 text-[15px] leading-[1.6]";

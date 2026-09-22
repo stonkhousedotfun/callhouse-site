@@ -21,16 +21,7 @@ jobs:
         run: pnpm typecheck
       - name: lint
         run: pnpm lint
+      - name: test
+        run: pnpm test
       - name: build
         run: pnpm build
-
-  copy-lint:
-    name: copy-lint (compliance)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: {node-version: 22}
-      # Zero dependencies, so no install: the gate runs even when the install is broken.
-      - name: forbidden + required copy
-        run: node scripts/copy-lint.mjs

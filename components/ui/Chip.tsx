@@ -5,7 +5,7 @@ import { cn } from "@/lib/cn";
 /**
  * The mockup's .chip: a small rounded-full status label. `dot` adds the 7px current-colour dot
  * the accent chips carry ("Listed"). `wrap` lets a long chip break across lines instead of
- * running past a 390px screen (the hero's "Stock Tokens · Robinhood Chain · NVDA vault first").
+ * running past a 390px screen (for example, a long product-status chip in the hero).
  */
 export type ChipTone = "neutral" | "accent" | "warn" | "usdg";
 

@@ -16,7 +16,7 @@ import { DEV_PREVIEW, SITE_URL } from "@/lib/site";
  *   2. Both domains carry the same disclosures — /legal, /how-it-works, /risks are duplicated on
  *      the dapp as /legal and /docs. Indexing both splits which copy a search engine decides to
  *      show, and the one it should show is the one on this domain: the pages here are static,
- *      have no wallet attached, and are gated by scripts/copy-lint.mjs on every build.
+ *      have no wallet attached, and are required by disclosure policy (no longer machine-checked: copy-lint was removed 2026-09-21).
  *
  * So: one indexed domain, one that is not. If you ever find yourself allowing the app, you are
  * also volunteering to keep two copies of a securities disclosure ranking against each other.

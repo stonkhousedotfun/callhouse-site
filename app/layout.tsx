@@ -57,7 +57,7 @@ const mono = Geist_Mono({
  *   - This domain carries the canonical /legal, /risks and /how-it-works copy. Serving the same
  *     disclosures from two hostnames is duplicate content, and duplicate content lets a search
  *     engine pick which of the two it shows. The disclosures get one address, and it is this one.
- *   - This is the surface scripts/copy-lint.mjs was written for. The page a stranger finds first
+ *   - This is the surface copy-lint was written for, before it was removed on 2026-09-21. The page a stranger finds first
  *     should be the page whose wording is checked on every build.
  * The separate dev build is an explicit exception: DEV_PREVIEW gives all its pages noindex and a
  * visible banner, while app/robots.ts disallows crawling and app/sitemap.ts returns 404.

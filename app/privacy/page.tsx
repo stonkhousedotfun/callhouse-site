@@ -13,7 +13,6 @@ import type { Metadata } from "next";
 import {
   Callout,
   DOC_LINK,
-  DRAFT_MARKER,
   Code,
   DocExternalLink,
   DocH3,
@@ -22,13 +21,9 @@ import {
   DocList,
   DocSection,
   LegalDocument,
-  VersionChip,
   type TocEntry,
 } from "@/app/legal/_components/LegalDocument";
-import { cn } from "@/lib/cn";
 import {
-  LEGAL_DOCS_ARE_DRAFT,
-  LEGAL_DOCS_VERSION,
   NOT_YET_DESIGNATED,
   OPERATOR_GAP_NOTICE,
   OPERATOR_JURISDICTION,
@@ -38,14 +33,20 @@ import {
 } from "@/lib/legal";
 import { EXPLORER_URL, appUrl } from "@/lib/site";
 
-// The draft sentence is appended from the same flag the in-page marker reads, so the search
-// snippet and the page stop saying "draft" in the same build rather than one lagging the other.
+const DESCRIPTION =
+  "What the site, app, indexer and optional notifier process: wallet addresses, encrypted channel targets, preferences and HTTP logs.";
+
 export const metadata: Metadata = {
   title: "Privacy",
-  description:
-    "What the site, app, indexer and optional notifier process: wallet addresses, encrypted channel targets, preferences and HTTP logs." +
-    (LEGAL_DOCS_ARE_DRAFT ? " Draft, pending review by counsel." : ""),
+  description: DESCRIPTION,
   alternates: { canonical: "/privacy" },
+  openGraph: {
+    title: "Privacy — Stonkhouse",
+    description: DESCRIPTION,
+    url: "/privacy",
+    siteName: "Stonkhouse",
+    type: "article",
+  },
 };
 
 /** The page's h2s, in render order. The section list and the headings both read from here. */
@@ -63,15 +64,6 @@ const SECTIONS = {
   contact: { id: "contact", title: "Contact" },
 } as const satisfies Record<string, TocEntry>;
 
-/** The marker the page carries at the top and the bottom while LEGAL_DOCS_ARE_DRAFT. */
-function DraftMarker({ className }: { className?: string }) {
-  if (!LEGAL_DOCS_ARE_DRAFT) return null;
-  return (
-    <p className={cn(DRAFT_MARKER, className)}>
-      <strong>Draft — pending review by counsel.</strong> Version {LEGAL_DOCS_VERSION}.
-    </p>
-  );
-}
 
 /** The two RPC hosts the dapp calls from the browser. Display only; this site never calls them. */
 const RPC_HOSTS = ["rpc.mainnet.chain.robinhood.com", "robinhood-rpc.publicnode.com"] as const;
@@ -83,11 +75,9 @@ export default function PrivacyPage() {
     <LegalDocument
       eyebrow="Privacy"
       title="What this interface sees, and what it keeps"
-      meta={<VersionChip />}
       toc={Object.values(SECTIONS)}
     >
       <DocIntro>
-        <DraftMarker />
 
         {designated ? null : (
           <Callout tone="warn">
@@ -174,9 +164,9 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Keeper and operating tools.</strong> Services we run may submit quote and order
-            transactions. Settlement and redemption need separate transactions and are currently
-            submitted manually; no automated settlement cranker is deployed. These transactions
-            appear on the public chain.
+            transactions. A running cranker may also submit settlement and redemption transactions;
+            it has no exclusive privilege, and another caller can submit them when the contracts allow.
+            These transactions appear on the public chain.
           </li>
           <li>
             <strong>Hosting.</strong> Railway hosts the domains and services and keeps HTTP logs as
@@ -303,9 +293,8 @@ export default function PrivacyPage() {
 
       <DocSection {...SECTIONS.changes}>
         <p>
-          This notice is versioned with the Terms of Use. The version in force is{" "}
-          <Code>{LEGAL_DOCS_VERSION}</Code>. A change is a new version and a new date, published on
-          this page; there is no other notice.
+          This notice is updated in place. Changes are published on this page; there is no separate
+          notice.
         </p>
       </DocSection>
 
@@ -331,8 +320,6 @@ export default function PrivacyPage() {
           .
         </p>
       </DocSection>
-
-      <DraftMarker className="mt-14" />
     </LegalDocument>
   );
 }

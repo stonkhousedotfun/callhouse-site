@@ -1,5 +1,5 @@
 /** Twin of callhouse/web/lib/v2/payoffCurve.ts. Keep the body identical; see scripts/check-twins.mjs. */
-import { breakeven, payoutAt, type PayoffPosition } from "./payoff";
+import { breakeven, payoutAt, type PayoffPosition } from "./payoff.ts";
 
 /** All prices and money are raw USDG-6 amounts. SVG coordinates are unitless. */
 export type PriceRange = { min: bigint; max: bigint };

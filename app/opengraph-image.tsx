@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 
-import { EXAMPLE_MULTIPLE, EXAMPLE_PAYOFF, EXAMPLE_PAYOUT, EXAMPLE_TAKE, formatUsdg } from "@/lib/examplePayoff";
 import { SITE_URL } from "@/lib/site";
 
 /**
@@ -60,7 +59,7 @@ const DOMAIN = SITE_URL.replace(/^https?:\/\//, "");
 
 const WORDMARK = "stonkhouse";
 
-export const alt = "Stonkhouse: small bets on big stocks. Lose at most what you pay. A payoff scenario with maximum loss.";
+export const alt = "Stonkhouse: small bets on big stocks.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -104,9 +103,9 @@ function Mark({ size: px }: { size: number }) {
 
 export default async function OpengraphImage() {
   const headlineLead = "Small bets on big stocks.";
-  const headlineAccent = "Lose at most what you pay.";
-  const payoff = `Example · NVDA at $${formatUsdg(EXAMPLE_PAYOFF.target)}: estimated settlement value ${formatUsdg(EXAMPLE_PAYOUT)} USDG (${EXAMPLE_MULTIPLE?.toFixed(2)}×) on ${formatUsdg(EXAMPLE_TAKE.cost)} USDG cost. Conversion may deliver less or return Stock Tokens.`;
-  const label = "Example · not a live quote";
+  const headlineAccent = "Stock Token options.";
+  const payoff = "Calls and puts on NVDA and SPCX, settled on Robinhood Chain.";
+  const label = "stonkhouse.fun";
   const [display, body] = await Promise.all([
     loadFont(DISPLAY, 800, unique(WORDMARK + headlineLead + headlineAccent)),
     loadFont(BODY, 500, unique(payoff + DOMAIN + label)),

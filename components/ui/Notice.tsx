@@ -9,7 +9,7 @@ import { WarnIcon } from "./icons";
  *   - box   (default): warn-soft background, rounded (the mockup's .note).
  *   - plain: no background, icon in warn colour beside running text (the hero's .disclose).
  *
- * Copy that copy-lint requires on a page (e.g. "Premium is paid only if a buyer fills" on
+ * Copy that disclosure policy requires on a page (copy-lint removed 2026-09-21; nothing checks it now) (e.g. "Premium is paid only if a buyer fills" on
  * app/page.tsx) must be written in that page file as children, never as a default inside this
  * component: the linter reads the page file's source text.
  */

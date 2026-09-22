@@ -2,9 +2,9 @@
  * Top bar for stonkhouse.fun. Server component; the only client code is NavLinks
  * (usePathname for the active "How it works" link).
  *
- * Visual order: brand, how a week runs, then on the right X / GitHub and "Open the app".
- * Risks and legal live in the footer, not here. Below 960px the how-it-works link drops under the
- * brand and the right cluster, so the Buy button and the marks stay reachable without a menu.
+ * Visual and focus order: brand, how a week runs, then X / GitHub and "Open the app".
+ * Risks and legal live in the footer, not here. Below 960px the brand has its own row,
+ * with the link and right cluster below it, so the Buy button and marks stay reachable without a menu.
  *
  * "Buy" and the two marks leave this origin. They are plain new-tab <a>s.
  *
@@ -15,23 +15,23 @@ import { SocialLinks } from "@/components/SocialLinks";
 import { Brand } from "@/components/ui/Brand";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { DEV_PREVIEW, OPEN_APP } from "@/lib/site";
+import { OPEN_APP } from "@/lib/site";
 
 export function Nav() {
   return (
     <header>
-      <Container className="flex flex-wrap items-center gap-x-7 gap-y-2 pb-3 pt-4 lg:py-[22px]">
-        <Brand className="order-1" />
+      <Container className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-7 gap-y-2 pb-3 pt-4 lg:grid-cols-[auto_minmax(0,1fr)_auto] lg:py-[22px]">
+        <Brand className="col-span-2 lg:col-span-1" />
         <nav
           aria-label="Site"
-          className="order-3 w-full overflow-x-auto [scrollbar-width:none] lg:order-2 lg:mr-auto lg:w-auto lg:overflow-visible"
+          className="min-w-0 overflow-x-auto [scrollbar-width:none] lg:overflow-visible"
         >
           <NavLinks />
         </nav>
-        <div className="order-2 ml-auto flex items-center gap-2 lg:order-3 lg:ml-0">
+        <div className="flex items-center gap-2">
           <SocialLinks />
           <Button href={OPEN_APP} size="sm">
-            {DEV_PREVIEW ? "Dev app" : "Buy"}
+            Launch App
           </Button>
         </div>
       </Container>

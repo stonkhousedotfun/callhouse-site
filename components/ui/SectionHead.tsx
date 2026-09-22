@@ -26,16 +26,18 @@ export type SectionHeadProps = {
 
 export function SectionHead({ eyebrow, title, intro, level = 2, id, className }: SectionHeadProps) {
   const Heading = level === 1 ? "h1" : "h2";
+  const hasEyebrow = eyebrow === 0 || Boolean(eyebrow);
+  const hasIntro = intro === 0 || Boolean(intro);
   return (
     <div
       className={cn(
         "mb-11 grid grid-cols-1 items-end gap-x-10 gap-y-4",
-        intro ? "lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]" : null,
+        hasIntro ? "lg:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]" : null,
         className,
       )}
     >
       <div>
-        {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
+        {hasEyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
         <Heading
           id={id}
           className={cn(
@@ -43,13 +45,13 @@ export function SectionHead({ eyebrow, title, intro, level = 2, id, className }:
             level === 1
               ? "text-[length:clamp(36px,4.8vw,56px)] leading-[1.04]"
               : "text-[length:clamp(30px,3.6vw,44px)] leading-[1.06]",
-            eyebrow ? "mt-3" : null,
+            hasEyebrow ? "mt-3" : null,
           )}
         >
           {title}
         </Heading>
       </div>
-      {intro ? (
+      {hasIntro ? (
         <div className="max-w-[36em] text-[17.5px] text-ink-2">
           {typeof intro === "string" ? <p>{intro}</p> : intro}
         </div>

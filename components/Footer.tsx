@@ -81,7 +81,7 @@ export function Footer() {
             Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited or Valorem (legacy accounts).
             Nothing here is financial advice or an offer of securities.
           </p>
-          <p className="max-w-[70em]">{STATUS.phase}.</p>
+          <p className="max-w-[70em]">{STATUS.phase}. {STATUS.auditLine}</p>
         </div>
       </Container>
     </footer>

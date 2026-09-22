@@ -1,5 +1,7 @@
 import type { AnchorHTMLAttributes, ReactNode } from "react";
 
+import { requireNonBlankHref } from "@/components/siteGuards";
+
 /**
  * A link that leaves this origin: the app, the docs, the explorer. Always a plain <a>
  * (next/link has no route to prefetch on another host), always a new tab, always
@@ -20,7 +22,7 @@ export type ExternalLinkProps = Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "h
 
 export function ExternalLink({ href, arrow = false, srNote = true, children, ...rest }: ExternalLinkProps) {
   return (
-    <a href={href} target="_blank" rel="noreferrer noopener" {...rest}>
+    <a {...rest} href={requireNonBlankHref(href)} target="_blank" rel="noreferrer noopener">
       {children}
       {arrow ? <span aria-hidden="true"> ↗</span> : null}
       {srNote ? <span className="sr-only"> (opens in a new tab)</span> : null}

@@ -8,7 +8,6 @@ const git = process.env.GIT ?? 'git';
 
 function forbiddenPath(file) {
   const name = file.split('/').at(-1);
-  if (/\.(?:md|mdx|markdown)$/i.test(file)) return 'Markdown file (excluded from this migration)';
   if ((/^\.env(?:\..+)?$/i.test(name) || /\.env$/i.test(name)) && !/\.(?:example|sample|template)$/i.test(name)) return 'non-template environment file';
   if (/(^|\/)(?:broadcast|env-dev|rehearsal-logs?|\.env-dev)(\/|$)/i.test(file)) return 'development deployment artifact';
   if (/(^|\/)(?:\.next|node_modules|\.turbo|coverage|dist|out|cache)(\/|$)/i.test(file)) return 'generated build/cache artifact';
@@ -25,10 +24,10 @@ function forbiddenText(value) {
 }
 
 if (process.argv.includes('--self-test')) {
-  assert.equal(forbiddenPath('README.md'), 'Markdown file (excluded from this migration)');
-  assert.equal(forbiddenPath('app/notes.MDX'), 'Markdown file (excluded from this migration)');
-  assert.equal(forbiddenPath('notes.MARKDOWN'), 'Markdown file (excluded from this migration)');
-  assert.equal(forbiddenPath('AGENTS.md'), 'Markdown file (excluded from this migration)');
+  assert.equal(forbiddenPath('README.md'), null);
+  assert.equal(forbiddenPath('app/notes.MDX'), null);
+  assert.equal(forbiddenPath('notes.MARKDOWN'), null);
+  assert.equal(forbiddenPath('AGENTS.md'), null);
   assert.equal(forbiddenPath('app/.env.production'), 'non-template environment file');
   assert.equal(forbiddenPath('ops/service.env'), 'non-template environment file');
   assert.equal(forbiddenPath('.env.example'), null);
@@ -52,13 +51,19 @@ try {
   const contentPaths = execFileSync(git, ['diff', '--cached', '--name-only', '--diff-filter=ACMR', '--no-renames', '-z'])
     .toString('utf8').split('\0').filter(Boolean);
   for (const file of contentPaths) {
-    if (!/\.(?:md|mdx|txt|json|ya?ml|toml|[cm]?js|tsx?|html|css|sh)$/i.test(file) && !file.startsWith('.env')) continue;
+    if (!/\.(?:md|mdx|markdown|txt|json|ya?ml|toml|[cm]?js|tsx?|html|css|sh)$/i.test(file) && !file.startsWith('.env')) continue;
     const content = execFileSync(git, ['show', `:${file}`], { maxBuffer: 20 * 1024 * 1024 });
     if (content.includes(0)) continue;
     const textReason = forbiddenText(content.toString('utf8'));
     if (textReason) failures.push(`${file}: ${textReason}`);
   }
-  execFileSync(git, ['diff', '--cached', '--check'], { stdio: 'pipe' });
+  try {
+    execFileSync(git, ['diff', '--cached', '--check'], { stdio: 'pipe' });
+  } catch (error) {
+    const report = error.stdout?.toString('utf8').replace(/\r?\n$/, '');
+    if (error.status !== 2 || !report || error.stderr?.length) throw error;
+    failures.push(report);
+  }
 } catch (error) {
   console.error(`scope guard could not inspect the staged snapshot: ${error.message}`);
   process.exit(2);

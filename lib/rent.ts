@@ -1,5 +1,4 @@
-/** Twin of callhouse/web/lib/v2/rent.ts. Keep the body identical; see scripts/check-twins.mjs. */
-/** Exact v7 writer collateral budget. One fee rounding per fill, in the collateral asset. */
+/** v8 writer collateral budget, including the series-pinned nonzero rent dial. One rounding per fill. */
 export type RentTerms = { collateralPerUnit: bigint; mintFeePpm: number; expiry: number; snapshotTimestamp: number; mintCutoff?: number };
 export const MINT_FEE_PERIOD = 604_800n;
 const DENOMINATOR = 1_000_000n * MINT_FEE_PERIOD;

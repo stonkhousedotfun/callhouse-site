@@ -4,7 +4,7 @@
  * WHY IT LIVES HERE: stonkhouse.fun is the indexed domain and the one a stranger reaches first;
  * stonkhousedotfun/callhouse: `SECURITY.md` §6 points at this path. It is a route handler rather than a file
  * in public/ because the Contact line is NEXT_PUBLIC_SECURITY_CONTACT_EMAIL from lib/legal.ts and
- * the Expires line is derived from LEGAL_DOCS_VERSION — a static file would have to be edited by
+ * the Expires line is derived from LEGAL_DOCS_REVIEWED — a static file would have to be edited by
  * hand in step with both, and would drift.
  *
  * WHILE NO SECURITY CONTACT IS SET THIS ROUTE RETURNS 404, on purpose. RFC 9116 §2.5.3 makes
@@ -16,7 +16,7 @@
  * launch step; until then stonkhousedotfun/callhouse: `SECURITY.md` §6 carries the same gap in words.
  *
  * `dynamic = "force-static"`: every input is a build-time constant (NEXT_PUBLIC_* is inlined by
- * `next build`, LEGAL_DOCS_VERSION is a literal, and securityTxtExpires() reads no clock), so
+ * `next build`, LEGAL_DOCS_REVIEWED is a literal, and securityTxtExpires() reads no clock), so
  * the response is the same bytes for the life of the image and Next can emit it at build. A
  * change to the address is a rebuild, exactly like every other NEXT_PUBLIC_* on this site.
  *

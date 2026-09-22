@@ -21,7 +21,7 @@ export const metadata: Metadata = {
 };
 
 const PAGES = [
-  { href: "/", label: "Home", what: "What Stonkhouse is: NVDA first, more stocks later" },
+  { href: "/", label: "Home", what: "What Stonkhouse is and which markets are live" },
   { href: "/how-it-works", label: "How it works", what: "One week, start to finish" },
   { href: "/risks", label: "Risks", what: "What can go wrong, before you deposit" },
   { href: "/legal", label: "Legal", what: "Who this is for, and what the collateral actually is" },

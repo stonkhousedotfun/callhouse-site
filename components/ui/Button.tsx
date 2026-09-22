@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from "react";
 
 import { cn } from "@/lib/cn";
+import { requireNonBlankHref } from "@/components/siteGuards";
 
 import { ExternalLink } from "./ExternalLink";
 
@@ -29,7 +30,7 @@ type CommonProps = {
 };
 
 export type LinkButtonProps = CommonProps &
-  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "className" | "children" | "href"> & {
+  Omit<AnchorHTMLAttributes<HTMLAnchorElement>, "className" | "children" | "href" | "target" | "rel"> & {
     href: string;
     /** Force new-tab behaviour. Defaults to true for http(s) URLs. */
     external?: boolean;
@@ -77,23 +78,24 @@ export function Button(props: ButtonProps) {
 
   const { variant, size, className, children, href, external, ...rest } = props;
   const classes = buttonClasses({ variant, size, className });
+  const safeHref = requireNonBlankHref(href);
 
-  if (external ?? /^https?:\/\//i.test(href)) {
+  if (external ?? /^https?:\/\//i.test(safeHref)) {
     return (
-      <ExternalLink href={href} className={classes} {...rest}>
+      <ExternalLink href={safeHref} className={classes} {...rest}>
         {children}
       </ExternalLink>
     );
   }
-  if (href.startsWith("/")) {
+  if (safeHref.startsWith("/")) {
     return (
-      <Link href={href} className={classes} {...rest}>
+      <Link href={safeHref} className={classes} {...rest}>
         {children}
       </Link>
     );
   }
   return (
-    <a href={href} className={classes} {...rest}>
+    <a href={safeHref} className={classes} {...rest}>
       {children}
     </a>
   );

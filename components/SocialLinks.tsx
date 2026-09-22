@@ -14,12 +14,12 @@ export function SocialLinks() {
     <nav aria-label="Stonkhouse elsewhere">
       <ul className="flex items-center gap-0.5">
         <li>
-          <ExternalLink href={X_URL} className={ITEM} aria-label="X">
+          <ExternalLink href={X_URL} className={ITEM} aria-label="X (opens in a new tab)" srNote={false}>
             <XIcon size={15} />
           </ExternalLink>
         </li>
         <li>
-          <ExternalLink href={GITHUB_URL} className={ITEM} aria-label="GitHub">
+          <ExternalLink href={GITHUB_URL} className={ITEM} aria-label="GitHub (opens in a new tab)" srNote={false}>
             <GitHubIcon size={16} />
           </ExternalLink>
         </li>

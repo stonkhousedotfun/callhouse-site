@@ -5,10 +5,10 @@
  * This is the CANONICAL copy of the disclosures. app.stonkhouse.fun is noindex; stonkhouse.fun is
  * the indexed domain, so this is the version a stranger, a search engine or a regulator reads
  * first. The two disclosures it is required to carry — the US-person perimeter and the legal
- * form of the Stock Token — are enforced verbatim by scripts/copy-lint.mjs, which fails CI if
- * the wording drifts. Do not reword, soften or tidy up a sentence here without running that
- * script; "not available to US persons" and "Robinhood Assets (Jersey) Limited" are literal
- * string matches, not sentiments.
+ * form of the Stock Token — are required verbatim by disclosure policy. NOTHING CHECKS THIS AUTOMATICALLY since copy-lint was removed on 2026-09-21, so
+ * the wording can drift. Do not reword, soften or tidy up a sentence here without checking the
+ * disclosure policy and the app twin; "not available to US persons" and
+ * "Robinhood Assets (Jersey) Limited" are literal string matches, not sentiments.
  *
  * Keep the geographic restriction and Stock Token form in sync with the dapp's
  * `web/app/legal/page.tsx`. This indexed page also describes v2 buyer and writer flows and links
@@ -28,7 +28,8 @@
  */
 import type { Metadata } from "next";
 
-import { LEGAL_DOCS_ARE_DRAFT, NOT_YET_DESIGNATED, SECURITY_CONTACT_EMAIL } from "@/lib/legal";
+import { NOT_YET_DESIGNATED, SECURITY_CONTACT_EMAIL } from "@/lib/legal";
+import { FEES_V2, delayHours, feePct } from "@/lib/site";
 
 import {
   Callout,
@@ -41,11 +42,20 @@ import {
   type TocEntry,
 } from "./_components/LegalDocument";
 
+const DESCRIPTION =
+  "Geographic restrictions, Stock Token debt securities, buyer option costs and writer collateral on Robinhood Chain.";
+
 export const metadata: Metadata = {
   title: "Legal",
-  description:
-    "Geographic restrictions, Stock Token debt securities, buyer option costs and writer collateral on Robinhood Chain.",
+  description: DESCRIPTION,
   alternates: { canonical: "/legal" },
+  openGraph: {
+    title: "Legal — Stonkhouse",
+    description: DESCRIPTION,
+    url: "/legal",
+    siteName: "Stonkhouse",
+    type: "article",
+  },
 };
 
 /**
@@ -68,7 +78,13 @@ export default function LegalPage() {
       title="Who this is for, and what Stock Tokens actually are"
       toc={Object.values(SECTIONS)}
     >
-      {/* The two phrases below are required, verbatim, by scripts/copy-lint.mjs.
+      <p>
+        This explanatory disclosure is not one of the adopted legal documents. The in-force{" "}
+        <DocLink href="/terms">Terms of Use</DocLink> and{" "}
+        <DocLink href="/privacy">privacy notice</DocLink> are separate pages.
+      </p>
+
+      {/* The two phrases below are required, verbatim, by disclosure policy (copy-lint removed 2026-09-21).
           They come from README "Frontend copy" and are compliance text. Do not reword. */}
       <Callout tone="bad">
         <strong>This interface is not available to US persons.</strong>
@@ -142,10 +158,12 @@ export default function LegalPage() {
             There is no points programme or airdrop for buying or writing these options.
           </li>
           <li>
-            A writer receives premium only when a buyer fills an order. An unfilled order earns
-            no premium; writing a new option charges collateral rent when it is minted. A call
-            that finishes in the money transfers upside above the strike to
-            the buyer. The buyer&apos;s payout may arrive in Stock Tokens if conversion to USDG fails.{" "}
+            The replacement design is not active before broadcast. When active, a writer receives
+            premium only when a buyer fills an order. An unfilled order earns no premium; a first sale
+            pays {feePct(FEES_V2.premiumBps)} of its premium and a true resale pays {feePct(FEES_V2.resalePremiumBps)}. The collateral-based rate launches at
+            zero, and a change for new series requires {delayHours(FEES_V2.marketFeeChangeDelayHours)}&apos; on-chain notice. A call that
+            finishes in the money transfers upside above the strike to the buyer. The buyer&apos;s payout
+            may arrive in Stock Tokens if conversion to USDG fails.{" "}
             <DocLink href="/risks">The risks page</DocLink> carries the full risk list, and{" "}
             <DocLink href="/how-it-works">how it works</DocLink> describes the cycle those outcomes come from.
           </li>
@@ -159,8 +177,8 @@ export default function LegalPage() {
             offer of securities.
           </li>
           <li>
-            The Stonkhouse smart contracts have had no external audit, only the project&apos;s own internal
-            reviews. An external audit is pending. They are provided as-is, with no warranty of any
+            No external audit report has been published for the Stonkhouse smart contracts.
+            An external audit is pending. The contracts are provided as-is, with no warranty of any
             kind. Published source files carry their own license notices. Buyers can lose their
             full cost and writers can lose collateral value.
           </li>
@@ -196,13 +214,13 @@ export default function LegalPage() {
               rather than a file with no contact line. Setting one is a launch step.
             </>
           )}{" "}
-          There is no bug bounty, and the contracts have had no external audit, so a report is a
+          No bug bounty is active and no external audit report has been published, so a report is a
           favour, not a claim.
         </p>
         <p>
           The <DocLink href="/terms">Terms of Use</DocLink> and the <DocLink href="/privacy">privacy notice</DocLink>{" "}
           are separate pages
-          {LEGAL_DOCS_ARE_DRAFT ? ", and both are drafts pending review by counsel" : ""}.
+          .
         </p>
       </DocSection>
     </LegalDocument>

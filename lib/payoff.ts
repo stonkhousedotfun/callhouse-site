@@ -1,5 +1,5 @@
-/** Twin of callhouse/web/lib/v2/payoff.ts. Keep the body identical; see scripts/check-twins.mjs. */
-import { writerCollateralNeed, type RentTerms } from "./rent";
+/** Site payoff illustration; the app's live quote remains authoritative. */
+import { writerCollateralNeed, type RentTerms } from "./rent.ts";
 
 /** v2 amounts are bigint base units: USDG has 6 decimals; one contract is 0.01 share. */
 export const UNIT = 10n ** 16n;
@@ -11,11 +11,14 @@ const USDG_CENT = 10_000n;
 const MAX_EXERCISE_FEE_BPS = 200n;
 const MAX_PAYOUT_FEE_SHARE_BPS = 1_000n;
 
-export type TakerFeeParams = { takerFeeFlat: bigint; takerFeeCapBps: number };
+export type TakerFeeParams = { takerFeeFlat: bigint; takerFeeCapBps: number; discountBps: number };
 export type Ask = { orderId: string; price: bigint; units: bigint;
   maker?: string; kind?: "AskResale" | "AskWrite"; onChainRemainingUnits?: bigint;
   makerFreeCollateral?: bigint | null; makerFreeUnits?: bigint | null };
 export type BuyCost = {
+  /** Missing inputs make this a lower-bound estimate, not a complete executable quote. */
+  pricingStatus: "priced" | "unpriceable";
+  unpriceableAsks: { orderId: string; reason: "maker" | "rent" | "collateral" }[];
   filledUnits: bigint;
   unfilledUnits: bigint;
   premium: bigint;
@@ -25,7 +28,9 @@ export type BuyCost = {
   orderIds: string[];
   fills: { orderId: string; price: bigint; units: bigint; premium: bigint }[];
 };
-export type PayoffPosition = { isPut: boolean; strike: bigint; units: bigint; exerciseFeeBps: number };
+export type PayoffPosition = { isPut: boolean; strike: bigint; units: bigint; exerciseFeeBps: number;
+  /** Explicit bound for a successful routed conversion; unrouted or failed conversions pay tokens. */
+  conversionFloorBps?: number };
 export type MoneyRaw = { raw: string; decimals: number };
 export type CardSentenceInput = {
   series: { ticker: string; expiry: number; isPut?: boolean };
@@ -52,10 +57,18 @@ function feeBps(value: number): bigint {
   return BigInt(value);
 }
 
+function conversionBps(value: number | undefined): bigint {
+  if (typeof value !== "number" || !Number.isSafeInteger(value) || value < 9_700 || value > 10_000) {
+    throw new RangeError("conversionFloorBps must be an explicit contract-bounded rate");
+  }
+  return BigInt(value);
+}
+
 function validatePosition(position: PayoffPosition): void {
   requirePositive(position.strike, "strike");
   requirePositive(position.units, "units");
   feeBps(position.exerciseFeeBps);
+  if (!position.isPut) conversionBps(position.conversionFloorBps);
 }
 
 /** Premium is exact because order prices are multiples of PRICE_TICK. */
@@ -66,19 +79,24 @@ export function premium(price: bigint, units: bigint): bigint {
   return (price * units) / UNITS_PER_SHARE;
 }
 
-/** One capped taker fee per take call, on the actual filled premium. */
+/** OrderBook._takerFee: one capped fee on filled premium, then the taker's effective clamped discount. */
 export function takerFee(premiumPaid: bigint, params: TakerFeeParams): bigint {
   requireNonnegative(premiumPaid, "premiumPaid");
   requireNonnegative(params.takerFeeFlat, "takerFeeFlat");
   if (!Number.isInteger(params.takerFeeCapBps) || params.takerFeeCapBps < 0 || params.takerFeeCapBps > 1_000) {
     throw new RangeError("takerFeeCapBps exceeds the contract ceiling");
   }
+  if (!Number.isSafeInteger(params.discountBps) || params.discountBps < 0 || params.discountBps > 5_000) {
+    throw new RangeError("discountBps exceeds the contract ceiling");
+  }
   const capped = (premiumPaid * BigInt(params.takerFeeCapBps)) / BPS;
-  return params.takerFeeFlat < capped ? params.takerFeeFlat : capped;
+  const base = params.takerFeeFlat < capped ? params.takerFeeFlat : capped;
+  return base - (base * BigInt(params.discountBps)) / BPS;
 }
 
 /** Walk asks as OrderBook._plan does: a writer's free collateral is shared by all its asks,
- * and an ask that cannot cover this call's planned units is skipped whole. quoteTake remains
+ * and an ask that cannot cover this call's planned units is skipped whole. Missing inputs are
+ * reported as unpriceable rather than mistaken for absent liquidity. quoteTake remains
  * authoritative before a trade (approvals, pauses and concurrent transactions can still change). */
 export function costToBuy(asks: readonly Ask[], units: bigint, params: TakerFeeParams, rent?: RentTerms): BuyCost {
   requirePositive(units, "units");
@@ -89,6 +107,7 @@ export function costToBuy(asks: readonly Ask[], units: bigint, params: TakerFeeP
   let remaining = units;
   let totalPremium = 0n;
   const fills: BuyCost["fills"] = [];
+  const unpriceableAsks: BuyCost["unpriceableAsks"] = [];
   for (const ask of sorted) {
     if (!/^\d+$/.test(ask.orderId) || seen.has(ask.orderId)) throw new RangeError("order IDs must be unique decimal strings");
     seen.add(ask.orderId);
@@ -99,9 +118,10 @@ export function costToBuy(asks: readonly Ask[], units: bigint, params: TakerFeeP
     const filled = orderRemaining < remaining ? orderRemaining : remaining;
     if (ask.kind === "AskWrite") {
       const key = ask.maker?.toLowerCase();
-      if (key === undefined || !rent) continue;
+      if (key === undefined) { unpriceableAsks.push({ orderId: ask.orderId, reason: "maker" }); continue; }
+      if (!rent) { unpriceableAsks.push({ orderId: ask.orderId, reason: "rent" }); continue; }
       const initial = ask.makerFreeCollateral;
-      if (initial === undefined || initial === null) continue;
+      if (initial === undefined || initial === null) { unpriceableAsks.push({ orderId: ask.orderId, reason: "collateral" }); continue; }
       if ((rent.snapshotTimestamp >= rent.expiry || (rent.mintCutoff !== undefined && rent.snapshotTimestamp >= rent.mintCutoff))) continue;
       const budget = writerBudget.get(key) ?? initial;
       const need = writerCollateralNeed(filled, rent);
@@ -115,7 +135,8 @@ export function costToBuy(asks: readonly Ask[], units: bigint, params: TakerFeeP
   }
   const filledUnits = units - remaining;
   const fee = takerFee(totalPremium, params);
-  return { filledUnits, unfilledUnits: remaining, premium: totalPremium, fee, cost: totalPremium + fee,
+  return { pricingStatus: unpriceableAsks.length ? "unpriceable" : "priced", unpriceableAsks,
+    filledUnits, unfilledUnits: remaining, premium: totalPremium, fee, cost: totalPremium + fee,
     averagePrice: filledUnits > 0n ? ceilDiv(totalPremium * UNITS_PER_SHARE, filledUnits) : null,
     orderIds: fills.map((fill) => fill.orderId), fills };
 }
@@ -143,18 +164,22 @@ export function exerciseFeePerUnit(gross: bigint, collateral: bigint, exerciseFe
   return byCollateral < byPayout ? byCollateral : byPayout;
 }
 
-/** Call payouts are valued at settlement price after the in-kind exercise fee. */
-export function netPayoutUsdgPerUnit(isPut: boolean, strike: bigint, price: bigint, exerciseFeeBps: number): bigint {
+/** Conditional USDG floor if a routed call conversion succeeds; puts pay USDG natively. */
+export function netPayoutUsdgPerUnit(isPut: boolean, strike: bigint, price: bigint, exerciseFeeBps: number,
+  conversionFloorBps?: number): bigint {
   const gross = grossPayoutPerUnit(isPut, strike, price);
   const fee = exerciseFeePerUnit(gross, collateralPerUnit(isPut, strike), exerciseFeeBps);
   const net = gross - fee;
-  return isPut ? net : (net * price) / WAD;
+  return isPut ? net : (((net * price) / WAD) * conversionBps(conversionFloorBps)) / BPS;
 }
 
-/** Hypothetical settlement payout in USDG base units, rounded down per contract. */
+/** Conditional conversion floor: Clearinghouse._redeem values total owed units, then _conversionFloor rounds down. */
 export function payoutAt(price: bigint, position: PayoffPosition): bigint {
   validatePosition(position);
-  return netPayoutUsdgPerUnit(position.isPut, position.strike, price, position.exerciseFeeBps) * position.units;
+  const gross = grossPayoutPerUnit(position.isPut, position.strike, price);
+  const fee = exerciseFeePerUnit(gross, collateralPerUnit(position.isPut, position.strike), position.exerciseFeeBps);
+  const owed = (gross - fee) * position.units;
+  return position.isPut ? owed : (((owed * price) / WAD) * conversionBps(position.conversionFloorBps)) / BPS;
 }
 
 /** First profitable price for a call; highest profitable price for a put. */

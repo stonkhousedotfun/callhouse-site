@@ -15,10 +15,11 @@ export function When({
   utc?: ReactNode;
   className?: string;
 }) {
+  const hasUtc = utc === 0 || Boolean(utc);
   return (
     <span className={cn("num leading-[1.35]", className)}>
       {children}
-      {utc ? <span className="mt-0.5 block text-[0.85em] font-medium text-ink-3">{utc}</span> : null}
+      {hasUtc ? <span className="mt-0.5 block text-[0.85em] font-medium text-ink-3">{utc}</span> : null}
     </span>
   );
 }

@@ -6,8 +6,10 @@
  * the factual sentences against the live deployment: the Clear's fee switch is its feeTo(), a
  * one-owner Safe (0xff14…CF61), not the admin key; the admin is a single hot key with no timelock;
  * "not audited" became "no external audit"; the keeper's Cboe price source and its order feed were
- * named (see LEGAL_DOCS_VERSION in lib/legal.ts). v7 updates the product description for v2 and
- * labels the Valorem/Seaport path as legacy while v1 positions run off.
+ * named. The legal versioning machinery was removed on 2026-09-21. v7 updates the product description for v2 and
+ * labels the Valorem/Seaport path as legacy while v1 positions run off. v8 is the 2026-09-19
+ * replacement-contract revision, adopted unchanged by the owner on 2026-09-20 (DEF-6 / OWN8-10);
+ * the draft marker this page carried while it was unadopted no longer renders.
  *
  * WHY THIS PAGE EXISTS: /legal says access is restricted by the Terms of Use rather than by a
  * technical control, and until 2026-09-12 there was no such document. A restriction that points
@@ -18,13 +20,13 @@
  * The page renders those gaps in plain words from lib/legal.ts instead of hiding them behind a
  * placeholder, and shows a warn notice while operatorIsDesignated() is false.
  * stonkhousedotfun/callhouse: `ops/launch-legal.md` is the list of decisions that closes it. The text was
- * adopted by the owner, reviewed against the code, without counsel; the DraftMarker machinery
- * remains so a future revision can be published as a draft before it takes force.
+ * adopted by the owner, reviewed against the code, without counsel. The DraftMarker machinery and
+ * the legal versioning gate were removed on 2026-09-21 at the owner's instruction.
  *
  * The eligibility section is copied VERBATIM from app/legal/page.tsx, because the terms cannot
  * describe the perimeter differently from the page that announces it. "not available to US
- * persons" on this page is a literal match required by scripts/copy-lint.mjs, as is "Draft"; if
- * either is reworded the build fails. Keep this page and /legal in the same commit when the
+ * persons" is required by disclosure policy, but copy-lint was removed on 2026-09-21; no
+ * automated rule now pins this wording. Keep this page and /legal in the same commit when the
  * perimeter wording changes.
  *
  * DELIBERATELY ABSENT: an "I accept" control (there is no account to attach acceptance to and a
@@ -39,7 +41,6 @@ import type { Metadata } from "next";
 import {
   Callout,
   DOC_LINK,
-  DRAFT_MARKER,
   Code,
   DocExternalLink,
   DocIntro,
@@ -47,31 +48,33 @@ import {
   DocList,
   DocSection,
   LegalDocument,
-  VersionChip,
   type TocEntry,
 } from "@/app/legal/_components/LegalDocument";
-import { cn } from "@/lib/cn";
 import {
   GOVERNING_LAW,
   LEGAL_CONTACT_EMAIL,
-  LEGAL_DOCS_ARE_DRAFT,
-  LEGAL_DOCS_VERSION,
   NOT_YET_DESIGNATED,
   OPERATOR_GAP_NOTICE,
   OPERATOR_JURISDICTION,
   OPERATOR_LEGAL_NAME,
   operatorIsDesignated,
 } from "@/lib/legal";
-import { MARKET, OPEN_APP } from "@/lib/site";
+import { FEES_V2, OPEN_APP, delayHours, feePct } from "@/lib/site";
 
-// The draft sentence is appended from the same flag the in-page marker reads, so the search
-// snippet and the page stop saying "draft" in the same build rather than one lagging the other.
+const DESCRIPTION =
+  "Terms of Use for stonkhouse.fun and app.stonkhouse.fun: who may use the interface, what it is, and what it does not promise.";
+
 export const metadata: Metadata = {
   title: "Terms of Use",
-  description:
-    "Terms of Use for stonkhouse.fun and app.stonkhouse.fun: who may use the interface, what it is, and what it does not promise." +
-    (LEGAL_DOCS_ARE_DRAFT ? " Draft, pending review by counsel." : ""),
+  description: DESCRIPTION,
   alternates: { canonical: "/terms" },
+  openGraph: {
+    title: "Terms of Use — Stonkhouse",
+    description: DESCRIPTION,
+    url: "/terms",
+    siteName: "Stonkhouse",
+    type: "article",
+  },
 };
 
 /** The page's h2s, in render order. The section list and the headings both read from here. */
@@ -93,15 +96,6 @@ const SECTIONS = {
   contact: { id: "contact", title: "Contact" },
 } as const satisfies Record<string, TocEntry>;
 
-/** The marker the page carries at the top and the bottom while LEGAL_DOCS_ARE_DRAFT. */
-function DraftMarker({ className }: { className?: string }) {
-  if (!LEGAL_DOCS_ARE_DRAFT) return null;
-  return (
-    <p className={cn(DRAFT_MARKER, className)}>
-      <strong>Draft — pending review by counsel.</strong> Version {LEGAL_DOCS_VERSION}.
-    </p>
-  );
-}
 
 export default function TermsPage() {
   const designated = operatorIsDesignated();
@@ -110,11 +104,9 @@ export default function TermsPage() {
     <LegalDocument
       eyebrow="Terms of Use"
       title="Terms of Use for this interface"
-      meta={<VersionChip />}
       toc={Object.values(SECTIONS)}
     >
       <DocIntro>
-        <DraftMarker />
 
         {designated ? null : (
           <Callout tone="warn">
@@ -132,7 +124,7 @@ export default function TermsPage() {
       </DocIntro>
 
       {/* Copied verbatim from app/legal/page.tsx. The two phrases in bold are required, literally,
-          by scripts/copy-lint.mjs. Do not reword here without rewording there. */}
+          by disclosure policy. Nothing checks it automatically since copy-lint was removed on 2026-09-21 - do not reword here without rewording there. */}
       <DocSection {...SECTIONS.who}>
         <Callout tone="bad">
           <strong>This interface is not available to US persons.</strong>
@@ -178,10 +170,12 @@ export default function TermsPage() {
           <li>
             The interface has no custody: a wallet signs each transaction. In v2, buyers pay premium
             and a capped taker fee to acquire long options, while writers lock Stock Tokens or USDG
-            collateral in the Clearinghouse behind their orders. The contracts are non-upgradeable.
-            Admin settings are bounded by compiled ceilings and cannot transfer user collateral,
-            though fee and oracle choices can affect value. The admin is currently a single key with
-            no timelock. Legacy v1 accounts use their own vault and Valorem Clear during run-off.
+            collateral in the Clearinghouse behind their orders. The replacement contracts described
+            by these terms are non-upgradeable and separate fee, configuration, listing, treasury and
+            guardian powers into delayed role lanes. Compiled ceilings bound fees, no role can transfer
+            user collateral, and close, redeem, withdraw and cancel remain available. This is a design
+            statement, not a claim that the replacement contracts have been broadcast. Legacy contracts
+            remain relevant during run-off.
           </li>
           <li>
             There is no username or password account and no know-your-customer check. Your wallet
@@ -222,9 +216,11 @@ export default function TermsPage() {
 
       <DocSection {...SECTIONS.risks}>
         <p>
-          A buyer can lose the entire premium and taker fee if an option expires worthless. A writer
-          receives premium only when an order fills, pays collateral rent when an option is minted,
-          and gives up upside above the strike on collateral committed to a filled call. The Stock
+          A buyer can lose the entire premium and taker fee if an option expires worthless. Under the
+          replacement design, a writer receives premium only when an order fills, pays {feePct(FEES_V2.premiumBps)} of that
+          premium on a first sale and {feePct(FEES_V2.resalePremiumBps)} on a true resale, and gives up upside above the strike on
+          collateral committed to a filled call. The collateral-based rate launches at zero and any
+          change for new series requires {delayHours(FEES_V2.marketFeeChangeDelayHours)}&apos; on-chain notice. The Stock
           Token is a debt security whose issuer can restrict transfers. An oracle dispute can delay
           settlement, and a call payout may arrive in Stock Tokens when USDG conversion fails.{" "}
           <DocLink href="/risks">The risks page</DocLink> is part of these terms by reference; read
@@ -235,13 +231,14 @@ export default function TermsPage() {
       <DocSection {...SECTIONS.thirdParty}>
         <DocList>
           <li>
-            The Stonkhouse contracts have had no external audit, only internal reviews. An external
-            audit is pending. The published source includes files with different license notices;
-            check each applicable notice before reuse. The contracts have no upgrade path: a bug
+            No external audit report has been published for the Stonkhouse contracts.
+            An external audit is pending. The published source includes files
+            with different license notices; check each applicable notice before reuse. The contracts
+            have no upgrade path: a bug
             may require a new deployment and migration, not a patch.
           </li>
           <li>
-            The {MARKET} Stock Token, USDG, RPC providers, market-data sources and any payout
+            Stock Tokens, USDG, RPC providers, market-data sources and any payout
             conversion route are third-party dependencies. None is operated by the people who
             publish this interface. Issuer restrictions can halt token transfers. In v2, oracle
             source availability and agreement determine the settlement price and can delay it;
@@ -254,10 +251,10 @@ export default function TermsPage() {
             that fee. Those dependencies remain relevant until the last v1 position is closed.
           </li>
           <li>
-            V2 orders live in the Stonkhouse OrderBook. No automated settlement cranker is currently
-            deployed. Anyone may snapshot, finalize or redeem when the contracts allow it, but a
-            caller must submit each transaction and pay gas. An unavailable operator can delay a
-            payout even though it has no exclusive settlement privilege.
+            Orders live in the Stonkhouse OrderBook. A settlement cranker is running today, but it
+            has no exclusive privilege: anyone may snapshot, finalize or redeem when the contracts
+            allow it, and every caller must submit a transaction and pay gas. An unavailable cranker
+            can delay a payout without preventing another caller from completing it.
           </li>
         </DocList>
       </DocSection>
@@ -313,9 +310,8 @@ export default function TermsPage() {
 
       <DocSection {...SECTIONS.changes}>
         <p>
-          These terms are versioned. The version in force is <Code>{LEGAL_DOCS_VERSION}</Code>. A
-          change is a new version and a new date; there is no other notice. Continuing to use the
-          interface after a change is use under the new version.
+          Changes to these terms are published on this page; there is no separate notice. Continuing
+          to use the interface after a change is use under the updated terms.
         </p>
       </DocSection>
 
@@ -384,8 +380,6 @@ export default function TermsPage() {
           .
         </p>
       </DocSection>
-
-      <DraftMarker className="mt-14" />
     </LegalDocument>
   );
 }
