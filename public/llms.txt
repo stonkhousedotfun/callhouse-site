@@ -14,4 +14,4 @@
 
 ## Source and interpretation
 
-The site source is the `callhouse-site` repository. In it, `AGENTS.md` maps the code and release gates; `lib/site.ts` holds displayed status and launch examples; `lib/live.ts` validates read-only indexer data before showing it. Current fees, quotes, positions and contract addresses must be checked in the app, indexer and verified chain state. The site's example fee slip is not a live OrderBook fee read. No page here asks for a wallet.
+The site source is the `callhouse-site` repository. In it, `lib/site.ts` holds displayed status and launch examples; `lib/live.ts` validates read-only indexer data before showing it. Current fees, quotes, positions and contract addresses must be checked in the app, indexer and verified chain state. The site's example fee slip is not a live OrderBook fee read. No page here asks for a wallet.

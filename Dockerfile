@@ -50,7 +50,7 @@ ENV COREPACK_ENABLE_DOWNLOAD_PROMPT=0
 # first invoked below. Nothing here names a version, so nothing here can disagree.
 RUN corepack enable
 
-# ---- BUG-12-SITE-DEPENDENCIES.md P2-2: NOTHING BELOW THIS LINE RUNS AS ROOT. ----
+# ---- NOTHING BELOW THIS LINE RUNS AS ROOT. ----
 # The install and the build used to run as uid 0, so any dependency's install script executed with
 # full privileges and could rewrite .next/standalone/server.js before the runner stage copied it —
 # an image that then passes its healthcheck and serves attacker-modified pages from the real domain.

@@ -34,7 +34,7 @@ import { LIVE_MARKETS, REGISTRY_MARKET_COUNT } from "./markets.generated.ts";
 export { LIVE_MARKETS, REGISTRY_MARKET_COUNT };
 
 /**
- * THE V8 LAUNCH SET. Owner ruling 2026-09-21 (root AGENTS.md, "LAUNCH WITH NVDA AND SPCX ONLY"), recorded as the
+ * THE V8 LAUNCH SET. Owner ruling 2026-09-21 ("launch with NVDA and SPCX only"), recorded as the
  * registry's authoritative `launchSet.markets` block in callhouse `ops/markets/tier1.json`
  * (`e09af8aaed8e1f9a29aaf82f010c652ee1085050`). T-OP-105.
  *

@@ -24,7 +24,7 @@
  */
 
 /**
- * SECURITY HEADERS (BUG-12-SITE-DEPENDENCIES.md P2-1). Every directive below is derived from what
+ * SECURITY HEADERS. Every directive below is derived from what
  * this site actually loads, because a policy wide enough to never complain is the same shape as no
  * policy at all.
  *
@@ -41,7 +41,7 @@
  * THE ONE LOOSE DIRECTIVE, stated rather than buried: script-src carries 'unsafe-inline'. Next's
  * App Router emits an inline bootstrap script with no nonce, and adding one needs middleware —
  * outside this change. So this CSP does NOT stop an injected inline script. What makes that
- * acceptable here and nowhere else: BUG-12 established that this site takes NO request-derived
+ * acceptable here and nowhere else: this site takes NO request-derived
  * input (one route handler with no arguments, no middleware, no searchParams, no forms) and has no
  * HTML sink, so there is no path by which a script could be injected. If a form, a searchParams
  * read or a dangerouslySetInnerHTML is ever added, this directive stops being a formality and a

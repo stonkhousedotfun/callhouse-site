@@ -148,7 +148,7 @@ test("FEES_V2 mirrors the contract constants and launch registry values it discl
 
 /*
  * T-OP-105. The how-it-works page announced "The approved expansion targets 20 markets … the other 14 registry
- * markets are deferred"; the owner ruling of 2026-09-21 (root AGENTS.md "LAUNCH WITH NVDA AND SPCX ONLY") and the
+ * markets are deferred"; the owner ruling of 2026-09-21 ("launch with NVDA and SPCX only") and the
  * registry's authoritative `launchSet.markets` block (callhouse ops/markets/tier1.json at
  * e09af8aaed8e1f9a29aaf82f010c652ee1085050) say two. LAUNCH_SET is hand-mirrored (the projection generator does not
  * render launchSet yet), so this pin is what makes drift loud; the expected list is copied on purpose.
