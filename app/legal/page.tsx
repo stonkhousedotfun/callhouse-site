@@ -18,11 +18,11 @@
  * cookie banner. Access is restricted by the Terms of Use at /terms and not by a technical
  * control, which the page says outright and links; shipping a checkbox here would imply a
  * perimeter that does not exist. Whether use-based acceptance is defensible for this perimeter
- * is a counsel question, tracked in stonkhousedotfun/callhouse: `ops/launch-legal.md`.
+ * is a counsel question.
  *
  * The "Reporting a vulnerability" section at the bottom is the `Policy:` target of
- * /.well-known/security.txt (app/.well-known/security.txt/route.ts) and stonkhousedotfun/callhouse:
- * `SECURITY.md` §6 points here too. It renders the security contact from lib/legal.ts or says there
+ * /.well-known/security.txt (app/.well-known/security.txt/route.ts).
+ * It renders the security contact from lib/legal.ts or says there
  * is none yet; it does not invent one. This section has no twin on the dapp's
  * web/app/legal/page.tsx — the disclosure address belongs on the indexed domain, once.
  */
@@ -60,7 +60,7 @@ export const metadata: Metadata = {
 
 /**
  * The page's h2s, in render order. The section list and the headings both read from here, so the
- * two cannot drift. "reporting" is the /legal#reporting anchor security.txt and SECURITY.md cite.
+ * two cannot drift. "reporting" is the /legal#reporting anchor that security.txt cites.
  */
 const SECTIONS = {
   geographic: { id: "geographic-restrictions", title: "Geographic restrictions" },
@@ -85,7 +85,7 @@ export default function LegalPage() {
       </p>
 
       {/* The two phrases below are required, verbatim, by disclosure policy (copy-lint removed 2026-09-21).
-          They come from README "Frontend copy" and are compliance text. Do not reword. */}
+          They are compliance text. Do not reword. */}
       <Callout tone="bad">
         <strong>This interface is not available to US persons.</strong>
         The same perimeter applies as to the underlying Stock Tokens. If you are a US person, or you
@@ -177,8 +177,7 @@ export default function LegalPage() {
             offer of securities.
           </li>
           <li>
-            No external audit report has been published for the Stonkhouse smart contracts.
-            An external audit is pending. The contracts are provided as-is, with no warranty of any
+            The contracts are provided as-is, with no warranty of any
             kind. Published source files carry their own license notices. Buyers can lose their
             full cost and writers can lose collateral value.
           </li>
@@ -191,9 +190,8 @@ export default function LegalPage() {
       <DocSection {...SECTIONS.noAffiliation}>
         <p>
           Stonkhouse is an independent project. It is not affiliated with, endorsed by, or operated by
-          Robinhood Markets, Inc., Robinhood Assets (Jersey) Limited, Valorem, or the issuers of USDG or
-          Seaport. Valorem and Seaport are part of legacy v1 accounts during run-off; the v2 path uses
-          its Clearinghouse and OrderBook. Those names identify third-party contracts and services.
+          Robinhood Markets, Inc., Robinhood Assets (Jersey) Limited, or the issuer of USDG. Those names
+          identify third-party companies and services.
         </p>
       </DocSection>
 
@@ -213,9 +211,7 @@ export default function LegalPage() {
               exists yet, and for that reason <Code>/.well-known/security.txt</Code> returns 404
               rather than a file with no contact line. Setting one is a launch step.
             </>
-          )}{" "}
-          No bug bounty is active and no external audit report has been published, so a report is a
-          favour, not a claim.
+          )}
         </p>
         <p>
           The <DocLink href="/terms">Terms of Use</DocLink> and the <DocLink href="/privacy">privacy notice</DocLink>{" "}

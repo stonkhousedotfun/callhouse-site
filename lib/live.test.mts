@@ -109,3 +109,25 @@ test("generated market list equals the v8 registry projection", {
     { input: registry, encoding: "utf8" });
   assert.equal(result.status, 0, result.stderr);
 });
+
+/*
+ * A page that formatted card.spot.formatted without a null check would throw at render.
+ * Checked: no page or component reads a LiveCard's spot, and tsconfig "strict" rejects an
+ * unguarded read (a planted `card.spot.formatted` in PayoffCard fails tsc with TS18047). That protection holds only
+ * while LiveCard.spot stays `Money | null`, mirroring the indexer's nullable cardSchema.spot. The directive below
+ * makes `tsc --noEmit` (and next build) fail if spot is ever narrowed to non-null, because the unguarded read
+ * would then compile silently and throw on the first null the indexer sends.
+ */
+export function spotMustStayNullable(card: import("./live.ts").LiveCard): string {
+  // @ts-expect-error LiveCard.spot is nullable; an unguarded read must not typecheck.
+  return card.spot.formatted;
+}
+
+test("a null spot reaches a caller as null, never as a formatted string", async (t) => {
+  if (!listedTicker) return t.skip("the registry has no live v2 market");
+  t.mock.method(globalThis, "fetch", async () => json({ card: { ...card(listedTicker), spot: null } }));
+  const hero = await getHero(0);
+  assert.ok(hero);
+  assert.equal(hero.spot, null);
+  assert.throws(() => spotMustStayNullable(hero), TypeError);
+});

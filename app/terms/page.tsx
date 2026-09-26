@@ -1,15 +1,11 @@
 /**
- * /terms — Terms of Use for both domains. Adopted 2026-09-13 as v1, corrected as v2 the same day,
- * renamed to Stonkhouse as v3 on 2026-09-15, and corrected as v4 the same day for the contracts
- * redesign (first drafted 2026-09-14): no third-party venue or registry, the vault's own Valorem
- * Clear instance, and the admin's value levers stated. The v4 accuracy pass the same day checked
- * the factual sentences against the live deployment: the Clear's fee switch is its feeTo(), a
- * one-owner Safe (0xff14…CF61), not the admin key; the admin is a single hot key with no timelock;
- * "not audited" became "no external audit"; the keeper's Cboe price source and its order feed were
- * named. The legal versioning machinery was removed on 2026-09-21. v7 updates the product description for v2 and
- * labels the Valorem/Seaport path as legacy while v1 positions run off. v8 is the 2026-09-19
- * replacement-contract revision, adopted unchanged by the owner on 2026-09-20 (DEF-6 / OWN8-10);
- * the draft marker this page carried while it was unadopted no longer renders.
+ * /terms — Terms of Use for both domains. Adopted 2026-09-13 as v1 and revised through v8, the 2026-09-19
+ * replacement-contract revision, adopted unchanged; the draft marker
+ * this page carried while it was unadopted no longer renders. The legal versioning machinery was removed on
+ * 2026-09-21.
+ *
+ * The v1 legacy-account text (the Valorem / Seaport run-off and the Valorem fee-switch
+ * Safe) was removed, as on /risks. The "not available to US persons" statement is unchanged.
  *
  * WHY THIS PAGE EXISTS: /legal says access is restricted by the Terms of Use rather than by a
  * technical control, and until 2026-09-12 there was no such document. A restriction that points
@@ -19,9 +15,9 @@
  * WHAT STILL GAPS: no operating entity has been designated and no governing law has been chosen.
  * The page renders those gaps in plain words from lib/legal.ts instead of hiding them behind a
  * placeholder, and shows a warn notice while operatorIsDesignated() is false.
- * stonkhousedotfun/callhouse: `ops/launch-legal.md` is the list of decisions that closes it. The text was
- * adopted by the owner, reviewed against the code, without counsel. The DraftMarker machinery and
- * the legal versioning gate were removed on 2026-09-21 at the owner's instruction.
+ * The text was
+ * adopted, reviewed against the code, without counsel. The DraftMarker machinery and
+ * the legal versioning gate were removed on 2026-09-21.
  *
  * The eligibility section is copied VERBATIM from app/legal/page.tsx, because the terms cannot
  * describe the perimeter differently from the page that announces it. "not available to US
@@ -31,7 +27,7 @@
  *
  * DELIBERATELY ABSENT: an "I accept" control (there is no account to attach acceptance to and a
  * checkbox would imply a gate that does not exist — whether use-based acceptance is defensible
- * for this perimeter is a counsel question, listed in stonkhousedotfun/callhouse: `ops/launch-legal.md`),
+ * for this perimeter is a counsel question),
  * clause numbering
  * (the sections are not cross-referenced, so numbers would be decoration), a geoblock, and any
  * sentence that promises an outcome. Nothing here is legal advice.
@@ -174,8 +170,7 @@ export default function TermsPage() {
             by these terms are non-upgradeable and separate fee, configuration, listing, treasury and
             guardian powers into delayed role lanes. Compiled ceilings bound fees, no role can transfer
             user collateral, and close, redeem, withdraw and cancel remain available. This is a design
-            statement, not a claim that the replacement contracts have been broadcast. Legacy contracts
-            remain relevant during run-off.
+            statement, not a claim that the replacement contracts have been broadcast.
           </li>
           <li>
             There is no username or password account and no know-your-customer check. Your wallet
@@ -198,8 +193,8 @@ export default function TermsPage() {
             <DocLink href="/legal#reporting">report it</DocLink> instead of using it.
           </li>
           <li>
-            Do not misrepresent this interface as affiliated with Robinhood, Valorem or any other
-            third party it names. It is not; <DocLink href="/legal">the legal page</DocLink>{" "}
+            Do not misrepresent this interface as affiliated with Robinhood or any other third party
+            it names. It is not; <DocLink href="/legal">the legal page</DocLink>{" "}
             says so in full.
           </li>
         </DocList>
@@ -231,8 +226,7 @@ export default function TermsPage() {
       <DocSection {...SECTIONS.thirdParty}>
         <DocList>
           <li>
-            No external audit report has been published for the Stonkhouse contracts.
-            An external audit is pending. The published source includes files
+            The published source includes files
             with different license notices; check each applicable notice before reuse. The contracts
             have no upgrade path: a bug
             may require a new deployment and migration, not a patch.
@@ -244,11 +238,6 @@ export default function TermsPage() {
             source availability and agreement determine the settlement price and can delay it;
             conversion of an in-the-money call to USDG may fail within the on-chain slippage bound,
             leaving a Stock Token payout instead.
-          </li>
-          <li>
-            Legacy v1 accounts use Seaport and Valorem Clear. Valorem&apos;s fee switch is held by a
-            separate Safe with one owner, and the legacy vault&apos;s admin decides whether it accepts
-            that fee. Those dependencies remain relevant until the last v1 position is closed.
           </li>
           <li>
             Orders live in the Stonkhouse OrderBook. A settlement cranker is running today, but it

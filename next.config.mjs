@@ -28,24 +28,30 @@
  * this site actually loads, because a policy wide enough to never complain is the same shape as no
  * policy at all.
  *
- * WHAT THIS SITE LOADS, and why the origins list is this short: fonts are self-hosted — Figtree,
- * Geist_Mono and Schibsted_Grotesk come through next/font/google, which downloads them at BUILD
- * time and serves them from this origin (app/layout.tsx). The one runtime call to
- * fonts.googleapis.com is in app/opengraph-image.tsx and runs on the SERVER while generating the
- * share image, so no browser ever fetches it. There is no <script>, no next/script and no
- * dangerouslySetInnerHTML anywhere in app/ or components/. Two client islands hydrate
- * (app/_components/PayoffDemo.tsx and components/NavLinks.tsx) and their chunks come from
- * /_next/static. Nothing fetches from the browser: the only fetch() is lib/live.ts, server-side.
- * Links to x.com, github.com, the explorer, the docs and the dapp are navigations, not loads.
+ * WHAT THIS SITE LOADS, and why the origins list is this short: fonts are self-hosted — Plus
+ * Jakarta Sans and JetBrains Mono come through next/font/google, which downloads them at BUILD time
+ * and serves them from this origin (app/layout.tsx). The runtime font calls — the css2 stylesheet
+ * from fonts.googleapis.com, then the font file it names — are in app/opengraph-image.tsx and run on
+ * the SERVER while generating the share image, so no browser ever makes them. Nothing fetches from
+ * the browser: every fetch() is server-side, in lib/live.ts (the read-only indexer API) and those two
+ * in app/opengraph-image.tsx. There is no next/script. There is exactly ONE inline <script>: the
+ * pre-paint theme bootstrap, which app/layout.tsx renders from lib/theme.ts THEME_INIT_SCRIPT
+ * through dangerouslySetInnerHTML. That string is a module constant (it reads localStorage and
+ * prefers-color-scheme in the browser) and interpolates nothing from the request. Four client
+ * islands hydrate (app/_components/PayoffChart.tsx, PayoffDemo.tsx and ThemeToggle.tsx, and
+ * components/NavLinks.tsx) and their chunks come from /_next/static. Links to x.com, github.com,
+ * the explorer, the docs and the dapp are navigations, not loads.
  *
  * THE ONE LOOSE DIRECTIVE, stated rather than buried: script-src carries 'unsafe-inline'. Next's
- * App Router emits an inline bootstrap script with no nonce, and adding one needs middleware —
- * outside this change. So this CSP does NOT stop an injected inline script. What makes that
- * acceptable here and nowhere else: this site takes NO request-derived
- * input (one route handler with no arguments, no middleware, no searchParams, no forms) and has no
- * HTML sink, so there is no path by which a script could be injected. If a form, a searchParams
- * read or a dangerouslySetInnerHTML is ever added, this directive stops being a formality and a
- * nonce becomes required. style-src carries it for the same reason: Next inlines critical CSS.
+ * App Router emits an inline bootstrap script with no nonce, the theme bootstrap above is inline
+ * too, and adding nonces needs middleware — outside this change. So this CSP does NOT stop an
+ * injected inline script. What makes that acceptable here and nowhere else: this site takes NO
+ * request-derived input (one route handler, app/.well-known/security.txt/route.ts, whose GET takes
+ * no arguments and is force-static; no middleware, no searchParams, no forms), and its only HTML
+ * sink is that constant theme script, so there is no path by which a script could be injected. If
+ * a form, a searchParams read, or a dangerouslySetInnerHTML of anything but a constant is ever
+ * added, this directive stops being a formality and a nonce becomes required. style-src carries
+ * it for the same reason: Next inlines critical CSS.
  *
  * THE DIRECTIVES THAT ARE LOAD-BEARING TODAY are the ones that do not depend on injection:
  *   frame-ancestors 'none'  — nobody can iframe /legal or /terms inside a lookalike page. This is
@@ -60,8 +66,9 @@
  * never to drop the header.
  *
  * X-Frame-Options duplicates frame-ancestors for user agents that predate CSP level 2. HSTS is
- * two years with preload, which is a commitment: this domain and its subdomains must stay
- * HTTPS-only. Referrer-Policy keeps the path off outbound requests to the explorer and the dapp.
+ * two years with includeSubDomains and WITHOUT preload (the note on the header below says why):
+ * this domain and its subdomains must stay HTTPS-only for as long as a browser remembers it.
+ * Referrer-Policy keeps the path off outbound requests to the explorer and the dapp.
  * poweredByHeader is off because `X-Powered-By: Next.js` tells an attacker the stack for free.
  */
 const CSP = [
@@ -86,8 +93,8 @@ const SECURITY_HEADERS = [
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   // No `preload`. It is a ONE-WAY DOOR: getting onto the browser preload list is easy and getting
   // off it takes months, during which every subdomain must stay HTTPS-only or become unreachable —
-  // and includeSubDomains here binds app.stonkhouse.fun and dev.stonkhouse.fun too. That is an
-  // owner decision, not a lane's. The header below is the reversible 90% of it.
+  // and includeSubDomains here binds app.stonkhouse.fun and dev.stonkhouse.fun too.
+  // The header below is the reversible 90% of it.
   { key: "Strict-Transport-Security", value: "max-age=63072000; includeSubDomains" },
   { key: "Permissions-Policy", value: "camera=(), microphone=(), geolocation=(), payment=()" },
 ];

@@ -1,12 +1,13 @@
 # Stonkhouse
 
-> Public information about Stock Token options on Robinhood Chain. This is an information site; trades take place in the separate app, where current market availability and quotes are shown. Examples are labelled and are not live quotes.
+> Public information about Stock Token options on Robinhood Chain. This is an information site; trades take place in the separate app, where current market availability and quotes are shown.
 
 ## Public pages
 
-- [Home](https://stonkhouse.fun/): buyer-first overview, payoff examples and live cards when available.
+- [Home](https://stonkhouse.fun/): buyer-first overview, an interactive payoff chart and live contracts when available.
 - [How it works](https://stonkhouse.fun/how-it-works): buying, writing, settlement and fees.
-- [Risks](https://stonkhouse.fun/risks): option, oracle, issuer, contract and operational risks.
+- [Risks](https://stonkhouse.fun/risks): what can go wrong for buyers and writers.
+- [FAQ](https://stonkhouse.fun/faq): withdrawal times for each vault, and how an option is settled and paid.
 - [Legal](https://stonkhouse.fun/legal): availability and instrument facts.
 - [Terms](https://stonkhouse.fun/terms) and [Privacy](https://stonkhouse.fun/privacy): current published notices.
 - [Protocol documentation](https://docs.stonkhouse.fun/): detailed product and protocol reference.
@@ -14,4 +15,4 @@
 
 ## Source and interpretation
 
-The site source is the `callhouse-site` repository. In it, `lib/site.ts` holds displayed status and launch examples; `lib/live.ts` validates read-only indexer data before showing it. Current fees, quotes, positions and contract addresses must be checked in the app, indexer and verified chain state. The site's example fee slip is not a live OrderBook fee read. No page here asks for a wallet.
+The site source is the `callhouse-site` repository. In it, `lib/site.ts` holds displayed status and launch fee terms; `lib/live.ts` validates read-only indexer data before showing it. Current fees, quotes, positions and contract addresses are in the app, indexer and verified chain state. No page here asks for a wallet.

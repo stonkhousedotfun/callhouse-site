@@ -4,19 +4,24 @@ import { notFound } from "next/navigation";
 import { DEV_PREVIEW, SITE_URL } from "@/lib/site";
 
 /**
- * /sitemap.xml for production stonkhouse.fun. Six routes, listed by hand. The separate dev
+ * /sitemap.xml for production stonkhouse.fun. Seven routes, listed by hand. The separate dev
  * preview returns 404, so it does not publish a sitemap.
  *
  * The list is literal rather than derived from the filesystem on purpose. This site has exactly
- * six public pages — landing, mechanics, risks, legal, terms and privacy — and
+ * seven public pages — landing, mechanics, risks, FAQ, legal, terms and privacy — and
  * adding another is a product decision, so a new route SHOULD require an edit here. A globbed sitemap would
  * quietly publish anything that landed in app/. /.well-known/security.txt is not a page and is
  * not listed.
  *
+ * A LITERAL LIST CAN BE FORGOTTEN, and one was: /faq shipped without an entry here.
+ * app/sitemap.test.ts therefore walks every page.tsx under app/ and fails when a page
+ * route is neither listed below nor named, with its reason, in that test's EXCLUDED map. It also fails
+ * when an entry here has no page. Adding a page is still a decision; the test makes sure it is made here.
+ *
  * LASTMODIFIED IS A FIXED CONSTANT, NOT A CLOCK. `new Date()` or `Date.now()` at module scope
  * would stamp every build with the moment the container was built, so a rebuild with no copy
- * change — a dependency bump, a Railway redeploy, a retried CI job — would tell crawlers all
- * six pages had just been revised. That trains them to ignore the field. It also
+ * change — a dependency bump, a Railway redeploy, a retried CI job — would tell crawlers every
+ * page had just been revised. That trains them to ignore the field. It also
  * makes the build non-reproducible: two builds of the same commit would emit different bytes.
  * Bump the constant BY HAND, in the same commit, when the copy on these pages actually changes.
  *
@@ -28,14 +33,21 @@ import { DEV_PREVIEW, SITE_URL } from "@/lib/site";
  * that disallows everything — see app/robots.ts here and stonkhousedotfun/callhouse: `web/app/robots.ts`
  * there. Listing its routes in this sitemap would contradict that, and a sitemap may not carry URLs
  * on another host in the first place. Also absent: alternates/i18n (one language), images (no
- * remote images), and any route that is not one of the six below.
+ * remote images), and any route that is not one of the seven below.
  */
 
 /**
- * Last real change to the copy on these pages, ISO 8601. Hand-maintained. Passed as a string so
+ * Last real change to the copy on every page except /faq, ISO 8601. Hand-maintained. Passed as a string so
  * no Date is constructed during the build and the output is byte-identical every time.
  */
 const CONTENT_REVISED = "2026-09-21T06:07:20.000Z";
+
+/**
+ * Last real change to the /faq copy: the commit that added the page. It has its own
+ * constant because the FAQ was written after CONTENT_REVISED, and stamping it with that earlier date
+ * would claim it existed before it did. Same rules: a string, hand-maintained, bumped with the copy.
+ */
+const FAQ_REVISED = "2026-09-23T04:05:04.000Z";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   if (DEV_PREVIEW) notFound();
@@ -61,6 +73,15 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: CONTENT_REVISED,
       changeFrequency: "monthly",
       priority: 0.8,
+    },
+    {
+      // Withdrawal times for every vault and how an option settles, written from the contracts.
+      // It expands /how-it-works, so its priority sits just below that page's; its answers change when the
+      // contracts do, which is why it is monthly rather than yearly.
+      url: `${SITE_URL}/faq`,
+      lastModified: FAQ_REVISED,
+      changeFrequency: "monthly",
+      priority: 0.6,
     },
     {
       // Geographic restrictions and the legal form of the Stock Token. Changes least often and

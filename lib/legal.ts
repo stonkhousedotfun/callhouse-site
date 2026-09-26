@@ -6,8 +6,8 @@
  * the operating entity, where it is organised, which law governs the terms, and the three
  * contact addresses. As of 2026-09-15 only the three contact addresses are set, on the Railway site
  * service (security@, legal@ and privacy@stonkhouse.fun); no entity has been formed or chosen and no
- * counsel has named a governing law. stonkhousedotfun/callhouse: `ops/launch-legal.md` is the list of
- * decisions that fills these in.
+ * counsel has named a governing law.
+ *
  *
  * EVERY VALUE IS OPTIONAL AND NONE HAS A DEFAULT. `undefined` when unset, and the pages render
  * that as a visible gap in plain words ("not yet designated"). There is no placeholder name here
@@ -19,8 +19,8 @@
  * These are NEXT_PUBLIC_*, so like everything in lib/site.ts they are INLINED AT BUILD TIME.
  * Setting them on the Railway service and restarting changes nothing; the site must be rebuilt,
  * and this repo's Dockerfile declares each one as a build ARG or the value would never reach
- * `next build` at all (README.md "Deploy"). stonkhousedotfun/callhouse: `ops/launch-legal.md` walks
- * through the order.
+ * `next build` at all.
+ *
  *
  * Deliberately absent: a postal address (counsel decides whether one must be published), a
  * company number, a DPO or EU/UK representative line (whether one is needed is a counsel
@@ -59,8 +59,8 @@ export const SECURITY_CONTACT_EMAIL = optional(process.env.NEXT_PUBLIC_SECURITY_
  * The date the legal documents were last reviewed, used for ONE thing: deriving the `Expires:`
  * line of /.well-known/security.txt, which RFC 9116 makes mandatory.
  *
- * THIS IS NOT A GATE. It was `LEGAL_DOCS_VERSION` until 2026-09-21, when the owner removed the
- * versioning machinery: the rule that wording could not change without bumping a version, the
+ * THIS IS NOT A GATE. It was `LEGAL_DOCS_VERSION` until 2026-09-21, when the versioning
+ * machinery was removed: the rule that wording could not change without bumping a version, the
  * draft flag derived from a "draft-" prefix, and the chips and markers the pages rendered from
  * them. The instruction was that nothing should stop us saying something. So nothing here does.
  *

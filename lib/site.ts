@@ -9,15 +9,16 @@
  * dapp.
  *
  * The displayed addresses below are DUPLICATED FROM stonkhousedotfun/callhouse: `web/lib/contracts.ts`,
- * `web/lib/chain.ts` and `README.md` ON PURPOSE. This repo must build, typecheck and deploy with no
+ * `web/lib/chain.ts`. This repo must build, typecheck and deploy with no
  * dependency on the dapp — it is a separate repo and Railway service with its own container, and a
  * shared package would drag viem (and therefore a wallet-shaped dependency tree) into a landing
- * page that makes no chain calls at all. This file DISPLAYS these addresses; it never calls them.
+ * page whose only chain calls are the server's read-only spot fallback (lib/chainPrice.ts). This file DISPLAYS these
+ * addresses; it never calls them.
  * If a displayed address changes, this file is updated by hand to match the chain.
  *
- * Deliberately absent: chain clients and ABIs. The v2 landing may read the public, read-only
- * indexer API on the server. It renders live values only after validation and otherwise uses a
- * labelled example. The v1 address facts below remain historical until the migration is complete.
+ * Deliberately absent: chain clients and ABIs. The landing reads the public, read-only indexer API on the server and,
+ * for a missing or stale spot, the market's feed or pool over the public RPC (lib/spotFallback.ts). It renders live
+ * values only after validation. The v1 address facts below are historical.
  *
  * LIVE ADDRESSES (confirmed on chain 4663, 2026-09-15): factory.implementation(), factory.clear(),
  * factory.seaport(), factory.usdg(), factory.asset() and factory.priceFeed() return exactly the
@@ -34,16 +35,17 @@ import { LIVE_MARKETS, REGISTRY_MARKET_COUNT } from "./markets.generated.ts";
 export { LIVE_MARKETS, REGISTRY_MARKET_COUNT };
 
 /**
- * THE V8 LAUNCH SET. Owner ruling 2026-09-21 ("launch with NVDA and SPCX only"), recorded as the
- * registry's authoritative `launchSet.markets` block in callhouse `ops/markets/tier1.json`
- * (`e09af8aaed8e1f9a29aaf82f010c652ee1085050`). T-OP-105.
+ * THE V8 LAUNCH SET: NVDA and SPCX only. The registry's authoritative `launchSet.markets` block in callhouse
+ * `ops/markets/tier1.json` records the same two.
+ *
  *
  * HAND-MIRRORED, NOT PROJECTED, and that is a known gap: `lib/markets.generated.ts` carries only `LIVE_MARKETS`
- * and `REGISTRY_MARKET_COUNT` because `scripts/market-projection.mjs` does not render `launchSet` yet, and both
- * files sit outside the row that added this constant. Until the generator projects it, `lib/site.test.ts` pins
- * this list to the ruling and the registry SHA above, so drift is red rather than silent. Every sentence about
- * the launch size renders from here; the 33 other registry rows are "not part of the launch", never a number
- * of "deferred" markets, because deferral implies a promise the ruling does not make.
+ * and `REGISTRY_MARKET_COUNT` because `scripts/market-projection.mjs` does not render `launchSet` yet. Until the
+ * generator projects it, `lib/site.test.ts` pins this list, so drift is red rather than silent. Every sentence about
+ * the launch size renders from here. The registry now holds exactly the launch set, so the pages say NVDA and
+ * SPCX are the only markets listed; should rows return, they are "not part of the launch", never a number of
+ * "deferred" markets, because deferral implies a promise no one has made.
+ *
  */
 export const LAUNCH_SET = ["NVDA", "SPCX"] as const;
 
@@ -52,6 +54,44 @@ export function listTickers(tickers: readonly string[]): string {
   if (tickers.length === 0) throw new RangeError("listTickers: empty list");
   if (tickers.length === 1) return tickers[0]!;
   return `${tickers.slice(0, -1).join(", ")} and ${tickers[tickers.length - 1]}`;
+}
+
+/** The weekdays a registry `dailyWeekdays` list may name (callhouse keeper/src/v2/registry.ts WEEKDAYS), in order. */
+const WEEKDAY_NAMES = { mon: "Monday", tue: "Tuesday", wed: "Wednesday", thu: "Thursday", fri: "Friday" } as const;
+export type Weekday = keyof typeof WEEKDAY_NAMES;
+type Listing = { expiriesAhead: { weekly: number; daily: number }; dailyWeekdays: readonly Weekday[] };
+
+/**
+ * WHICH EXPIRIES EACH LAUNCH MARKET LISTS: its effective `expiriesAhead` and `dailyWeekdays` in callhouse
+ * `ops/markets/tier1.json` (the version scripts/market-projection.mjs pins), `v2.defaults` with the market's
+ * `overrides` on top. NVDA lists dailies for Monday, Wednesday and Friday closes only;
+ * SPCX lists weeklies and no dailies. Hand-mirrored like LAUNCH_SET, because the
+ * projection does not render listing days; lib/site.test.ts compares it with the registry when CALLHOUSE_WEB_DIR is set.
+ */
+export const LISTED_EXPIRIES = {
+  NVDA: { expiriesAhead: { weekly: 0, daily: 6 }, dailyWeekdays: ["mon", "wed", "fri"] },
+  SPCX: { expiriesAhead: { weekly: 2, daily: 0 }, dailyWeekdays: ["mon", "tue", "wed", "thu", "fri"] },
+} as const satisfies Record<(typeof LAUNCH_SET)[number], Listing>;
+
+/** "NVDA lists daily options expiring Monday, Wednesday and Friday; SPCX lists weekly options only." */
+export function listedExpiriesSentence(
+  tickers: readonly string[] = LAUNCH_SET,
+  listed: Readonly<Record<string, Listing>> = LISTED_EXPIRIES,
+): string {
+  const parts = tickers.map((ticker) => {
+    const listing = listed[ticker];
+    if (!listing) throw new RangeError(`listedExpiriesSentence: no listing for ${ticker}`);
+    const { expiriesAhead, dailyWeekdays } = listing;
+    const days = dailyWeekdays.length === Object.keys(WEEKDAY_NAMES).length
+      ? "every trading day"
+      : listTickers(dailyWeekdays.map((day) => WEEKDAY_NAMES[day]));
+    const daily = expiriesAhead.daily > 0 ? `daily options expiring ${days}` : "";
+    if (daily && expiriesAhead.weekly > 0) return `${ticker} lists ${daily} and weekly options`;
+    if (daily) return `${ticker} lists ${daily}`;
+    if (expiriesAhead.weekly > 0) return `${ticker} lists weekly options only`;
+    throw new RangeError(`listedExpiriesSentence: ${ticker} lists no expiries`);
+  });
+  return `${parts.join("; ")}.`;
 }
 
 /** Strip trailing slashes so joins never produce `//`. */
@@ -70,6 +110,9 @@ export const DOCS_URL = normalizeBase(process.env.NEXT_PUBLIC_DOCS_URL ?? "https
 
 /** X (Twitter). Override with NEXT_PUBLIC_X_URL if the handle is not @stonkhousefun. */
 export const X_URL = normalizeBase(process.env.NEXT_PUBLIC_X_URL ?? "https://x.com/stonkhousefun");
+
+/** Telegram. Override with NEXT_PUBLIC_TELEGRAM_URL if the channel is not t.me/stonkhousefun. */
+export const TELEGRAM_URL = normalizeBase(process.env.NEXT_PUBLIC_TELEGRAM_URL ?? "https://t.me/stonkhousefun");
 
 /** App and keeper repo. */
 export const GITHUB_URL = normalizeBase(process.env.NEXT_PUBLIC_GITHUB_URL ?? "https://github.com/stonkhousedotfun/callhouse");
@@ -121,26 +164,28 @@ export function marketAvailabilitySummary(markets: readonly string[], registryMa
 
 /**
  * Public production status. The contracts first launched on the mainnet dev host and are now the
- * production v2 deployment; the dev hostname is not a separate chain or contract set. The landing,
- * footer and risks glance read these so "beta" and the audit fact cannot drift across pages. An
- * external audit is pending; no external audit report has been published yet.
+ * production v2 deployment; the dev hostname is not a separate chain or contract set.
+ * The site shows no beta, audit or "Dev preview" label, so the phase and audit strings that
+ * used to live here were removed with their last readers.
  */
 export const STATUS = {
-  phase: "Beta",
-  audit: "Unaudited",
-  auditLine: "No external audit report has been published. An external audit is pending.",
   v2: marketAvailabilityStatus(LIVE_MARKETS),
 } as const;
 
 /**
- * Pre-broadcast settings for the replacement contracts. They are design values, not a live read;
- * the app quote and series-pinned terms control an actual trade after those contracts are active.
+ * The live v9 fee settings. Read on chain 2026-09-25 6:49 PM PT: OrderBook `feeParams()` =
+ * (premiumFeeBps 500, resaleFeeBps 0, takerFeeFlat 100000, takerFeeCapBps 1000, makerRebateBps 5000), and Clearinghouse
+ * `market(NVDA|SPCX)` exerciseFeeBps 25, mintFeePpm 0; the same as callhouse ops/markets/tier1.json `v2.fees`. They are
+ * not a live read at render time: a scheduled change moves them after its notice, and the app quote and the
+ * series-pinned terms control an actual trade.
  */
 export const FEES_V2 = {
   premiumBps: 500,
   resalePremiumBps: 0,
   takerFlatRaw: 100_000n,
   takerCapBps: 1_000,
+  /** Share of each take's taker fee the book pays the maker whose order filled (MakerRegistry tier 0 = this default). */
+  makerRebateBps: 5_000,
   exerciseBps: 25,
   exercisePayoutCapBps: 1_000,
   writerCollateralRatePpm: 0,
@@ -149,9 +194,9 @@ export const FEES_V2 = {
 } as const;
 
 /**
- * Fee figures as prose. T-OP-091 (F-SITE-02): /terms, /legal and /how-it-works used to state "5%", "0%" and
- * "72 hours" as hand-typed text beside FEES_V2, and once copy-lint was removed (owner instruction 2026-09-21,
- * 18ad2eec) nothing bound the two together — the disclosure matched the constants by coincidence. Every fee
+ * Fee figures as prose. /terms, /legal and /how-it-works used to state "5%", "0%" and
+ * "72 hours" as hand-typed text beside FEES_V2, and once copy-lint was removed
+ * nothing bound the two together — the disclosure matched the constants by coincidence. Every fee
  * figure in prose now renders through these two helpers from FEES_V2, so a constant change moves the prose
  * and lib/site.test.ts pins the constants to the contract values they mirror.
  *
@@ -195,6 +240,8 @@ export type AddressRow = {
   what: string;
   /** Source-verification status, for the contracts Stonkhouse deployed. Omitted for third parties. */
   verified?: string;
+  /** The explorer page that shows this contract's verified source. Present only once the source is verified there. */
+  sourceUrl?: string;
 };
 
 /**
@@ -207,8 +254,8 @@ export type AddressRow = {
 export const TOKEN_ADDRESS = "0xc2525b7c68b6d66dE5AABFEDC7B13314F389D5C4";
 
 /**
- * Public token and historical v1 account addresses. Frozen v7 option-contract addresses are
- * intentionally absent from this site. V8 addresses stay unpublished until deployment.
+ * Public token, USDG and the historical v1 account addresses. Frozen v7 option-contract addresses
+ * are intentionally absent from this site. The deployed v9 contracts are in V8_ADDRESSES below.
  */
 export const ADDRESSES = {
   token: {
@@ -264,6 +311,105 @@ export const ADDRESSES = {
     label: "Chainlink RHNVDA / USD",
     address: "0x379EC4f7C378F34a1B47E4F3cbeBCbAC3E8E9F15",
     what: "8 decimals. Display, and the price floors checked when an account lists and a lot fills. Settlement never reads a price feed.",
+  },
+} as const satisfies Record<string, AddressRow>;
+
+/**
+ * callhouse `ops/markets/tier1.json` `v2.deployBlock`: the block the live core was deployed in. That is the v9 deployment
+ * (launched 2026-09-25; its contracts still report interface version 8, which is why the names here keep `V8_`).
+ */
+export const V8_DEPLOY_BLOCK = 72_462_898;
+
+export const V8_UNVERIFIED = "Not source-verified on the explorer yet.";
+export const V8_VERIFIED = "Source verified on the Robinhood Chain explorer.";
+
+/**
+ * The explorer that holds verified source: Etherscan's Robinhood Chain explorer. Blockscout above stays the address
+ * link.
+ */
+export const SOURCE_EXPLORER_URL = "https://robin.etherscan.io";
+
+/** The verified-source page for a deployed contract. */
+export function verifiedSourceUrl(address: string): string {
+  return `${SOURCE_EXPLORER_URL}/address/${address}#code`;
+}
+
+/**
+ * The deployed v9 contracts. COPIED from the callhouse registry write-back, never typed from a deploy log or a plan:
+ * `ops/markets/tier1.json` at the version scripts/market-projection.mjs pins, as written back by the launch run (the
+ * registry after externals, RegisterMarkets and the House-vault window of the 2026-09-25 launch run). Each row names
+ * the registry key it came from. Etherscan V2 `getsourcecode` (chain 4663) was asked about
+ * every row: only the AccessManager returns source. The other eight return none, so they keep V8_UNVERIFIED and no
+ * `sourceUrl` until the explorer shows their source. (The v8 set this replaced was verified; none of its
+ * addresses is live any more.)
+ * Keys are `v8*` so none collides with the removed v7 `v2*` keys lib/site.test.ts keeps out.
+ */
+export const V8_ADDRESSES = {
+  // v2.contracts.clearinghouse
+  v8Clearinghouse: {
+    label: "Clearinghouse",
+    address: "0xD33663CD8A363710daF87C78616899cED34b9374",
+    what: "Holds writer collateral, mints the long and short tokens of each series and pays holders at settlement.",
+    verified: V8_UNVERIFIED,
+  },
+  // v2.contracts.orderBook
+  v8OrderBook: {
+    label: "OrderBook",
+    address: "0x581AFCC6Da498F4D8161705E1D294a6e4fEeaeF3",
+    what: "Bids, resale asks and write-on-fill asks for every series. Every take pays the taker fee.",
+    verified: V8_UNVERIFIED,
+  },
+  // v2.contracts.settlementOracle
+  v8SettlementOracle: {
+    label: "SettlementOracle",
+    address: "0x932c9BF2350633382ed6b2CB52e1c82345A3B160",
+    what: "One settlement price per stock and expiry, from that market's registered price sources.",
+    verified: V8_UNVERIFIED,
+  },
+  // v2.contracts.expiryCalendar
+  v8ExpiryCalendar: {
+    label: "ExpiryCalendar",
+    address: "0x7ae41B8b0ba2189CC59a9c124b20D9BA00177ae5",
+    what: "The expiry grid: 16:00 New York time on NYSE session days, plus whitelisted special expiries.",
+    verified: V8_UNVERIFIED,
+  },
+  // v2.contracts.payoutAdapter
+  v8PayoutAdapter: {
+    label: "PayoutAdapter",
+    address: "0x92E01EbED9A3253a7D029912546C594bD3DD2737",
+    // The PayoutRouter. registry markets[].v2.payoutRoute is {venue: v3, fee: 500} for NVDA and SPCX, and
+    // routes(asset) on chain (2026-09-25 6:50 PM PT) answers Venue.V3, fee 500, the same pools the oracle reads.
+    what: "Sells an in-the-money call's Stock Token payout for USDG through the PayoutRouter, on each market's pinned route (for NVDA and SPCX, a Uniswap v3 pool with a 0.05% fee). If the sale fails, the payout is paid in Stock Tokens.",
+    verified: V8_UNVERIFIED,
+  },
+  // markets[ticker=NVDA].v2.houseVault (equal to v2.contracts.houseVault)
+  v8HouseVaultNvda: {
+    label: "NVDA house vault",
+    address: "0xF9F95d999aA798fc0B60a0f85f7CCe251fe247a7",
+    what: "User-funded market maker for NVDA. Depositors hold its shares; a bot quotes inside on-chain limits.",
+    verified: V8_UNVERIFIED,
+  },
+  // markets[ticker=SPCX].v2.houseVault
+  v8HouseVaultSpcx: {
+    label: "SPCX house vault",
+    address: "0x031AB8C376C31447e766Fb95d19D2369f3806Ce1",
+    what: "User-funded market maker for SPCX. Depositors hold its shares; a bot quotes inside on-chain limits.",
+    verified: V8_UNVERIFIED,
+  },
+  // v2.contracts.earnVault
+  v8EarnVault: {
+    label: "Earn vault",
+    address: "0x847794900FAE91516Cc3fbc36955C6B64a2dD609",
+    what: "Earn. Depositors receive shares; the vault writes calls by resting asks on the OrderBook.",
+    verified: V8_UNVERIFIED,
+  },
+  // v2.contracts.accessManager
+  v8AccessManager: {
+    label: "AccessManager",
+    address: "0x3698FDcD6A29675382d287b30546B75dE9174103",
+    what: "Maps each admin function to a role, with delays on scheduled changes.",
+    verified: V8_VERIFIED,
+    sourceUrl: verifiedSourceUrl("0x3698FDcD6A29675382d287b30546B75dE9174103"),
   },
 } as const satisfies Record<string, AddressRow>;
 

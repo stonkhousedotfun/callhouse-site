@@ -76,8 +76,8 @@ test("a registry with nothing live renders an empty LIVE_MARKETS and still count
 });
 
 test("an unresolvable registry exits non-zero and names the path it tried", () => {
-  // The whole reason this CLI exists rather than reusing check-twins.mjs:17-24, which exits 0 here
-  // (v8-plan/06-QUIRKS.md §A3). A writer that "succeeded" having written nothing is the worse failure.
+  // The whole reason this CLI exists rather than reusing check-twins.mjs:17-24, which exits 0 here.
+  // A writer that "succeeded" having written nothing is the worse failure.
   const dir = mkdtempSync(join(tmpdir(), "gen-markets-missing-"));
   try {
     const missing = run(["--check", "--registry", join(dir, "absent.json")]);
@@ -116,13 +116,13 @@ test("the CLI refuses an ambiguous invocation rather than guessing, and defaults
 });
 
 test("no absolute workspace path is baked into either file", () => {
-  // scripts/check-commit-scope.mjs:20-25 rejects a staged .mjs containing one, so this fails here rather
-  // than at commit time. Asserted by running the guard's own predicate, not by restating its regex.
+  // scripts/check-commit-scope.mjs rejects a staged .mjs containing one, so this fails here rather than at
+  // commit time. Its self-test proves the guard refuses a home path; the two patterns below are its generic ones.
   const selfTest = execFileSync(process.execPath, [join(here, "check-commit-scope.mjs"), "--self-test"], { encoding: "utf8" });
   assert.match(selfTest, /scope guard self-test passed/);
   for (const name of ["gen-markets.mjs", "gen-markets.test.mjs"]) {
     const content = readFileSync(join(here, name), "utf8");
-    assert.doesNotMatch(content, /\/Users\/[^\s/]+\/Desktop\/robinhood-dev/, name);
-    assert.doesNotMatch(content, /wt\/callhouse|github\.com\/leekzor\//, name);
+    assert.doesNotMatch(content, /\/Users\/[^\s/]+\//, name);
+    assert.doesNotMatch(content, /\/private\/tmp\/|wt\/callhouse/, name);
   }
 });

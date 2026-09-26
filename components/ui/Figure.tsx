@@ -10,7 +10,7 @@ import { cn } from "@/lib/cn";
  *
  * <Figure> is one label/value pair and renders `<div><dt/><dd/></div>`, so it MUST sit inside a
  * <dl>. Shapes from the mockup:
- *   - hero facts:     <Figure label="Live markets" value="NVDA · AAPL" />            (size md)
+ *   - hero facts:     <Figure label="Live markets" value="NVDA · SPCX" />            (size md)
  *   - week card:      <Figure boxed size="lg" label="Strike" value="225.00" unit="USDG" />
  *   - endings panel:  <Figure boxed caps mono={false} size="sm" label="Premium" value="None" />
  *

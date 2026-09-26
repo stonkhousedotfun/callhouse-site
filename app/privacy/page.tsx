@@ -1,7 +1,7 @@
 /**
  * Privacy notice for stonkhouse.fun, app.stonkhouse.fun, the v2 indexer and optional notifier.
- * Product facts were checked against callhouse/web/lib/v2/api.ts, the account and notification
- * routes, callhouse/notifier/README.md and its encrypted-target store. Recheck those sources when
+ * Product facts were checked against the app's API client, its account and notification routes,
+ * and the notifier and its encrypted-target store. Recheck those sources when
  * service behaviour changes. Legal controller and contact fields come from lib/legal.ts.
  *
  * The indexed site is the canonical notice. The app uses wallet addresses for account reads;

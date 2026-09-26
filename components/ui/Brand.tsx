@@ -24,11 +24,18 @@ export function BrandMark({ size = 26, className }: { size?: number; className?:
   );
 }
 
-/** Mark + "stonkhouse" wordmark, linking home. */
+/**
+ * Mark + "stonkhouse" wordmark, linking home.
+ *
+ * `prefetch={false}`: the wordmark sits in the header of every page, so Next's viewport prefetch fetched the home
+ * RSC payload and its payoff-chart chunk (~30 KB per mobile view) on
+ * every route, including the home page itself. Navigating home is rare enough to pay for on click.
+ */
 export function Brand({ className }: { className?: string }) {
   return (
     <Link
       href="/"
+      prefetch={false}
       className={cn(
         "inline-flex items-center gap-[9px] rounded-[10px] font-display text-[21px] font-extrabold leading-none tracking-[-0.03em] text-ink no-underline",
         className,

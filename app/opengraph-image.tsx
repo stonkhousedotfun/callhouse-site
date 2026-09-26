@@ -8,17 +8,17 @@ import { SITE_URL } from "@/lib/site";
  * and `contentType` alongside the default render is what makes Next emit the og:image tags, so
  * nothing imports this file and the layout needs no og.images entry.
  *
- * Uses the same labelled example as the landing. Social platforms can cache shared images for
- * hours or days, so an order-book quote must never appear here as if it were current.
+ * Carries no quote and no example figures. Social platforms can cache shared images for hours or
+ * days, so an order-book quote must never appear here as if it were current.
  *
  * FONTS ARE BEST EFFORT, AND THE CARD NEVER FAILS THE BUILD OVER THEM. `loadFont` asks Google Fonts
- * for Schibsted Grotesk 800 and Figtree 500, subset to exactly the characters drawn below. The build
+ * for Plus Jakarta Sans 800 and 500, subset to exactly the characters drawn below. The build
  * already reaches Google Fonts for next/font in app/layout.tsx, so this adds no new kind of
  * dependency. But if that request fails, times out or returns a format Satori cannot read, the card
  * renders with the face next/og bundles instead (Geist, regular weight only): plainer, still
  * correct. This card never fails the build over its fonts. The build as a whole does depend on
  * Google Fonts, through next/font in app/layout.tsx, which errors in a production build when the
- * faces cannot be fetched (see README).
+ * faces cannot be fetched.
  *
  * SATORI IS NOT A BROWSER. It implements a subset of flexbox and nothing else:
  *   - No CSS grid, no float, no position: absolute tricks beyond the basics, no CSS variables.
@@ -31,7 +31,7 @@ import { SITE_URL } from "@/lib/site";
  *   - Custom fonts REPLACE the bundled face rather than adding to it, so a character missing from
  *     the font subset renders as nothing. `GLYPHS_*` below are built from the very strings drawn.
  *
- * Colours are the LIGHT Daylight tokens from app/globals.css, written as literals because Satori
+ * Colours are the Neon DAY tokens from app/globals.css, written as literals because Satori
  * cannot read CSS variables. Do not introduce a value that is not a token there; this card and the
  * site it links to sit one click apart. The mark is BrandMark from components/ui/Brand.tsx on the
  * same 26 unit grid.
@@ -40,16 +40,19 @@ import { SITE_URL } from "@/lib/site";
  * with either), a dark variant (platforms show one image to everyone) and a per-route variant.
  */
 
-const GROUND = "#f5f8f6"; /* --ground */
-const INK = "#0c1a15"; /* --ink */
-const INK_2 = "#47584f"; /* --ink-2 */
-const LINE = "#e0e8e3"; /* --line */
-const ACCENT = "#0a7f55"; /* --accent */
-const ACCENT_INK = "#ffffff"; /* --accent-ink */
+/* The Neon DAY tokens (app/globals.css TWIN BLOCK): the card has one variant, and a light
+   card reads on every platform's timeline. */
+const GROUND = "#ffffff"; /* --ground (day) */
+const INK = "#0b0f0d"; /* --ink (day) */
+const INK_2 = "#3a4741"; /* --ink-2 (day) */
+const LINE = "#e6ece8"; /* --line (day) */
+const ACCENT = "#0a7f55"; /* --accent (day) */
+const ACCENT_INK = "#ffffff"; /* --accent-ink (day) */
 
-/** Satori resolves these names against the `fonts` array; with no fonts loaded it uses Geist. */
-const DISPLAY = "Schibsted Grotesk";
-const BODY = "Figtree";
+/** Satori resolves these names against the `fonts` array; with no fonts loaded it uses Geist. Neon type:
+ *  one family, Plus Jakarta Sans, at 800 for the display lines and 500 for body. */
+const DISPLAY = "Plus Jakarta Sans";
+const BODY = "Plus Jakarta Sans";
 
 /**
  * The bare host, so the card reads "stonkhouse.fun" rather than "https://stonkhouse.fun". Derived
@@ -104,11 +107,10 @@ function Mark({ size: px }: { size: number }) {
 export default async function OpengraphImage() {
   const headlineLead = "Small bets on big stocks.";
   const headlineAccent = "Stock Token options.";
-  const payoff = "Calls and puts on NVDA and SPCX, settled on Robinhood Chain.";
-  const label = "stonkhouse.fun";
+  const payoff = "Calls on NVDA and SPCX, settled on Robinhood Chain.";
   const [display, body] = await Promise.all([
     loadFont(DISPLAY, 800, unique(WORDMARK + headlineLead + headlineAccent)),
-    loadFont(BODY, 500, unique(payoff + DOMAIN + label)),
+    loadFont(BODY, 500, unique(payoff + DOMAIN)),
   ]);
   // All or nothing. next/og treats any `fonts` array, even an empty one, as a full replacement for
   // its bundled face, so a half-loaded pair would leave one line of the card with no glyphs at all.
@@ -178,18 +180,18 @@ export default async function OpengraphImage() {
           </div>
         </div>
 
-        {/* Bottom: a hairline, the domain, and the quote freshness label. */}
+        {/* Bottom: a hairline and the domain, once. The right-hand slot held the quote freshness label
+            ("Example · not a live quote") until the example card was dropped, after which it
+            repeated the host a second time. The card carries no quote, so there is nothing to label. */}
         <div
           style={{
             display: "flex",
-            justifyContent: "space-between",
             alignItems: "center",
             paddingTop: 26,
             borderTop: `2px solid ${LINE}`,
           }}
         >
           <div style={{ display: "flex", fontSize: 26, fontWeight: 500, color: INK_2 }}>{DOMAIN}</div>
-          <div style={{ display: "flex", fontSize: 24, fontWeight: 500, color: INK_2 }}>{label}</div>
         </div>
       </div>
     ),

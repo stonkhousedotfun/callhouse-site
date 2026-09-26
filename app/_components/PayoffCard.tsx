@@ -1,4 +1,5 @@
 import { Panel } from "@/components/ui";
+import { LocalTime } from "@/components/ui/LocalTime";
 import type { LiveCard } from "@/lib/live";
 import { cardSentence } from "@/lib/payoff";
 import { appUrl } from "@/lib/site";
@@ -18,13 +19,11 @@ export function PayoffCard({ card, featured = false }: { card: LiveCard; feature
   const sentence = cardSentence(card, units, {
     cost: BigInt(quote.cost.raw), payout: BigInt(quote.payoutAtTarget.raw),
   });
-  const date = new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "America/New_York" })
-    .format(new Date(card.series.expiry * 1000));
   return <Panel as="article" lift={featured} className="flex h-full min-w-0 flex-col justify-between gap-6">
     <div>
       <div className="flex flex-wrap items-center justify-between gap-2 text-sm text-ink-2">
         <strong className="font-display text-lg text-ink">{card.series.ticker} {card.series.isPut ? "put" : "call"}</strong>
-        <span>{date} · ${exact(card.series.strike.raw)} strike</span>
+        <span><LocalTime at={card.series.expiry} market /> · ${exact(card.series.strike.raw)} strike</span>
       </div>
       <p className="num mt-5 text-[length:clamp(34px,4vw,48px)] font-semibold leading-none tracking-[-0.03em] text-accent-text">
         {quote.multiple.toFixed(2)}×

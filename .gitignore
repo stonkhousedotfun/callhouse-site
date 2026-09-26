@@ -22,5 +22,7 @@ next-env.d.ts
 *.mnemonic
 *.secret
 *.log
+# The scope guard's local list of private names (scripts/check-commit-scope.mjs). Never committed.
+.scope-guard.local
 
 .DS_Store

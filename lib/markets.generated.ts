@@ -3,7 +3,9 @@
 
 /** V2 markets that the app registry currently marks live and registered, in registry order. */
 export const LIVE_MARKETS = [
+  "NVDA",
+  "SPCX",
 ] as const;
 
 /** Rows currently present in the app registry, including planned and paused markets. */
-export const REGISTRY_MARKET_COUNT = 35;
+export const REGISTRY_MARKET_COUNT = 2;

@@ -1,5 +1,5 @@
 # Requires local gitleaks, semgrep, node, and pnpm; all hooks are check-only.
-# The Git hook is not installed from this linked worktree (shared hook directory).
+#
 minimum_pre_commit_version: '3.2.0'
 repos:
   - repo: https://github.com/gitleaks/gitleaks
@@ -39,4 +39,4 @@ repos:
         entry: pnpm -s check-twins
         language: system
         pass_filenames: false
-        files: '^(lib/(payoff|payoffCurve|rent)\.ts|scripts/check-twins\.mjs)$'
+        files: '^(lib/(payoff|payoffCurve|rent|theme|impliedVol|payoffFormat|payoffChart)\.ts|app/globals\.css|scripts/(check-twins|market-projection)\.mjs)$'

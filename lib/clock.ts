@@ -1,13 +1,58 @@
 /**
  * The week's clock, in language a stranger can read.
  *
- * The keeper sets exercise at the NYSE Friday close — 4:00pm America/New_York, Thursday on a
- * Friday holiday — and expiry 24 hours later (stonkhousedotfun/callhouse keeper/src/calendar.ts). That is
- * 8:00pm UTC while US daylight time holds and 9:00pm UTC after it ends. Pages lead with New York
- * in 12-hour time and put UTC in a footnote, never in the same breath as the close.
+ * Every time a reader sees is in THEIR browser's time zone, with the zone named ("Sep 24, 1:00 PM PDT"). A market
+ * deadline (expiry, cutoff, settlement) also keeps the market's own time beside it, muted: "Sep 24, 1:00 PM PDT
+ * (4:00 PM ET)", shown once when the reader is already on New York time. There is no UTC line.
+ *
+ * The server cannot know the reader's zone, so a page renders the New York string ({marketAt}) and
+ * <LocalTime> swaps in {viewerAt} after mount. Neither string is ever printed without its zone name.
  */
 
 const NY = "America/New_York";
+
+/** The market's time zone. */
+export const MARKET_ZONE = NY;
+
+type FormatOptions = { timeZone?: string; dateless?: boolean };
+
+function formatIn(tsSeconds: number, { timeZone, dateless = false }: FormatOptions, zoneName: "short" | "shortGeneric"): string {
+  return new Intl.DateTimeFormat("en-US", {
+    ...(timeZone ? { timeZone } : {}),
+    ...(dateless ? {} : { month: "short", day: "numeric" }),
+    hour: "numeric",
+    minute: "2-digit",
+    timeZoneName: zoneName,
+  }).format(new Date(tsSeconds * 1000));
+}
+
+/** The same instant with the zone name dropped, so two zones can be compared by wall clock. */
+function wallClock(tsSeconds: number, timeZone: string | undefined): string {
+  return new Intl.DateTimeFormat("en-US", {
+    ...(timeZone ? { timeZone } : {}),
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  }).format(new Date(tsSeconds * 1000));
+}
+
+/** "Sep 24, 4:00 PM EDT": what the server renders, before the browser's zone is known. */
+export function marketAt(tsSeconds: number, dateless = false): string {
+  return formatIn(tsSeconds, { timeZone: NY, dateless }, "short");
+}
+
+/**
+ * The reader's time, zone named: "Sep 24, 1:00 PM PDT". With `market`, a deadline also shows New York time,
+ * "Sep 24, 1:00 PM PDT (4:00 PM ET)", unless the reader's wall clock already is New York's. `timeZone` is for tests;
+ * the page leaves it unset so the browser's zone is used.
+ */
+export function viewerAt(tsSeconds: number, opts: FormatOptions & { market?: boolean } = {}): string {
+  const local = formatIn(tsSeconds, opts, "short");
+  if (!opts.market || wallClock(tsSeconds, opts.timeZone) === wallClock(tsSeconds, NY)) return local;
+  return `${local} (${formatIn(tsSeconds, { timeZone: NY, dateless: true }, "shortGeneric")})`;
+}
 
 function pad(n: number): string {
   return String(n).padStart(2, "0");
@@ -68,15 +113,12 @@ export type Clock = {
   label: string;
   /** "Fri 4:00pm NY" */
   short: string;
-  /** "8:00pm UTC" */
-  utc: string;
 };
 
 /** Format a unix-seconds instant the way the rest of the site prints time. */
 export function clockAt(tsSeconds: number): Clock {
   const date = new Date(tsSeconds * 1000);
   const ny = partsIn(NY, date);
-  const utc = partsIn("UTC", date);
   const time = hour12(ny.hour, ny.minute);
   return {
     weekday: ny.weekday,
@@ -86,13 +128,12 @@ export function clockAt(tsSeconds: number): Clock {
     zone: ny.zone,
     label: `${ny.weekday} ${time} New York`,
     short: `${ny.weekday.slice(0, 3)} ${time} NY`,
-    utc: `${hour12(utc.hour, utc.minute)} UTC`,
   };
 }
 
 /**
  * The keeper's usual week, when the page is describing the rule rather than one dated rehearsal.
- * Lead with these; the DST footnote lives in <ClockNote>.
+ * Lead with these; <ClockNote> says once that times are shown in the reader's zone.
  */
 export const WEEK = {
   close: "Friday 4:00pm New York",
@@ -100,6 +141,4 @@ export const WEEK = {
   expiry: "Saturday 4:00pm New York",
   expiryShort: "Sat 4:00pm NY",
   window: "Friday 4:00pm to Saturday 4:00pm New York",
-  utcDst: "8:00pm UTC",
-  utcStd: "9:00pm UTC",
 } as const;

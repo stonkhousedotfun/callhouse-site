@@ -1,5 +1,6 @@
 /** Read-only v2 API client for server-rendered marketing copy. Bad or absent data is never presented as live. */
 import { LIVE_MARKETS } from "./markets.generated.ts";
+import { chainReaders, resolveSpot, usdgMoney, type Readers, type SpotSource } from "./spotFallback.ts";
 
 export type Money = { raw: string; decimals: 6; formatted: string };
 export type LiveCard = {
@@ -115,4 +116,59 @@ export async function getStats(): Promise<LiveStats | null> {
       !/^[A-Z][A-Z0-9]{0,9}$/.test(win.ticker))) return null;
   return { contractsFilled: data.contractsFilled,
     biggestWinWeek: win ? { multiple: win.multiple as number, ticker: win.ticker as string } : null };
+}
+
+/**
+ * One launch market's price for the front page's ticker cards. `source` says where the price
+ * came from (lib/spotFallback.ts); absent on rows built elsewhere.
+ */
+export type LiveSpot = {
+  ticker: string;
+  name: string;
+  spot: Money | null;
+  spotUpdatedAt: number | null;
+  source?: SpotSource;
+};
+
+/** The API's /v2/markets rows for live markets, by ticker; null when the read failed or a live row broke its shape. */
+function apiMarkets(data: unknown): Map<string, { name: string; spot: Money | null; spotUpdatedAt: number | null }> | null {
+  if (!Array.isArray(data)) return null;
+  const byTicker = new Map<string, { name: string; spot: Money | null; spotUpdatedAt: number | null }>();
+  for (const value of data) {
+    const x = object(value);
+    if (!x || typeof x.ticker !== "string" || !LIVE_MARKET_SET.has(x.ticker)) continue;
+    const spot = x.spot === null ? null : money(x.spot);
+    const at = x.spotUpdatedAt;
+    const atOk = at === null || (typeof at === "number" && Number.isSafeInteger(at) && at > 0 && at <= MAX_DATE_EXPIRY);
+    if (typeof x.name !== "string" || !x.name || (x.spot !== null && !spot) || !atOk || (spot === null) !== (at === null)) return null;
+    byTicker.set(x.ticker, { name: x.name, spot, spotUpdatedAt: at as number | null });
+  }
+  return byTicker;
+}
+
+/**
+ * The front page's ticker cards: one row per generated live market, in LIVE_MARKETS order, each with a price whenever
+ * anything can price it.
+ *
+ * The price chain is lib/spotFallback.ts: the API's /v2/markets spot when present and fresh, else the market's
+ * Chainlink feed, else its Uniswap v3 pool, else the last good price this server saw. The API rows are still
+ * validated as before: the indexer's marketSchema makes `spot` and `spotUpdatedAt` both present or both null, and a
+ * live row that breaks the shape (no name, a malformed money object, one of the pair without the other) means the
+ * whole API read is not used -- every card then comes from the chain. Rows for markets outside LIVE_MARKETS are
+ * ignored. The result is never null; a card's spot is null only when nothing has ever priced that market here.
+ */
+export async function getSpots(revalidate = 60, readers: Readers = chainReaders): Promise<LiveSpot[]> {
+  const api = apiMarkets(await read("/v2/markets", revalidate));
+  return Promise.all(LIVE_MARKETS.map(async (ticker): Promise<LiveSpot> => {
+    const row = api?.get(ticker);
+    const apiSpot = row?.spot && row.spotUpdatedAt !== null
+      ? { raw: BigInt(row.spot.raw), updatedAt: row.spotUpdatedAt }
+      : null;
+    const resolved = await resolveSpot(ticker, apiSpot, readers);
+    const name = row?.name ?? ticker;
+    if (!resolved) return { ticker, name, spot: null, spotUpdatedAt: null };
+    // The API's own money object is kept as sent; a chain or cached price is formatted here.
+    const spot = resolved.source === "api" && row?.spot ? row.spot : usdgMoney(resolved.raw);
+    return { ticker, name, spot, spotUpdatedAt: resolved.updatedAt, source: resolved.source };
+  }));
 }

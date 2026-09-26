@@ -1,10 +1,11 @@
 /**
- * X and GitHub marks. The old GitBook is linked as legacy v1 in the footer only.
+ * X, Telegram and GitHub marks. The docs are not a mark here: they describe the current v8 contracts and are a
+ * text link to DOCS_URL, "Docs" in the header's link list and "Documentation" in the footer.
  * Each leaves this origin, so they are plain new-tab <a>s.
  */
 import { ExternalLink } from "@/components/ui/ExternalLink";
-import { GitHubIcon, XIcon } from "@/components/ui/icons";
-import { GITHUB_URL, X_URL } from "@/lib/site";
+import { GitHubIcon, TelegramIcon, XIcon } from "@/components/ui/icons";
+import { GITHUB_URL, TELEGRAM_URL, X_URL } from "@/lib/site";
 
 const ITEM =
   "grid size-9 place-items-center rounded-[10px] text-ink-2 no-underline transition-colors duration-150 hover:bg-surface-2 hover:text-ink";
@@ -16,6 +17,11 @@ export function SocialLinks() {
         <li>
           <ExternalLink href={X_URL} className={ITEM} aria-label="X (opens in a new tab)" srNote={false}>
             <XIcon size={15} />
+          </ExternalLink>
+        </li>
+        <li>
+          <ExternalLink href={TELEGRAM_URL} className={ITEM} aria-label="Telegram (opens in a new tab)" srNote={false}>
+            <TelegramIcon size={16} />
           </ExternalLink>
         </li>
         <li>

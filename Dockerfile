@@ -3,9 +3,9 @@
 #
 # WHY THIS FILE EXISTS: Railway builds this repo with the repo root as the build context and the
 # Dockerfile at `Dockerfile` (railway.json). This repo is one pnpm package with its own
-# pnpm-lock.yaml, so the context holds everything the install needs and nothing else. README.md
-# "Deploy" documents every Railway-side setting this file assumes; if you change one, change it
-# there too.
+# pnpm-lock.yaml, so the context holds everything the install needs and nothing else. If you
+# change a Railway-side setting this file assumes (the build context, the Dockerfile path, a
+# build variable), change this file with it.
 #
 # THE LAYERING IS THE POINT: manifests → install → sources → build. Copy the sources before the
 # install and every one-line copy edit reinstalls node_modules from scratch.
@@ -88,7 +88,7 @@ RUN pnpm install --frozen-lockfile
 #
 # The six operator variables carry NO default, on purpose: unset compiles to "not yet designated"
 # on /terms, /privacy and /legal, and /.well-known/security.txt stays a 404. That gap is the
-# intended state until counsel decides the values (stonkhousedotfun/callhouse: ops/launch-legal.md), and
+# intended state until counsel decides the values, and
 # declaring the ARGs changes nothing until then — lib/legal.ts trims an empty string to unset.
 #
 # This block sits AFTER the install on purpose: a URL change must not invalidate the node_modules
@@ -149,7 +149,7 @@ RUN pnpm run build
 RUN test -f .next/standalone/server.js || { \
       echo "BUILD ERROR: .next/standalone/server.js is missing."; \
       echo "next.config.mjs must set output:'standalone' AND outputFileTracingRoot to this directory."; \
-      echo "See README.md, 'Known sharp edges'."; \
+      echo "With both set, the standalone tree mirrors this directory, so the entry point is .next/standalone/server.js."; \
       exit 1; \
     }
 

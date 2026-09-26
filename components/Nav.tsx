@@ -1,21 +1,26 @@
 /**
- * Top bar for stonkhouse.fun. Server component; the only client code is NavLinks
- * (usePathname for the active "How it works" link).
+ * Top bar for stonkhouse.fun. Server component; the client islands are NavLinks
+ * (usePathname: it marks whichever header link is the current route) and ThemeToggle (the night/day switch,
+ * app/_components/ThemeToggle.tsx; the app's header leads its right cluster with the
+ * same toggle, callhouse web/components/Nav.tsx).
  *
- * Visual and focus order: brand, how a week runs, then X / GitHub and "Open the app".
- * Risks and legal live in the footer, not here. Below 960px the brand has its own row,
+ * Visual and focus order follows the Neon mockup: brand; How it works,
+ * FAQ, Risks and Docs (NavLinks); then the theme toggle, X / GitHub and "Launch App". Risks is here
+ * and in the footer; Legal, Terms and Privacy are footer only. Docs is the v8 GitBook (DOCS_URL,
+ * passed down so the client island does not import lib/site). Below 960px the brand has its own row,
  * with the link and right cluster below it, so the Buy button and marks stay reachable without a menu.
  *
  * "Buy" and the two marks leave this origin. They are plain new-tab <a>s.
  *
  * DELIBERATELY ABSENT: any wallet or connect control. This package has no wallet code.
  */
+import { ThemeToggle } from "@/app/_components/ThemeToggle";
 import { NavLinks } from "@/components/NavLinks";
 import { SocialLinks } from "@/components/SocialLinks";
 import { Brand } from "@/components/ui/Brand";
 import { Button } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { OPEN_APP } from "@/lib/site";
+import { DOCS_URL, OPEN_APP } from "@/lib/site";
 
 export function Nav() {
   return (
@@ -26,9 +31,10 @@ export function Nav() {
           aria-label="Site"
           className="min-w-0 overflow-x-auto [scrollbar-width:none] lg:overflow-visible"
         >
-          <NavLinks />
+          <NavLinks docsHref={DOCS_URL} />
         </nav>
         <div className="flex items-center gap-2">
+          <ThemeToggle />
           <SocialLinks />
           <Button href={OPEN_APP} size="sm">
             Launch App

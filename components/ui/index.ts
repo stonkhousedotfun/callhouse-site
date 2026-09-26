@@ -1,5 +1,6 @@
 /**
- * Daylight primitives. Server components, no client runtime; import from "@/components/ui".
+ * Daylight primitives. Server components, no client runtime, except InfoTip (a "use client" twin of the app's, which
+ * the PayoffChart twin imports); import from "@/components/ui".
  */
 export { Brand, BrandMark } from "./Brand";
 export { Button, buttonClasses } from "./Button";
@@ -16,6 +17,8 @@ export { Figure, Num } from "./Figure";
 export type { FigureProps, FigureSize, NumProps, NumTone } from "./Figure";
 export { ClockNote, When } from "./When";
 export { CheckCircleIcon, GitBookIcon, GitHubIcon, WarnIcon, XIcon } from "./icons";
+export { InfoTip } from "./InfoTip";
+export type { InfoTipProps } from "./InfoTip";
 export { Notice } from "./Notice";
 export type { NoticeProps } from "./Notice";
 export { Card, Panel } from "./Panel";

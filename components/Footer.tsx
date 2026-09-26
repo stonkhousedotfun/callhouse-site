@@ -1,19 +1,14 @@
 /**
  * Footer for stonkhouse.fun (the mockup's .footer). Server component: nothing here hydrates.
  *
- * Four rows, in this order:
+ * Two rows, in this order:
  *   1. what this is: product, registry market count, chain.
- *   2. where to go: how it works, risks, legal, terms, privacy, then the links that leave this
+ *   2. where to go: how it works, FAQ, risks, legal, terms, privacy, then the links that leave this
  *      domain (docs, the app, the explorer), each marked ↗ and opening a new tab. Risks and legal
  *      live here, not in the top bar.
- *   3. the standing disclaimers. "Not affiliated with Robinhood Markets, Robinhood Assets (Jersey)
- *      Limited or Valorem" is carried word for word from the dapp's footer (stonkhousedotfun/callhouse
- *      `web/app/layout.tsx`, as ported 2026-09-14); if it is reworded, reword both in paired commits
- *      across the two repos.
- *   4. the audit status, stated outright.
+ * No disclaimer paragraph and no beta or audit line in the site chrome.
  *
  * DELIBERATELY ABSENT: a contract link (the addresses live on /how-it-works#contracts).
- * The docs contain current v2 deployment guidance alongside clearly labelled legacy v1 pages.
  */
 import Link from "next/link";
 
@@ -26,11 +21,11 @@ import {
   DOCS_URL,
   EXPLORER_URL,
   REGISTRY_MARKET_COUNT,
-  STATUS,
 } from "@/lib/site";
 
 const PAGES = [
   { href: "/how-it-works", label: "How it works" },
+  { href: "/faq", label: "FAQ" },
   { href: "/risks", label: "Risks" },
   { href: "/legal", label: "Legal" },
   { href: "/terms", label: "Terms" },
@@ -77,11 +72,6 @@ export function Footer() {
               </li>
             </ul>
           </nav>
-          <p className="max-w-[70em]">
-            Not available to US persons. Not affiliated with Robinhood Markets, Robinhood Assets (Jersey) Limited or Valorem (legacy accounts).
-            Nothing here is financial advice or an offer of securities.
-          </p>
-          <p className="max-w-[70em]">{STATUS.phase}. {STATUS.auditLine}</p>
         </div>
       </Container>
     </footer>
